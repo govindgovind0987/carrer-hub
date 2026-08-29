@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { judgeSubmission } from '@/lib/compiler/judge-engine';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function POST(req) {
   try {

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { generateCareerCoachResponseWithAI, normalizeActionType } from '@/services/ai';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function POST(req) {
   try {
