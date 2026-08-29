@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { generateCareerCoachResponseWithAI, normalizeActionType } from '@/services/ai';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req) {
   try {
     const session = await auth();

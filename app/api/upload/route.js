@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 import { uploadFile } from '@/services/storage';
 import { verifyCloudinaryConnection } from '@/lib/cloudinary';
 
+export const dynamic = 'force-dynamic';
+
 const ALLOWED_MIME_TYPES = {
   resumes: [
     'application/pdf',

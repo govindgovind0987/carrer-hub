@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { judgeSubmission } from '@/lib/compiler/judge-engine';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req) {
   try {
     const session = await auth();
