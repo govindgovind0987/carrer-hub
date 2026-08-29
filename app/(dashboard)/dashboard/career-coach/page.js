@@ -7,6 +7,8 @@ export const metadata = {
   description: 'Personalized AI career advisor powered by Groq SDK analyzing your actual profile, DSA progress, and interview performance.',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function CareerCoachPage() {
   const session = await auth();
   const userId = session?.user?.id;

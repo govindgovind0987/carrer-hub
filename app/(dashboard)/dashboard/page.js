@@ -27,6 +27,8 @@ export const metadata = {
   description: 'AI-powered career preparation, DSA progress tracking, interview prep, and skill development portal.',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function CandidateDashboardPage() {
   const session = await auth();
   const userId = session?.user?.id;

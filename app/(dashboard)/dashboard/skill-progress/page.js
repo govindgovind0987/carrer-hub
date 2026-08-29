@@ -7,6 +7,8 @@ export const metadata = {
   description: 'Interactive breakdown of your technical mastery across 20 DSA topics, web dev, database, and interview prep.',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function SkillProgressPage() {
   const session = await auth();
   const userId = session?.user?.id;

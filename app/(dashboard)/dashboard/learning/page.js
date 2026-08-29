@@ -26,6 +26,8 @@ export const metadata = {
   description: 'Track your personalized DSA roadmap, topic weaknesses, interview prep, and learning activity.',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function LearningDashboardPage() {
   const session = await auth();
   const userId = session?.user?.id;
