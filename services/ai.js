@@ -2,14 +2,23 @@ import { Groq } from 'groq-sdk';
 import { AI_PROMPTS } from '../constants/prompts.js';
 import { calculateDeterministicResumeScore, getQualityLevel } from './resume-score-engine.js';
 
-const groqApiKey = process.env.GROQ_API_KEY;
-const groq = groqApiKey ? new Groq({ apiKey: groqApiKey }) : null;
 const MODEL_NAME = 'llama-3.3-70b-versatile';
+
+function getGroqClient() {
+  const groqApiKey = process.env.GROQ_API_KEY;
+  if (!groqApiKey) return null;
+  try {
+    return new Groq({ apiKey: groqApiKey });
+  } catch (e) {
+    return null;
+  }
+}
 
 /**
  * Executes a Groq LLM completion request with JSON parsing and fallback
  */
 export async function callGroqJson(prompt) {
+  const groq = getGroqClient();
   if (groq) {
     try {
       const response = await groq.chat.completions.create({
@@ -53,6 +62,7 @@ export async function analyzeResumeWithAI(resumeText, targetJobDescription = nul
   let aiWeakAreas = [];
   let aiSuggestions = [];
 
+  const groq = getGroqClient();
   if (groq) {
     const aiPrompt = `
 You are a senior technical recruiter for top-tier tech companies.

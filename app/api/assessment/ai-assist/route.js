@@ -4,14 +4,14 @@ import Groq from 'groq-sdk';
 
 export const dynamic = 'force-dynamic';
 
-const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
-
 export async function POST(req) {
   try {
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
 
     const { code, language, mode, problemTitle, problemDescription } = await req.json();
 
