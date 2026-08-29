@@ -1,0 +1,1121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ===========================================
+// Enums
+// ===========================================
+
+enum UserRole {
+  CANDIDATE
+  RECRUITER
+  ADMIN
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  REMOTE
+  HYBRID
+}
+
+enum ExperienceLevel {
+  ENTRY_LEVEL
+  MID_LEVEL
+  SENIOR_LEVEL
+  LEAD
+  EXECUTIVE
+}
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+}
+
+enum ApplicationStatus {
+  PENDING
+  SHORTLISTED
+  INTERVIEW
+  REJECTED
+  ACCEPTED
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum NotificationType {
+  APPLICATION_UPDATE
+  NEW_APPLICATION
+  JOB_ALERT
+  SYSTEM
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum QuestionCategory {
+  JAVASCRIPT
+  REACT
+  NEXTJS
+  NODEJS
+  MONGODB
+  SQL
+  DSA
+  HR
+  BEHAVIORAL
+  TECHNICAL
+}
+
+// ===========================================
+// Auth.js Required Models
+// ===========================================
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  hashedPassword String?
+  image          String?
+  role           UserRole  @default(CANDIDATE)
+  status         String    @default("ACTIVE") // ACTIVE, SUSPENDED, PENDING_VERIFICATION
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  accounts             Account[]
+  sessions             Session[]
+  profile              Profile?
+  company              Company?
+  resumes              Resume[]
+  applications         Application[]
+  bookmarks            Bookmark[]
+  notifications        Notification[]
+  jobs                 Job[]                @relation("RecruiterJobs")
+  analyses             ResumeAnalysis[]
+  atsReports           ATSReport[]
+  jobMatches           JobMatch[]
+  assessmentResults    AssessmentResult[]
+  interviewHistories   InterviewQuestion[]
+  aiHistories          AIHistory[]
+  interviewSessions    InterviewSession[]
+  interviewReports     InterviewReport[]
+  performanceHistories PerformanceHistory[]
+  activityLogs         ActivityLog[]
+  auditLogs            AuditLog[]
+  problemSubmissions   ProblemSubmission[]
+  problemProgress      UserProblemProgress[]
+  codingStats          UserCodingStats?
+  userBadges           UserBadge[]
+  recruiterAssessments RecruiterAssessment[]        @relation("RecruiterAssessments")
+  candidateResults     CandidateAssessmentResult[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ===========================================
+// Candidate Profile & Resume Models
+// ===========================================
+
+model Profile {
+  id          String  @id @default(cuid())
+  userId      String  @unique
+  bio         String? @db.Text
+  phone       String?
+  location    String?
+  website     String?
+  resumeUrl   String?
+  linkedinUrl String?
+  githubUrl   String?
+  headline    String?
+  company     String?
+  experience  Int?    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  educations   Education[]
+  experiences  Experience[]
+  skills       Skill[]
+  projects     Project[]
+  certificates Certificate[]
+  languages    Language[]
+  achievements Achievement[]
+
+  @@map("profiles")
+}
+
+model Education {
+  id           String    @id @default(cuid())
+  profileId    String
+  institution  String
+  degree       String
+  fieldOfStudy String?
+  startDate    DateTime
+  endDate      DateTime?
+  current      Boolean   @default(false)
+  description  String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@map("educations")
+}
+
+model Experience {
+  id          String    @id @default(cuid())
+  profileId   String
+  company     String
+  title       String
+  location    String?
+  startDate   DateTime
+  endDate     DateTime?
+  current     Boolean   @default(false)
+  description String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@map("experiences")
+}
+
+model Skill {
+  id        String     @id @default(cuid())
+  profileId String
+  name      String
+  category  String?    @default("General")
+  level     SkillLevel @default(INTERMEDIATE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@map("skills")
+}
+
+model Project {
+  id           String   @id @default(cuid())
+  profileId    String
+  title        String
+  description  String   @db.Text
+  link         String?
+  githubUrl    String?
+  technologies String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@map("projects")
+}
+
+model Certificate {
+  id            String    @id @default(cuid())
+  profileId     String
+  name          String
+  issuer        String
+  issueDate     DateTime
+  expiryDate    DateTime?
+  credentialUrl String?
+  credentialId  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@map("certificates")
+}
+
+model Language {
+  id          String @id @default(cuid())
+  profileId   String
+  name        String
+  proficiency String @default("Professional")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@map("languages")
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  profileId   String
+  title       String
+  description String   @db.Text
+  date        DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@map("achievements")
+}
+
+model Resume {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  isDefault Boolean  @default(false)
+  fileUrl   String
+  fileKey   String?
+  fileSize  Int?     @default(0)
+  mimeType  String?  @default("application/pdf")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  versions     ResumeVersion[]
+  applications Application[]
+  analyses     ResumeAnalysis[]
+  atsReports   ATSReport[]
+  jobMatches   JobMatch[]
+
+  @@index([userId])
+  @@map("resumes")
+}
+
+model ResumeVersion {
+  id                 String   @id @default(cuid())
+  resumeId           String
+  versionNumber      Int
+  fileUrl            String
+  fileKey            String?
+  changesDescription String?
+  createdAt          DateTime @default(now())
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@map("resume_versions")
+}
+
+// ===========================================
+// Recruiter & Company Models
+// ===========================================
+
+model Company {
+  id          String   @id @default(cuid())
+  recruiterId String   @unique
+  name        String
+  slug        String   @unique
+  logo        String?
+  coverImage  String?
+  description String?  @db.Text
+  website     String?
+  location    String?
+  size        String?
+  industry    String?
+  socialLinks Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  recruiter User  @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+  jobs      Job[]
+
+  @@index([recruiterId])
+  @@map("companies")
+}
+
+// ===========================================
+// Job & Application Models
+// ===========================================
+
+model Job {
+  id              String          @id @default(cuid())
+  companyId       String
+  recruiterId     String
+  title           String
+  slug            String          @unique
+  description     String          @db.Text
+  requirements    String          @db.Text
+  location        String
+  jobType         JobType         @default(FULL_TIME)
+  experienceLevel ExperienceLevel @default(MID_LEVEL)
+  category        String          @default("Software Engineering")
+  salaryMin       Int?
+  salaryMax       Int?
+  salaryCurrency  String          @default("USD")
+  status          JobStatus       @default(PUBLISHED)
+  featured        Boolean         @default(false)
+  viewsCount      Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  recruiter    User          @relation("RecruiterJobs", fields: [recruiterId], references: [id], onDelete: Cascade)
+  applications Application[]
+  bookmarks    Bookmark[]
+  matches      JobMatch[]
+
+  @@index([companyId])
+  @@index([recruiterId])
+  @@index([category])
+  @@index([status])
+  @@map("jobs")
+}
+
+model Application {
+  id          String            @id @default(cuid())
+  jobId       String
+  candidateId String
+  resumeId    String?
+  coverLetter String?           @db.Text
+  status      ApplicationStatus @default(PENDING)
+  appliedAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  job       Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate User    @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  resume    Resume? @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+
+  @@unique([jobId, candidateId])
+  @@index([candidateId])
+  @@index([jobId])
+  @@index([status])
+  @@map("applications")
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@index([userId])
+  @@index([jobId])
+  @@map("bookmarks")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  message   String           @db.Text
+  type      NotificationType @default(SYSTEM)
+  isRead    Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+// ===========================================
+// AI Engine & Intelligence System Models (Day 3)
+// ===========================================
+
+model ResumeAnalysis {
+  id                    String   @id @default(cuid())
+  userId                String
+  resumeId              String
+  overallScore          Int      @default(0)
+  atsScore              Int      @default(0)
+  summary               String   @db.Text
+  weakAreas             String[] @default([])
+  strongAreas           String[] @default([])
+  missingSkills         String[] @default([])
+  keywordAnalysis       Json?
+  grammarSuggestions    String[] @default([])
+  formattingSuggestions String[] @default([])
+  careerSuggestions     String[] @default([])
+  interviewReadiness    String?
+  createdAt             DateTime @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume     Resume      @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  atsReports ATSReport[]
+
+  @@index([userId])
+  @@index([resumeId])
+  @@map("resume_analyses")
+}
+
+model ATSReport {
+  id                 String   @id @default(cuid())
+  analysisId         String
+  resumeId           String
+  userId             String
+  score              Int      @default(0)
+  keywordsFound      String[] @default([])
+  missingKeywords    String[] @default([])
+  formattingScore    Int      @default(0)
+  readabilityScore   Int      @default(0)
+  sectionScores      Json?
+  recommendations    String[] @default([])
+  createdAt          DateTime @default(now())
+
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume   Resume         @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  analysis ResumeAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([resumeId])
+  @@index([analysisId])
+  @@map("ats_reports")
+}
+
+model JobMatch {
+  id                    String   @id @default(cuid())
+  userId                String
+  resumeId              String
+  jobId                 String
+  matchScore            Int      @default(0)
+  candidateTitle        String?
+  jobTitle              String?
+  missingSkills         String[] @default([])
+  recommendedSkills     String[] @default([])
+  suggestions           String[] @default([])
+  recommendation        String?  @db.Text
+  createdAt             DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  job    Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([resumeId])
+  @@index([jobId])
+  @@map("job_matches")
+}
+
+model InterviewQuestion {
+  id                String           @id @default(cuid())
+  userId            String
+  sessionId         String?
+  order             Int              @default(0)
+  questionType      String           @default("TEXT") // TEXT, VOICE, CODE, PARAGRAPH, MULTIPLE_CHOICE
+  category          QuestionCategory @default(TECHNICAL)
+  categoryName      String?          @default("Technical")
+  difficulty        Difficulty       @default(MEDIUM)
+  role              String?
+  companyStyle      String?          @default("General Interview")
+  question          String           @db.Text
+  sampleAnswer      String?          @db.Text
+  explanation       String?          @db.Text
+  bestAnswer        String?          @db.Text
+  alternativeAnswer String?          @db.Text
+  commonMistakes    String[]         @default([])
+  interviewTips     String[]         @default([])
+  options           Json?
+  codeTemplate      String?          @db.Text
+  keyPoints         String[]         @default([])
+  followUp          String?          @db.Text
+  bookmarked        Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session           InterviewSession?   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  answers           InterviewAnswer[]
+  feedbacks         InterviewFeedback[]
+  codingSubmissions CodingSubmission[]
+  voiceRecordings   VoiceRecording[]
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([category])
+  @@map("interview_questions")
+}
+
+model CodingAssessment {
+  id           String           @id @default(cuid())
+  title        String
+  category     QuestionCategory @default(JAVASCRIPT)
+  difficulty   Difficulty       @default(EASY)
+  question     String           @db.Text
+  starterCode  String           @db.Text
+  testCases    Json
+  solutionCode String           @db.Text
+  createdAt    DateTime         @default(now())
+
+  results AssessmentResult[]
+
+  @@index([category])
+  @@index([difficulty])
+  @@map("coding_assessments")
+}
+
+model AssessmentResult {
+  id           String   @id @default(cuid())
+  userId       String
+  assessmentId String
+  score        Int      @default(0)
+  userCode     String   @db.Text
+  passed       Boolean  @default(false)
+  feedback     String?  @db.Text
+  timeTakenSec Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessment CodingAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([assessmentId])
+  @@map("assessment_results")
+}
+
+model AIHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  inputData Json?
+  outputData Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@map("ai_histories")
+}
+
+model PromptHistory {
+  id         String   @id @default(cuid())
+  promptName String
+  tokensUsed Int      @default(0)
+  modelUsed  String   @default("llama-3.3-70b-versatile")
+  durationMs Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@map("prompt_histories")
+}
+
+// ===========================================
+// AI Mock Interview Platform Models (Day 4)
+// ===========================================
+
+model InterviewSession {
+  id                   String              @id @default(cuid())
+  userId               String
+  role                 String
+  technology           String
+  companyStyle         String?             @default("General Interview")
+  experience           String
+  difficulty           Difficulty          @default(MEDIUM)
+  type                 String              @default("Technical Interview")
+  durationMinutes      Int                 @default(30)
+  numberOfQuestions    Int                 @default(5)
+  questionCategories   String[]            @default([])
+  status               String              @default("CREATED") // CREATED, IN_PROGRESS, PAUSED, COMPLETED, CANCELLED
+  currentQuestionIndex Int                 @default(0)
+  startedAt            DateTime?
+  endedAt              DateTime?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions         InterviewQuestion[]
+  answers           InterviewAnswer[]
+  report            InterviewReport?
+  feedbacks         InterviewFeedback[]
+  codingSubmissions CodingSubmission[]
+  voiceRecordings   VoiceRecording[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("interview_sessions")
+}
+
+model InterviewAnswer {
+  id              String            @id @default(cuid())
+  sessionId       String
+  questionId      String
+  answerType      String            @default("TEXT") // TEXT, VOICE, CODE, PARAGRAPH, MULTIPLE_CHOICE
+  userAnswer      String            @db.Text
+  voiceUrl        String?
+  codeSnippet     String?           @db.Text
+  codeLanguage    String?
+  selectedOption  String?
+  confidenceScore Float?            @default(0.0)
+  timeTakenSec    Int               @default(0)
+  createdAt       DateTime          @default(now())
+
+  session  InterviewSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question InterviewQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([questionId])
+  @@map("interview_answers")
+}
+
+model InterviewReport {
+  id                   String           @id @default(cuid())
+  sessionId            String           @unique
+  userId               String
+  overallScore         Int              @default(0)
+  technicalScore       Int              @default(0)
+  codingScore          Int              @default(0)
+  communicationScore   Int              @default(0)
+  confidenceScore      Int              @default(0)
+  problemSolvingScore  Int              @default(0)
+  behaviorScore        Int              @default(0)
+  questionBreakdown    Json
+  answerBreakdown      Json
+  performanceTrend     Json?
+  strengths            String[]         @default([])
+  weaknesses           String[]         @default([])
+  mistakes             String[]         @default([])
+  missingConcepts      String[]         @default([])
+  recommendedTopics    String[]         @default([])
+  recommendedResources Json?
+  summary              String           @db.Text
+  recommendation       String           @db.Text
+  createdAt            DateTime         @default(now())
+
+  session InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("interview_reports")
+}
+
+model InterviewFeedback {
+  id                 String            @id @default(cuid())
+  sessionId          String
+  questionId         String
+  feedback           String            @db.Text
+  score              Int               @default(0)
+  correctness        Int               @default(0)
+  technicalKnowledge Int               @default(0)
+  communication      Int               @default(0)
+  confidence         Int               @default(0)
+  problemSolving     Int               @default(0)
+  codingStyle        Int               @default(0)
+  cleanCode          Int               @default(0)
+  bestPractices      Int               @default(0)
+  logicalThinking    Int               @default(0)
+  createdAt          DateTime          @default(now())
+
+  session  InterviewSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question InterviewQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([questionId])
+  @@map("interview_feedbacks")
+}
+
+model CodingSubmission {
+  id              String            @id @default(cuid())
+  sessionId       String
+  questionId      String
+  code            String            @db.Text
+  language        String
+  executionResult Json?
+  score           Int               @default(0)
+  createdAt       DateTime          @default(now())
+
+  session  InterviewSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question InterviewQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([questionId])
+  @@map("coding_submissions")
+}
+
+model QuestionBank {
+  id           String           @id @default(cuid())
+  title        String
+  category     QuestionCategory @default(TECHNICAL)
+  technology   String           @default("General")
+  difficulty   Difficulty       @default(MEDIUM)
+  questionType String           @default("TEXT")
+  question     String           @db.Text
+  sampleAnswer String?          @db.Text
+  options      Json?
+  codeTemplate String?          @db.Text
+  createdAt    DateTime         @default(now())
+
+  @@index([category])
+  @@index([technology])
+  @@index([difficulty])
+  @@map("question_bank")
+}
+
+model PerformanceHistory {
+  id              String     @id @default(cuid())
+  userId          String
+  sessionId       String
+  averageScore    Int        @default(0)
+  technology      String
+  difficulty      Difficulty @default(MEDIUM)
+  durationMinutes Int        @default(0)
+  createdAt       DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("performance_histories")
+}
+
+model VoiceRecording {
+  id            String            @id @default(cuid())
+  sessionId     String
+  questionId    String
+  audioUrl      String
+  durationSec   Int               @default(0)
+  transcription String?           @db.Text
+  confidence    Float             @default(0.0)
+  createdAt     DateTime          @default(now())
+
+  session  InterviewSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question InterviewQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([questionId])
+  @@map("voice_recordings")
+}
+
+// ===========================================
+// Admin, Audit Logs & System Models (Day 5)
+// ===========================================
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  details   String?  @db.Text
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@map("activity_logs")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  adminId    String?
+  targetType String
+  targetId   String
+  action     String
+  changes    Json?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  category  String   @default("GENERAL")
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  to        String
+  subject   String
+  template  String
+  status    String   @default("SENT") // SENT, FAILED
+  error     String?  @db.Text
+  sentAt    DateTime @default(now())
+
+  @@index([to])
+  @@index([template])
+  @@map("email_logs")
+}
+
+// ===========================================
+// Online Coding Platform Models
+// ===========================================
+
+enum Verdict {
+  ACCEPTED
+  WRONG_ANSWER
+  TIME_LIMIT_EXCEEDED
+  MEMORY_LIMIT_EXCEEDED
+  COMPILATION_ERROR
+  RUNTIME_ERROR
+  OUTPUT_LIMIT_EXCEEDED
+  INTERNAL_JUDGE_ERROR
+}
+
+model Problem {
+  id                  String           @id @default(cuid())
+  slug                String           @unique
+  title               String
+  description         String           @db.Text
+  difficulty          Difficulty       @default(EASY)
+  category            String           @default("DSA")
+  tags                String[]         @default([])
+  constraints         String[]         @default([])
+  examples            Json             // array of { input, output, explanation }
+  hints               String[]         @default([])
+  editorial           String?          @db.Text
+  starterCode         Json             // object { python, java, cpp }
+  referenceSolution   Json?            // object { python, java, cpp } (hidden reference solution)
+  companyTags         String[]         @default([])
+  inputFormat         String?          @db.Text
+  outputFormat        String?          @db.Text
+  complexityAnalysis  String?          @db.Text
+  timeLimitMs         Int              @default(3000)
+  memoryLimitMb       Int              @default(128)
+  supportedLanguages  String[]         @default(["python", "java", "cpp"])
+  
+  totalSubmissions    Int              @default(0)
+  acceptedSubmissions Int              @default(0)
+  acceptanceRate      Float            @default(0.0)
+
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  testCases           TestCase[]
+  submissions         ProblemSubmission[]
+  userProgress        UserProblemProgress[]
+
+  @@index([slug])
+  @@index([difficulty])
+  @@index([category])
+  @@map("problems")
+}
+
+model TestCase {
+  id             String   @id @default(cuid())
+  problemId      String
+  input          String   @db.Text
+  expectedOutput String   @db.Text
+  isHidden       Boolean  @default(true)
+  explanation    String?  @db.Text
+  createdAt      DateTime @default(now())
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@index([problemId])
+  @@map("test_cases")
+}
+
+model ProblemSubmission {
+  id           String   @id @default(cuid())
+  userId       String
+  problemId    String
+  code         String   @db.Text
+  language     String
+  verdict      Verdict  @default(WRONG_ANSWER)
+  runtimeMs    Int      @default(0)
+  memoryMb     Float    @default(0.0)
+  passedCases  Int      @default(0)
+  totalCases   Int      @default(0)
+  errorMessage String?  @db.Text
+  testResults  Json?    // array of test case output details
+  createdAt    DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([problemId])
+  @@index([verdict])
+  @@map("problem_submissions")
+}
+
+model UserProblemProgress {
+  id              String    @id @default(cuid())
+  userId          String
+  problemId       String
+  status          String    @default("UNSOLVED") // UNSOLVED, ATTEMPTED, SOLVED
+  notes           String?   @db.Text
+  bookmarked      Boolean   @default(false)
+  savedCode       Json?     // { language: code }
+  lastSubmittedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, problemId])
+  @@index([userId])
+  @@index([problemId])
+  @@map("user_problem_progress")
+}
+
+model UserCodingStats {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  solvedCount      Int      @default(0)
+  easySolved       Int      @default(0)
+  mediumSolved     Int      @default(0)
+  hardSolved       Int      @default(0)
+  totalSubmissions Int      @default(0)
+  acceptedCount    Int      @default(0)
+  points           Int      @default(0)
+  streakDays       Int      @default(0)
+  lastActiveDate   DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_coding_stats")
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String
+  icon        String
+  category    String   @default("MILESTONE")
+
+  userBadges UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+  @@map("user_badges")
+}
+
+model RecruiterAssessment {
+  id               String      @id @default(cuid())
+  recruiterId      String
+  title            String
+  description      String      @db.Text
+  difficulty       Difficulty  @default(MEDIUM)
+  timeLimitMinutes Int         @default(60)
+  passingScore     Int         @default(70)
+  problemIds       String[]    @default([])
+  customQuestions  Json?       // Array of { title, description, starterCode, testCases }
+  accessCode       String      @unique
+  status           String      @default("ACTIVE") // DRAFT, ACTIVE, ARCHIVED
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  recruiter        User                        @relation("RecruiterAssessments", fields: [recruiterId], references: [id], onDelete: Cascade)
+  candidateResults CandidateAssessmentResult[]
+
+  @@index([recruiterId])
+  @@index([accessCode])
+  @@map("recruiter_assessments")
+}
+
+model CandidateAssessmentResult {
+  id              String    @id @default(cuid())
+  assessmentId    String
+  candidateUserId String?
+  candidateEmail  String
+  candidateName   String
+  status          String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  totalScore      Int       @default(0)
+  maxScore        Int       @default(100)
+  passedProblems  Int       @default(0)
+  totalProblems   Int       @default(0)
+  submissions     Json?     // Detailed submissions per problem
+  plagiarismScore Int       @default(0)
+  plagiarismFlags Json?     // Detection flags
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+
+  assessment    RecruiterAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  candidateUser User?               @relation(fields: [candidateUserId], references: [id], onDelete: SetNull)
+
+  @@index([assessmentId])
+  @@index([candidateEmail])
+  @@map("candidate_assessment_results")
+}
+
+

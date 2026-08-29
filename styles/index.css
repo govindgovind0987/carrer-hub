@@ -1,0 +1,26 @@
+/*
+ * CareerHub — Additional Styles
+ *
+ * This file is for component-specific or page-specific styles
+ * that don't belong in globals.css.
+ *
+ * The primary design system tokens are in app/globals.css.
+ * Use Tailwind CSS utility classes as the primary styling method.
+ *
+ * Only add styles here when:
+ * - Complex animations that can't be expressed in Tailwind
+ * - Third-party library style overrides
+ * - Print styles
+ */
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}
