@@ -200,7 +200,16 @@ export function DashboardShell({ children }) {
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={() => signOut({ callbackUrl: '/' })}
+                  onClick={async () => {
+                    try {
+                      localStorage.setItem('careerhub_theme', 'light');
+                      document.cookie =
+                        'careerhub_theme=light; path=/; max-age=31536000; SameSite=Lax';
+                    } catch {
+                      // ignore
+                    }
+                    await signOut({ callbackUrl: '/' });
+                  }}
                   className="text-destructive focus:text-destructive text-xs cursor-pointer"
                 >
                   <LogOut className="mr-2 h-3.5 w-3.5" /> Sign Out

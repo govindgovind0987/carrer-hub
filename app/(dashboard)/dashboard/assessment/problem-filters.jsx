@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { Search, Filter, Bookmark, Layers } from 'lucide-react';
+import { useState, useEffect, useTransition, useCallback } from 'react';
+import { Search, Filter, Bookmark, Layers, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 const CATEGORIES = [
@@ -55,20 +56,54 @@ const COMPANIES = [
   { value: 'Startup', label: 'Startup' },
 ];
 
-export function CodingProblemFilters({ currentCategory, currentDifficulty, currentSearch, currentStatus, currentCompany, currentBookmarked }) {
+export function CodingProblemFilters({
+  currentCategory,
+  currentDifficulty,
+  currentSearch,
+  currentStatus,
+  currentCompany,
+  currentBookmarked,
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [, startTransition] = useTransition();
 
-  const updateParam = (key, value) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value && value !== 'ALL' && value !== 'false') {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
-    router.push(`${pathname}?${params.toString()}`);
-  };
+  const [prevSearchProp, setPrevSearchProp] = useState(currentSearch);
+  const [searchTerm, setSearchTerm] = useState(currentSearch || '');
+
+  // Synchronize during render if parent prop changed
+  if (currentSearch !== prevSearchProp) {
+    setPrevSearchProp(currentSearch);
+    setSearchTerm(currentSearch || '');
+  }
+
+  const updateParam = useCallback(
+    (key, value) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value && value !== 'ALL' && value !== 'false') {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+      startTransition(() => {
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      });
+    },
+    [pathname, router, searchParams]
+  );
+
+  // Debounce search updates by 300ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const activeSearch = searchParams.get('search') || '';
+      if (searchTerm.trim() !== activeSearch) {
+        updateParam('search', searchTerm.trim());
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, searchParams, updateParam]);
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -77,10 +112,27 @@ export function CodingProblemFilters({ currentCategory, currentDifficulty, curre
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Search problems by title, tags, or company..."
-          defaultValue={currentSearch}
-          onChange={(e) => updateParam('search', e.target.value)}
-          className="pl-9 bg-card/60 text-xs focus:ring-ring"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              updateParam('search', searchTerm.trim());
+            }
+          }}
+          className="pl-9 pr-8 bg-card/60 text-xs focus:ring-ring"
         />
+        {searchTerm && (
+          <button
+            type="button"
+            onClick={() => {
+              setSearchTerm('');
+              updateParam('search', '');
+            }}
+            className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
 
       {/* DSA Topic Dropdown */}
@@ -143,7 +195,12 @@ export function CodingProblemFilters({ currentCategory, currentDifficulty, curre
 
       {/* Bookmarked Filter Toggle */}
       <button
-        onClick={() => updateParam('bookmarked', currentBookmarked === 'true' ? 'false' : 'true')}
+        onClick={() =>
+          updateParam(
+            'bookmarked',
+            currentBookmarked === 'true' ? 'false' : 'true'
+          )
+        }
         className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border transition-all ${
           currentBookmarked === 'true'
             ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'

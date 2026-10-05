@@ -43,6 +43,12 @@ export function Navbar() {
   const handleSignOut = async () => {
     setIsSigningOut(true);
     try {
+      try {
+        localStorage.setItem('careerhub_theme', 'light');
+        document.cookie = 'careerhub_theme=light; path=/; max-age=31536000; SameSite=Lax';
+      } catch {
+        // ignore
+      }
       await signOut({ callbackUrl: '/' });
       toast.success('Signed out successfully');
     } catch (error) {

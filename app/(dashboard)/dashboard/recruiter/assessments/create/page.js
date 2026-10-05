@@ -29,6 +29,7 @@ export default function CreateAssessmentPage() {
 
   useEffect(() => {
     const controller = new AbortController();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setProblemsLoading(true);
     fetch(`/api/assessment/problems?page=${problemsPage}&limit=25`, {
       signal: controller.signal,

@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { signIn, signOut } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { signUpSchema, signInSchema } from '@/schemas/auth';
+import { cookies } from 'next/headers';
 
 export async function registerUser(formData) {
   try {
@@ -73,6 +74,28 @@ export async function loginUser(formData) {
       redirect: false,
     });
 
+    // Set theme cookie for immediate SSR rendering with user's saved theme
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email: validated.data.email },
+        select: { id: true },
+      });
+      if (user?.id) {
+        const setting = await prisma.systemSetting.findUnique({
+          where: { key: `user_theme_${user.id}` },
+        });
+        const userTheme = setting?.value === 'dark' ? 'dark' : 'light';
+        const cookieStore = await cookies();
+        cookieStore.set('careerhub_theme', userTheme, {
+          path: '/',
+          maxAge: 31536000,
+          sameSite: 'lax',
+        });
+      }
+    } catch {
+      // ignore
+    }
+
     return { success: true };
   } catch (error) {
     if (error?.type === 'CredentialsSignin') {
@@ -93,6 +116,16 @@ export async function loginUser(formData) {
 }
 
 export async function logoutUser() {
+  try {
+    const cookieStore = await cookies();
+    cookieStore.set('careerhub_theme', 'light', {
+      path: '/',
+      maxAge: 31536000,
+      sameSite: 'lax',
+    });
+  } catch {
+    // ignore
+  }
   await signOut({ redirect: false });
   return { success: true };
 }

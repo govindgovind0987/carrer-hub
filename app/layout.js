@@ -66,8 +66,9 @@ export default function RootLayout({ children }) {
       <body className="min-h-screen bg-background antialiased">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          enableSystem={false}
+          storageKey="careerhub_theme"
           disableTransitionOnChange
         >
           <AuthProvider>
