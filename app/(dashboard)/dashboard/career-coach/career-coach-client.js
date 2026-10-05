@@ -44,11 +44,11 @@ export default function CareerCoachClient({ initialContext }) {
   const [aiResponse, setAiResponse] = useState(null);
 
   const actionButtons = [
-    { id: 'analyze-skills', label: 'Analyze My Skills', icon: BrainCircuit, color: 'text-violet-500' },
-    { id: 'learning-roadmap', label: 'Create My Learning Roadmap', icon: Compass, color: 'text-indigo-500' },
+    { id: 'analyze-skills', label: 'Analyze My Skills', icon: BrainCircuit, color: 'text-primary' },
+    { id: 'learning-roadmap', label: 'Create My Learning Roadmap', icon: Compass, color: 'text-primary' },
     { id: 'learn-next', label: 'What Should I Learn Next?', icon: Target, color: 'text-emerald-500' },
     { id: 'weak-areas', label: 'Find My Weak Areas', icon: AlertCircle, color: 'text-rose-500' },
-    { id: 'interview-prep', label: 'Prepare Me for Interviews', icon: Video, color: 'text-purple-500' },
+    { id: 'interview-prep', label: 'Prepare Me for Interviews', icon: Video, color: 'text-primary' },
     { id: 'improve-resume', label: 'Improve My Resume', icon: FileText, color: 'text-cyan-500' },
     { id: 'technical-skills', label: 'Improve My Technical Skills', icon: Code2, color: 'text-amber-500' },
     { id: '30-day-plan', label: 'Create 30-Day Plan', icon: Calendar, color: 'text-blue-500' },
@@ -273,7 +273,7 @@ export default function CareerCoachClient({ initialContext }) {
         <CardContent className="p-6">
           {loading ? (
             <div className="py-12 flex flex-col items-center justify-center space-y-3 text-center">
-              <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="text-sm font-medium text-foreground">Analyzing candidate profile, ATS scores, and DSA activity...</p>
               <p className="text-xs text-muted-foreground">Constructing action-specific strategy for &quot;{activeActionLabel}&quot;.</p>
             </div>
@@ -281,7 +281,7 @@ export default function CareerCoachClient({ initialContext }) {
             <div className="space-y-6">
               {/* Summary Callout */}
               {aiResponse.summary && (
-                <div className="rounded-xl border border-violet-500/30 bg-violet-500/5 p-4">
+                <div className="rounded-md border border-primary/30 bg-primary/5 p-4">
                   <p className="text-sm text-foreground leading-relaxed font-medium">{aiResponse.summary}</p>
                 </div>
               )}
@@ -292,7 +292,7 @@ export default function CareerCoachClient({ initialContext }) {
                   {aiResponse.overallAssessment && (
                     <div className="space-y-2">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                        <BrainCircuit className="h-4 w-4 text-violet-500" /> Overall Skill Assessment
+                        <BrainCircuit className="h-4 w-4 text-primary" /> Overall Skill Assessment
                       </h3>
                       <p className="text-xs text-muted-foreground leading-relaxed p-3 rounded-lg bg-card border border-border/40">
                         {aiResponse.overallAssessment}
@@ -307,7 +307,7 @@ export default function CareerCoachClient({ initialContext }) {
                       </h3>
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         {aiResponse.strongSkills.map((sk, idx) => (
-                          <div key={idx} className="p-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
+                          <div key={idx} className="p-3 rounded-md border border-emerald-500/20 bg-emerald-500/5">
                             <div className="flex items-center justify-between mb-1">
                               <span className="font-bold text-xs text-foreground">{sk.name}</span>
                               <Badge className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[10px] border-0">
@@ -328,7 +328,7 @@ export default function CareerCoachClient({ initialContext }) {
                       </h3>
                       <div className="grid gap-3 sm:grid-cols-2">
                         {aiResponse.skillsNeedingImprovement.map((sk, idx) => (
-                          <div key={idx} className="p-3 rounded-xl border border-amber-500/20 bg-amber-500/5 space-y-1">
+                          <div key={idx} className="p-3 rounded-md border border-amber-500/20 bg-amber-500/5 space-y-1">
                             <div className="flex items-center justify-between">
                               <span className="font-bold text-xs text-foreground">{sk.name}</span>
                               <span className="text-[10px] text-amber-600 font-semibold">{sk.currentLevel || 'Beginner'} → {sk.targetLevel || 'Intermediate'}</span>
@@ -359,12 +359,12 @@ export default function CareerCoachClient({ initialContext }) {
                   {aiResponse.priorityRecommendations?.length > 0 && (
                     <div className="space-y-2 border-t border-border/50 pt-4">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                        <ListCheck className="h-4 w-4 text-violet-600" /> Priority Skill Recommendations
+                        <ListCheck className="h-4 w-4 text-primary" /> Priority Skill Recommendations
                       </h3>
                       <ul className="space-y-1.5 text-xs">
                         {aiResponse.priorityRecommendations.map((rec, idx) => (
                           <li key={idx} className="flex items-start gap-2 p-2 rounded-lg bg-card border border-border/40">
-                            <Check className="h-4 w-4 text-violet-600 shrink-0 mt-0.5" />
+                            <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                             <span>{rec}</span>
                           </li>
                         ))}
@@ -377,13 +377,13 @@ export default function CareerCoachClient({ initialContext }) {
                       <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Suggested Next Actions</h3>
                       <div className="grid gap-3 sm:grid-cols-2">
                         {aiResponse.suggestedNextActions.map((act, idx) => (
-                          <div key={idx} className="p-3 rounded-xl border border-border/50 bg-card flex flex-col justify-between">
+                          <div key={idx} className="p-3 rounded-md border border-border/50 bg-card flex flex-col justify-between">
                             <div>
                               <h4 className="font-bold text-xs text-foreground">{act.title}</h4>
                               <p className="text-[11px] text-muted-foreground mt-1">{act.description}</p>
                             </div>
                             {act.targetRoute && (
-                              <Button asChild size="sm" variant="ghost" className="mt-2 text-xs text-violet-600 justify-start p-0 h-auto font-semibold">
+                              <Button asChild size="sm" variant="ghost" className="mt-2 text-xs text-primary justify-start p-0 h-auto font-semibold">
                                 <Link href={act.targetRoute}>
                                   Execute <ArrowRight className="ml-1 h-3 w-3" />
                                 </Link>
@@ -400,14 +400,14 @@ export default function CareerCoachClient({ initialContext }) {
               {/* DYNAMIC VIEW 2: LEARNING ROADMAP */}
               {(aiResponse.actionType === 'learning-roadmap' || activeActionId === 'learning-roadmap') && (
                 <div className="space-y-6">
-                  <div className="flex flex-wrap gap-4 p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+                  <div className="flex flex-wrap gap-4 p-4 rounded-md bg-primary/10 border border-primary/20">
                     <div>
                       <span className="text-[10px] uppercase font-bold text-muted-foreground">Current Level</span>
-                      <p className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{aiResponse.currentLevel || 'Software Developer'}</p>
+                      <p className="text-sm font-bold text-primary dark:text-primary">{aiResponse.currentLevel || 'Software Developer'}</p>
                     </div>
-                    <div className="border-l border-indigo-500/30 pl-4">
+                    <div className="border-l border-primary/30 pl-4">
                       <span className="text-[10px] uppercase font-bold text-muted-foreground">Target Role</span>
-                      <p className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{aiResponse.targetRole || 'Senior Software Engineer'}</p>
+                      <p className="text-sm font-bold text-primary dark:text-primary">{aiResponse.targetRole || 'Senior Software Engineer'}</p>
                     </div>
                   </div>
 
@@ -429,15 +429,15 @@ export default function CareerCoachClient({ initialContext }) {
                   {aiResponse.phases?.length > 0 && (
                     <div className="space-y-4">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                        <Compass className="h-4 w-4 text-indigo-500" /> Multi-Phase Structured Roadmap
+                        <Compass className="h-4 w-4 text-primary" /> Multi-Phase Structured Roadmap
                       </h3>
                       <div className="space-y-4">
                         {aiResponse.phases.map((ph, idx) => (
-                          <div key={idx} className="p-4 rounded-xl border border-indigo-500/20 bg-card space-y-3">
+                          <div key={idx} className="p-4 rounded-md border border-primary/20 bg-card space-y-3">
                             <div className="flex items-center justify-between border-b border-border/50 pb-2">
-                              <span className="font-extrabold text-sm text-indigo-600">{ph.phase}</span>
+                              <span className="font-extrabold text-sm text-primary">{ph.phase}</span>
                               {ph.milestone && (
-                                <Badge variant="outline" className="text-[10px] border-indigo-500/30 text-indigo-600">
+                                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
                                   Milestone: {ph.milestone}
                                 </Badge>
                               )}
@@ -473,7 +473,7 @@ export default function CareerCoachClient({ initialContext }) {
                       <ol className="space-y-1 text-xs text-muted-foreground">
                         {aiResponse.recommendedSequence.map((step, idx) => (
                           <li key={idx} className="flex items-center gap-2">
-                            <span className="h-5 w-5 rounded-full bg-indigo-500/10 text-indigo-600 font-bold text-[10px] flex items-center justify-center shrink-0">
+                            <span className="h-5 w-5 rounded-full bg-primary/10 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">
                               {idx + 1}
                             </span>
                             <span>{step}</span>
@@ -489,7 +489,7 @@ export default function CareerCoachClient({ initialContext }) {
               {(aiResponse.actionType === 'learn-next' || activeActionId === 'learn-next') && (
                 <div className="space-y-6">
                   {aiResponse.learnThisFirst && (
-                    <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-card to-background border border-emerald-500/30 space-y-3">
+                    <div className="p-5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 space-y-3">
                       <div className="flex items-center justify-between">
                         <Badge className="bg-emerald-500 text-white border-0 text-xs font-bold">
                           Learn This First (Highest Impact)
@@ -520,7 +520,7 @@ export default function CareerCoachClient({ initialContext }) {
                       </h3>
                       <div className="grid gap-3 sm:grid-cols-2">
                         {aiResponse.nextSkills.map((sk, idx) => (
-                          <div key={idx} className="p-3.5 rounded-xl border border-border/50 bg-card space-y-1.5">
+                          <div key={idx} className="p-3.5 rounded-md border border-border/50 bg-card space-y-1.5">
                             <div className="flex items-center justify-between">
                               <span className="font-bold text-xs text-foreground">{sk.skill}</span>
                               <Badge className={sk.priority === 'High' ? 'bg-rose-500/10 text-rose-600 border-rose-500/30 text-[10px]' : 'bg-blue-500/10 text-blue-600 border-blue-500/30 text-[10px]'}>
@@ -528,7 +528,7 @@ export default function CareerCoachClient({ initialContext }) {
                               </Badge>
                             </div>
                             <p className="text-[11px] text-muted-foreground leading-relaxed">{sk.whyItMatters}</p>
-                            {sk.category && <span className="text-[10px] text-violet-600 font-semibold block">{sk.category}</span>}
+                            {sk.category && <span className="text-[10px] text-primary font-semibold block">{sk.category}</span>}
                           </div>
                         ))}
                       </div>
@@ -536,9 +536,9 @@ export default function CareerCoachClient({ initialContext }) {
                   )}
 
                   {aiResponse.practiceRecommendation && (
-                    <div className="p-4 rounded-xl border border-border/50 bg-card space-y-1.5">
+                    <div className="p-4 rounded-md border border-border/50 bg-card space-y-1.5">
                       <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                        <BookOpen className="h-4 w-4 text-violet-600" /> Practice Recommendation
+                        <BookOpen className="h-4 w-4 text-primary" /> Practice Recommendation
                       </h4>
                       <p className="text-xs text-muted-foreground leading-relaxed">{aiResponse.practiceRecommendation}</p>
                     </div>
@@ -557,7 +557,7 @@ export default function CareerCoachClient({ initialContext }) {
                       const isHigh = w.severity === 'High';
                       const isMed = w.severity === 'Medium';
                       return (
-                        <div key={idx} className={`p-4 rounded-xl border space-y-2.5 ${isHigh ? 'border-rose-500/30 bg-rose-500/5' : isMed ? 'border-amber-500/30 bg-amber-500/5' : 'border-blue-500/30 bg-blue-500/5'}`}>
+                        <div key={idx} className={`p-4 rounded-md border space-y-2.5 ${isHigh ? 'border-rose-500/30 bg-rose-500/5' : isMed ? 'border-amber-500/30 bg-amber-500/5' : 'border-blue-500/30 bg-blue-500/5'}`}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Badge className={`text-[10px] font-bold border-0 ${isHigh ? 'bg-rose-600 text-white' : isMed ? 'bg-amber-600 text-white' : 'bg-blue-600 text-white'}`}>
@@ -597,12 +597,12 @@ export default function CareerCoachClient({ initialContext }) {
                   {aiResponse.technicalTopics?.length > 0 && (
                     <div className="space-y-3">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                        <Code2 className="h-4 w-4 text-purple-500" /> Core Technical Interview Topics
+                        <Code2 className="h-4 w-4 text-primary" /> Core Technical Interview Topics
                       </h3>
                       <div className="grid gap-3 sm:grid-cols-2">
                         {aiResponse.technicalTopics.map((top, idx) => (
-                          <div key={idx} className="p-3.5 rounded-xl border border-purple-500/20 bg-purple-500/5 space-y-2">
-                            <h4 className="font-bold text-xs text-purple-700 dark:text-purple-300">{top.topic}</h4>
+                          <div key={idx} className="p-3.5 rounded-md border border-primary/20 bg-primary/5 space-y-2">
+                            <h4 className="font-bold text-xs text-primary dark:text-primary">{top.topic}</h4>
                             {top.keyConcepts?.length > 0 && (
                               <div className="flex flex-wrap gap-1">
                                 {top.keyConcepts.map((kc, kIdx) => (
@@ -624,7 +624,7 @@ export default function CareerCoachClient({ initialContext }) {
                   {aiResponse.dsaTopics?.length > 0 && (
                     <div className="space-y-2">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                        <TrendingUp className="h-4 w-4 text-indigo-500" /> High-Yield DSA Patterns
+                        <TrendingUp className="h-4 w-4 text-primary" /> High-Yield DSA Patterns
                       </h3>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {aiResponse.dsaTopics.map((dsa, idx) => (
@@ -693,14 +693,14 @@ export default function CareerCoachClient({ initialContext }) {
                       <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Actionable Preparation Strategy</h3>
                       <div className="grid gap-3 sm:grid-cols-2">
                         {aiResponse.preparationStrategy.map((st, idx) => (
-                          <div key={idx} className="p-3.5 rounded-xl border border-border/50 bg-card flex flex-col justify-between">
+                          <div key={idx} className="p-3.5 rounded-md border border-border/50 bg-card flex flex-col justify-between">
                             <div>
-                              <span className="text-[10px] font-bold text-purple-600">Step {st.step || idx + 1}</span>
+                              <span className="text-[10px] font-bold text-primary">Step {st.step || idx + 1}</span>
                               <h4 className="font-bold text-xs text-foreground mt-0.5">{st.title}</h4>
                               <p className="text-[11px] text-muted-foreground mt-1">{st.description}</p>
                             </div>
                             {st.targetRoute && (
-                              <Button asChild size="sm" variant="ghost" className="mt-3 text-xs text-purple-600 justify-start p-0 h-auto font-semibold">
+                              <Button asChild size="sm" variant="ghost" className="mt-3 text-xs text-primary justify-start p-0 h-auto font-semibold">
                                 <Link href={st.targetRoute}>
                                   Launch Practice <ArrowRight className="ml-1 h-3 w-3" />
                                 </Link>
@@ -719,7 +719,7 @@ export default function CareerCoachClient({ initialContext }) {
                 <div className="space-y-6">
                   <div className="grid gap-4 sm:grid-cols-2">
                     {aiResponse.resumeStrengths?.length > 0 && (
-                      <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 space-y-2">
+                      <div className="p-4 rounded-md border border-emerald-500/20 bg-emerald-500/5 space-y-2">
                         <h4 className="font-bold text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
                           <CheckCircle2 className="h-4 w-4" /> Resume Strengths
                         </h4>
@@ -732,7 +732,7 @@ export default function CareerCoachClient({ initialContext }) {
                     )}
 
                     {aiResponse.resumeProblems?.length > 0 && (
-                      <div className="p-4 rounded-xl border border-rose-500/20 bg-rose-500/5 space-y-2">
+                      <div className="p-4 rounded-md border border-rose-500/20 bg-rose-500/5 space-y-2">
                         <h4 className="font-bold text-xs text-rose-700 dark:text-rose-300 flex items-center gap-1.5">
                           <AlertCircle className="h-4 w-4" /> Areas to Fix
                         </h4>
@@ -763,11 +763,11 @@ export default function CareerCoachClient({ initialContext }) {
                   {aiResponse.experienceImprovements?.length > 0 && (
                     <div className="space-y-3">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                        <FileCheck className="h-4 w-4 text-violet-600" /> Experience Bullet Point Rewrites
+                        <FileCheck className="h-4 w-4 text-primary" /> Experience Bullet Point Rewrites
                       </h3>
                       <div className="space-y-3">
                         {aiResponse.experienceImprovements.map((exp, idx) => (
-                          <div key={idx} className="p-3.5 rounded-xl border border-border/50 bg-card space-y-2 text-xs">
+                          <div key={idx} className="p-3.5 rounded-md border border-border/50 bg-card space-y-2 text-xs">
                             <div className="text-rose-600 font-medium">
                               <span className="font-bold text-[10px] uppercase block text-muted-foreground">Current Issue:</span>
                               {exp.currentIssue}
@@ -785,17 +785,17 @@ export default function CareerCoachClient({ initialContext }) {
                   {aiResponse.projectImprovements?.length > 0 && (
                     <div className="space-y-3">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                        <Code2 className="h-4 w-4 text-indigo-500" /> Project Description Enhancements
+                        <Code2 className="h-4 w-4 text-primary" /> Project Description Enhancements
                       </h3>
                       <div className="space-y-3">
                         {aiResponse.projectImprovements.map((prj, idx) => (
-                          <div key={idx} className="p-3.5 rounded-xl border border-border/50 bg-card space-y-2 text-xs">
+                          <div key={idx} className="p-3.5 rounded-md border border-border/50 bg-card space-y-2 text-xs">
                             <div className="text-amber-600 font-medium">
                               <span className="font-bold text-[10px] uppercase block text-muted-foreground">Gap:</span>
                               {prj.currentIssue}
                             </div>
-                            <div className="text-indigo-600 font-medium bg-indigo-500/5 p-2 rounded border border-indigo-500/20">
-                              <span className="font-bold text-[10px] uppercase block text-indigo-700 dark:text-indigo-300">Recommended Format:</span>
+                            <div className="text-primary font-medium bg-primary/5 p-2 rounded border border-primary/20">
+                              <span className="font-bold text-[10px] uppercase block text-primary dark:text-primary">Recommended Format:</span>
                               {prj.bulletImprovement}
                             </div>
                           </div>
@@ -824,7 +824,7 @@ export default function CareerCoachClient({ initialContext }) {
               {(aiResponse.actionType === 'technical-skills' || activeActionId === 'technical-skills') && (
                 <div className="space-y-6">
                   {aiResponse.currentTechnicalLevel && (
-                    <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between">
+                    <div className="p-4 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-between">
                       <div>
                         <span className="text-[10px] font-bold uppercase text-muted-foreground">Current Technical Level</span>
                         <p className="text-base font-extrabold text-amber-700 dark:text-amber-300">{aiResponse.currentTechnicalLevel}</p>
@@ -835,7 +835,7 @@ export default function CareerCoachClient({ initialContext }) {
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     {aiResponse.strongTechnicalAreas?.length > 0 && (
-                      <div className="p-4 rounded-xl border border-emerald-500/20 bg-card space-y-2">
+                      <div className="p-4 rounded-md border border-emerald-500/20 bg-card space-y-2">
                         <h4 className="font-bold text-xs text-emerald-600 flex items-center gap-1.5">
                           <CheckCircle2 className="h-4 w-4" /> Strong Technical Areas
                         </h4>
@@ -848,7 +848,7 @@ export default function CareerCoachClient({ initialContext }) {
                     )}
 
                     {aiResponse.weakTechnicalAreas?.length > 0 && (
-                      <div className="p-4 rounded-xl border border-rose-500/20 bg-card space-y-2">
+                      <div className="p-4 rounded-md border border-rose-500/20 bg-card space-y-2">
                         <h4 className="font-bold text-xs text-rose-600 flex items-center gap-1.5">
                           <AlertCircle className="h-4 w-4" /> Technical Gaps
                         </h4>
@@ -868,7 +868,7 @@ export default function CareerCoachClient({ initialContext }) {
                       </h3>
                       <div className="grid gap-3 sm:grid-cols-2">
                         {aiResponse.recommendedTechnologies.map((rec, idx) => (
-                          <div key={idx} className="p-3.5 rounded-xl border border-border/50 bg-card space-y-1">
+                          <div key={idx} className="p-3.5 rounded-md border border-border/50 bg-card space-y-1">
                             <div className="flex items-center justify-between">
                               <span className="font-bold text-xs text-foreground">{rec.tech}</span>
                               {rec.impact && <Badge variant="secondary" className="text-[9px]">{rec.impact}</Badge>}
@@ -883,11 +883,11 @@ export default function CareerCoachClient({ initialContext }) {
                   {aiResponse.projectRecommendations?.length > 0 && (
                     <div className="space-y-3">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                        <Layers className="h-4 w-4 text-violet-600" /> Recommended Practice Projects
+                        <Layers className="h-4 w-4 text-primary" /> Recommended Practice Projects
                       </h3>
                       <div className="space-y-3">
                         {aiResponse.projectRecommendations.map((prj, idx) => (
-                          <div key={idx} className="p-4 rounded-xl border border-violet-500/20 bg-violet-500/5 space-y-2">
+                          <div key={idx} className="p-4 rounded-md border border-primary/20 bg-primary/5 space-y-2">
                             <h4 className="font-bold text-xs text-foreground">{prj.title}</h4>
                             <p className="text-xs text-muted-foreground">{prj.description}</p>
                             {prj.stack?.length > 0 && (
@@ -927,7 +927,7 @@ export default function CareerCoachClient({ initialContext }) {
                   </h3>
                   <div className="grid gap-4 sm:grid-cols-2">
                     {aiResponse.periods?.map((p, idx) => (
-                      <div key={idx} className="p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 space-y-3 flex flex-col justify-between">
+                      <div key={idx} className="p-4 rounded-md border border-blue-500/20 bg-blue-500/5 space-y-3 flex flex-col justify-between">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <span className="text-[10px] font-mono font-bold uppercase text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
@@ -965,7 +965,7 @@ export default function CareerCoachClient({ initialContext }) {
                   </h3>
                   <div className="space-y-4">
                     {aiResponse.periods?.map((p, idx) => (
-                      <div key={idx} className="p-5 rounded-xl border border-emerald-500/20 bg-card space-y-3">
+                      <div key={idx} className="p-5 rounded-md border border-emerald-500/20 bg-card space-y-3">
                         <div className="flex items-center justify-between border-b border-border/50 pb-2">
                           <span className="text-xs font-mono font-bold text-emerald-600 uppercase">{p.range}</span>
                           <h4 className="font-extrabold text-sm text-foreground">{p.title}</h4>
@@ -1015,7 +1015,7 @@ export default function CareerCoachClient({ initialContext }) {
               </p>
               <Button
                 onClick={() => handleRunAiAction(actionButtons[0])}
-                className="bg-violet-600 hover:bg-violet-700 text-white text-xs"
+                className="bg-primary hover:bg-primary text-primary-foreground text-xs"
               >
                 Analyze My Skills Now
               </Button>

@@ -27,7 +27,7 @@ export function SectionHeading({
       transition={{ duration: 0.5 }}
     >
       {label && (
-        <h2 className="text-sm font-semibold uppercase tracking-widest text-violet-600">
+        <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">
           {label}
         </h2>
       )}

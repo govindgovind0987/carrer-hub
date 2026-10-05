@@ -26,25 +26,44 @@ export default async function SkillProgressPage() {
     await Promise.all([
       prisma.userProblemProgress.findMany({
         where: { userId },
-        include: { problem: true },
+        select: {
+          status: true,
+          lastSubmittedAt: true,
+          problem: { select: { category: true, tags: true, difficulty: true } },
+        },
       }),
       prisma.problemSubmission.findMany({
         where: { userId },
-        include: { problem: true },
+        select: {
+          verdict: true,
+          language: true,
+          createdAt: true,
+          problem: { select: { category: true, tags: true } },
+        },
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.userCodingStats.findUnique({ where: { userId } }),
+      prisma.userCodingStats.findUnique({ where: { userId }, select: { solvedCount: true } }),
       prisma.interviewSession.findMany({
         where: { userId },
-        include: { report: true },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+        select: {
+          id: true,
+          role: true,
+          technology: true,
+          type: true,
+          status: true,
+          report: { select: { overallScore: true } },
+        },
       }),
       prisma.resumeAnalysis.findFirst({
         where: { userId },
         orderBy: { createdAt: 'desc' },
+        select: { atsScore: true, overallScore: true, missingSkills: true },
       }),
       prisma.profile.findUnique({
         where: { userId },
-        include: { skills: true },
+        select: { skills: { select: { id: true, name: true, level: true } } },
       }),
     ]);
 

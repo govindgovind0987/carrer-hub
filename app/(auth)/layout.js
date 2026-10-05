@@ -7,13 +7,7 @@ export const metadata = {
 
 export default function AuthLayout({ children }) {
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-1/4 -left-1/4 h-72 w-72 rounded-full bg-violet-500/15 blur-3xl" />
-        <div className="absolute bottom-1/4 -right-1/4 h-72 w-72 rounded-full bg-indigo-500/15 blur-3xl" />
-      </div>
-
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-muted/35">
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 sm:p-6">
         <Logo />

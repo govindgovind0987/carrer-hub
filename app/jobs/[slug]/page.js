@@ -65,16 +65,16 @@ export default async function JobDetailPage({ params }) {
           <Card className="border-border/50 bg-card p-6 sm:p-8 shadow-md">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
               <div className="flex items-start gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white font-bold text-2xl shadow-lg shrink-0">
+                <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-primary   text-primary-foreground font-bold text-2xl shadow-sm shrink-0">
                   {job.company?.name ? job.company.name.charAt(0) : 'C'}
                 </div>
                 <div className="space-y-1.5">
                   <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{job.title}</h1>
-                  <p className="text-base font-medium text-violet-600 flex items-center gap-1.5">
+                  <p className="text-base font-medium text-primary flex items-center gap-1.5">
                     <Building2 className="h-4 w-4" /> {job.company?.name || 'Hiring Company'}
                   </p>
                   <div className="flex flex-wrap gap-2 pt-2">
-                    <Badge className="bg-violet-500/10 text-violet-600 border-violet-500/20">{job.category}</Badge>
+                    <Badge className="bg-primary/10 text-primary border-primary/20">{job.category}</Badge>
                     <Badge variant="secondary">{job.jobType.replace('_', ' ')}</Badge>
                     <Badge variant="outline">{job.experienceLevel.replace('_', ' ')}</Badge>
                   </div>
@@ -89,7 +89,7 @@ export default async function JobDetailPage({ params }) {
             {/* Quick Specs Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-6 border-t border-border/40 text-sm">
               <div>
-                <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-violet-500" /> Location</span>
+                <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-primary" /> Location</span>
                 <p className="font-semibold mt-1">{job.location}</p>
               </div>
               <div>
@@ -99,11 +99,11 @@ export default async function JobDetailPage({ params }) {
                 </p>
               </div>
               <div>
-                <span className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3.5 w-3.5 text-purple-500" /> Posted Date</span>
+                <span className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3.5 w-3.5 text-primary" /> Posted Date</span>
                 <p className="font-semibold mt-1">{new Date(job.createdAt).toLocaleDateString()}</p>
               </div>
               <div>
-                <span className="text-xs text-muted-foreground flex items-center gap-1"><Eye className="h-3.5 w-3.5 text-indigo-500" /> Total Views</span>
+                <span className="text-xs text-muted-foreground flex items-center gap-1"><Eye className="h-3.5 w-3.5 text-primary" /> Total Views</span>
                 <p className="font-semibold mt-1">{job.viewsCount} views</p>
               </div>
             </div>
@@ -132,7 +132,7 @@ export default async function JobDetailPage({ params }) {
             <div className="space-y-6">
               <Card className="border-border/50 p-6 space-y-4">
                 <h3 className="font-bold text-base border-b border-border/40 pb-3 flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-violet-600" /> About Company
+                  <Building2 className="h-4 w-4 text-primary" /> About Company
                 </h3>
                 <div>
                   <p className="font-bold text-base">{job.company?.name}</p>

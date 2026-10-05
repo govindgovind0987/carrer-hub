@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import {
   Users,
   Clock,
@@ -15,34 +16,58 @@ import {
   FileCode,
 } from 'lucide-react';
 
-export default async function RecruiterAssessmentDetailPage({ params }) {
+export default async function RecruiterAssessmentDetailPage({ params, searchParams }) {
   const session = await auth();
   if (!session?.user?.id || (session.user.role !== 'RECRUITER' && session.user.role !== 'ADMIN')) {
     redirect('/dashboard');
   }
 
   const { id } = await params;
+  const query = await searchParams;
+  const page = Math.max(1, Number(query?.page) || 1);
+  const pageSize = 25;
 
-  const assessment = await prisma.recruiterAssessment.findUnique({
-    where: { id },
-    include: {
-      candidateResults: {
-        orderBy: { createdAt: 'desc' },
+  const [assessment, candidateResults, totalResults] = await Promise.all([
+    prisma.recruiterAssessment.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        accessCode: true,
+        status: true,
+        title: true,
+        timeLimitMinutes: true,
+        passingScore: true,
       },
-    },
-  });
+    }),
+    prisma.candidateAssessmentResult.findMany({
+      where: { assessmentId: id },
+      select: {
+        id: true,
+        candidateName: true,
+        candidateEmail: true,
+        totalScore: true,
+        maxScore: true,
+        plagiarismScore: true,
+      },
+        orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.candidateAssessmentResult.count({ where: { assessmentId: id } }),
+  ]);
 
   if (!assessment) {
     notFound();
   }
+  const totalPages = Math.max(1, Math.ceil(totalResults / pageSize));
 
   return (
     <div className="space-y-8 pb-12 max-w-6xl mx-auto">
       {/* Header Banner */}
-      <div className="p-6 rounded-2xl bg-card border border-border/60 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="p-6 rounded-lg bg-card border border-border/60 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Badge className="bg-violet-500/10 text-violet-600 border-violet-500/30 text-xs">
+            <Badge className="bg-primary/10 text-primary border-primary/30 text-xs">
               Access Code: {assessment.accessCode}
             </Badge>
             <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-xs">
@@ -63,7 +88,7 @@ export default async function RecruiterAssessmentDetailPage({ params }) {
       </div>
 
       {/* Candidate Submissions & Plagiarism View */}
-      <Card className="border-border/60 bg-card/80 backdrop-blur-xl shadow-xl">
+      <Card className="border-border/60 bg-card/80 backdrop-blur-xl shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg font-bold">Candidate Submissions & Integrity Audit</CardTitle>
           <CardDescription className="text-xs">
@@ -72,8 +97,8 @@ export default async function RecruiterAssessmentDetailPage({ params }) {
         </CardHeader>
         <CardContent className="p-0">
           <div className="divide-y divide-border/40">
-            {assessment.candidateResults.length > 0 ? (
-              assessment.candidateResults.map((result) => (
+            {candidateResults.length > 0 ? (
+              candidateResults.map((result) => (
                 <div key={result.id} className="p-5 space-y-4 hover:bg-muted/20 transition-colors">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
@@ -114,6 +139,27 @@ export default async function RecruiterAssessmentDetailPage({ params }) {
           </div>
         </CardContent>
       </Card>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-end gap-2">
+          {page > 1 ? (
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/dashboard/recruiter/assessments/${id}?page=${page - 1}`}>Previous</Link>
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" disabled>Previous</Button>
+          )}
+          <span className="text-xs text-muted-foreground">
+            Page {Math.min(page, totalPages)} of {totalPages}
+          </span>
+          {page < totalPages ? (
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/dashboard/recruiter/assessments/${id}?page=${page + 1}`}>Next</Link>
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" disabled>Next</Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -12,7 +12,7 @@ const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
   ssr: false,
   loading: () => (
     <div className="h-80 w-full bg-slate-950 flex flex-col items-center justify-center text-slate-400 font-mono text-sm space-y-2">
-      <Code2 className="h-8 w-8 animate-pulse text-violet-400" />
+      <Code2 className="h-8 w-8 animate-pulse text-primary" />
       <span>Loading Enterprise Monaco Editor...</span>
     </div>
   ),
@@ -86,8 +86,8 @@ export function CodeEditorComponent({
   return (
     <div
       ref={containerRef}
-      className={`rounded-2xl border border-border/60 overflow-hidden bg-slate-950 text-slate-100 flex flex-col transition-all duration-300 ${
-        isFullscreen ? 'fixed inset-4 z-50 shadow-2xl ring-2 ring-violet-500/50' : 'w-full shadow-lg'
+      className={`rounded-lg border border-border/60 overflow-hidden bg-slate-950 text-slate-100 flex flex-col transition-all duration-300 ${
+        isFullscreen ? 'fixed inset-4 z-50 shadow-md ring-2 ring-ring' : 'w-full shadow-sm'
       }`}
     >
       {/* Editor Header Control Bar */}
@@ -112,7 +112,7 @@ export function CodeEditorComponent({
             </SelectContent>
           </Select>
 
-          <Badge variant="outline" className="text-[10px] font-mono border-violet-500/40 text-violet-400 bg-violet-500/10">
+          <Badge variant="outline" className="text-[10px] font-mono border-primary/40 text-primary bg-primary/10">
             Monaco Engine
           </Badge>
         </div>
@@ -168,7 +168,7 @@ export function CodeEditorComponent({
       {executionOutput !== null && (
         <div className="p-3 bg-slate-900 border-t border-slate-800 text-xs font-mono space-y-1.5">
           <div className="flex items-center justify-between text-slate-400">
-            <span className="flex items-center gap-1.5 text-violet-400 font-semibold">
+            <span className="flex items-center gap-1.5 text-primary font-semibold">
               <Terminal className="h-3.5 w-3.5" /> Execution Output Console
             </span>
             <button onClick={() => setExecutionOutput(null)} className="text-[10px] hover:underline">

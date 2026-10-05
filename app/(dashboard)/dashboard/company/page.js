@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { Globe, MapPin, Users, Loader2, Save, Upload, Camera, Building } from 'lucide-react';
@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { getCompany, updateCompany } from '@/actions/company';
 import { companySchema } from '@/schemas/company';
+import Image from 'next/image';
 
 export default function CompanyPage() {
   const [company, setCompany] = useState(null);
@@ -26,14 +27,14 @@ export default function CompanyPage() {
     handleSubmit,
     reset,
     setValue,
-    watch,
+    control,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(companySchema),
   });
 
-  const logoUrl = watch('logo');
-  const coverUrl = watch('coverImage');
+  const logoUrl = useWatch({ control, name: 'logo' });
+  const coverUrl = useWatch({ control, name: 'coverImage' });
 
   useEffect(() => {
     let isMounted = true;
@@ -123,7 +124,7 @@ export default function CompanyPage() {
   if (loading) {
     return (
       <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -144,21 +145,28 @@ export default function CompanyPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Company Assets Section */}
-          <div className="grid gap-6 sm:grid-cols-2 p-4 rounded-xl bg-muted/40 border border-border/50">
+          <div className="grid gap-6 sm:grid-cols-2 p-4 rounded-md bg-muted/40 border border-border/50">
             {/* Logo Upload */}
             <div className="space-y-3">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
                 <span>Company Logo</span>
                 {logoUrl?.includes('cloudinary') && (
-                  <Badge className="bg-violet-500/10 text-violet-600 border-violet-500/20 text-[10px]">
+                  <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px]">
                     Cloudinary Verified
                   </Badge>
                 )}
               </Label>
               <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-xl border border-border/60 bg-background flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                <div className="relative h-16 w-16 rounded-md border border-border/60 bg-background flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
                   {logoUrl ? (
-                    <img src={logoUrl} alt="Company Logo" className="h-full w-full object-contain p-1" />
+                    <Image
+                      src={logoUrl}
+                      alt="Company Logo"
+                      fill
+                      sizes="64px"
+                      className="object-contain p-1"
+                      unoptimized={logoUrl.toLowerCase().endsWith('.svg')}
+                    />
                   ) : (
                     <Building className="h-8 w-8 text-muted-foreground/50" />
                   )}
@@ -187,15 +195,22 @@ export default function CompanyPage() {
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
                 <span>Cover Image</span>
                 {coverUrl?.includes('cloudinary') && (
-                  <Badge className="bg-violet-500/10 text-violet-600 border-violet-500/20 text-[10px]">
+                  <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px]">
                     Cloudinary Verified
                   </Badge>
                 )}
               </Label>
               <div className="flex items-center gap-4">
-                <div className="h-16 w-28 rounded-xl border border-border/60 bg-background flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                <div className="relative h-16 w-28 rounded-md border border-border/60 bg-background flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
                   {coverUrl ? (
-                    <img src={coverUrl} alt="Cover Preview" className="h-full w-full object-cover" />
+                    <Image
+                      src={coverUrl}
+                      alt="Cover Preview"
+                      fill
+                      sizes="112px"
+                      className="object-cover"
+                      unoptimized={coverUrl.toLowerCase().endsWith('.svg')}
+                    />
                   ) : (
                     <Camera className="h-6 w-6 text-muted-foreground/50" />
                   )}
@@ -256,7 +271,7 @@ export default function CompanyPage() {
               </div>
             </div>
 
-            <Button type="submit" disabled={saving} className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white">
+            <Button type="submit" disabled={saving} className="bg-primary   text-primary-foreground">
               {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />} Save Company Profile
             </Button>
           </form>

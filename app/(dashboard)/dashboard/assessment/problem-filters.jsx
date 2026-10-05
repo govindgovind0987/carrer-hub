@@ -79,17 +79,17 @@ export function CodingProblemFilters({ currentCategory, currentDifficulty, curre
           placeholder="Search problems by title, tags, or company..."
           defaultValue={currentSearch}
           onChange={(e) => updateParam('search', e.target.value)}
-          className="pl-9 bg-card/60 text-xs focus-visible:ring-violet-500"
+          className="pl-9 bg-card/60 text-xs focus:ring-ring"
         />
       </div>
 
       {/* DSA Topic Dropdown */}
       <div className="flex items-center gap-2">
-        <Layers className="h-4 w-4 text-violet-500" />
+        <Layers className="h-4 w-4 text-primary" />
         <select
           value={currentCategory || 'ALL'}
           onChange={(e) => updateParam('category', e.target.value)}
-          className="bg-card/80 border border-border/60 text-xs font-semibold rounded-lg px-3 py-2 focus:outline-none cursor-pointer focus:ring-1 focus:ring-violet-500"
+          className="bg-card/80 border border-border/60 text-xs font-semibold rounded-lg px-3 py-2 focus:outline-none cursor-pointer focus:ring-1 focus:ring-ring"
         >
           {CATEGORIES.map((cat) => (
             <option key={cat.value} value={cat.value}>
@@ -104,7 +104,7 @@ export function CodingProblemFilters({ currentCategory, currentDifficulty, curre
         <select
           value={currentCompany || 'ALL'}
           onChange={(e) => updateParam('company', e.target.value)}
-          className="bg-card/80 border border-border/60 text-xs font-semibold rounded-lg px-3 py-2 focus:outline-none cursor-pointer focus:ring-1 focus:ring-violet-500"
+          className="bg-card/80 border border-border/60 text-xs font-semibold rounded-lg px-3 py-2 focus:outline-none cursor-pointer focus:ring-1 focus:ring-ring"
         >
           {COMPANIES.map((c) => (
             <option key={c.value} value={c.value}>
@@ -120,7 +120,7 @@ export function CodingProblemFilters({ currentCategory, currentDifficulty, curre
         <select
           value={currentDifficulty || 'ALL'}
           onChange={(e) => updateParam('difficulty', e.target.value)}
-          className="bg-card/80 border border-border/60 text-xs font-semibold rounded-lg px-3 py-2 focus:outline-none cursor-pointer focus:ring-1 focus:ring-violet-500"
+          className="bg-card/80 border border-border/60 text-xs font-semibold rounded-lg px-3 py-2 focus:outline-none cursor-pointer focus:ring-1 focus:ring-ring"
         >
           <option value="ALL">All Difficulties</option>
           <option value="EASY">Easy</option>
@@ -133,7 +133,7 @@ export function CodingProblemFilters({ currentCategory, currentDifficulty, curre
       <select
         value={currentStatus || 'ALL'}
         onChange={(e) => updateParam('status', e.target.value)}
-        className="bg-card/80 border border-border/60 text-xs font-semibold rounded-lg px-3 py-2 focus:outline-none cursor-pointer focus:ring-1 focus:ring-violet-500"
+        className="bg-card/80 border border-border/60 text-xs font-semibold rounded-lg px-3 py-2 focus:outline-none cursor-pointer focus:ring-1 focus:ring-ring"
       >
         <option value="ALL">All Status</option>
         <option value="SOLVED">Solved</option>

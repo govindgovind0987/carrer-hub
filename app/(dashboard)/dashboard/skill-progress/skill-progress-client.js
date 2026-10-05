@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   Code2,
@@ -56,7 +56,7 @@ export default function SkillProgressClient({
   const [activeTab, setActiveTab] = useState('dsa');
 
   // Compute stats for all 20 DSA Topics
-  const dsaTopicData = ALL_DSA_TOPICS.map((topic) => {
+  const dsaTopicData = useMemo(() => ALL_DSA_TOPICS.map((topic) => {
     // Filter progress entries related to this topic
     const progressInTopic = userProgress.filter((up) => {
       const cat = up.problem?.category || '';
@@ -109,26 +109,33 @@ export default function SkillProgressClient({
       recentActivity: lastSub ? new Date(lastSub).toLocaleDateString() : 'No recent activity',
       skillLevel,
     };
-  });
+  }), [submissions, userProgress]);
 
   const totalDsaSolved = codingStats?.solvedCount ?? userProgress.filter((p) => p.status === 'SOLVED').length;
   const totalDsaAttempted = userProgress.length;
 
   // Language Breakdown from Submissions
-  const langCounts = {};
-  submissions.forEach((s) => {
-    const l = s.language?.toLowerCase() || 'python';
-    langCounts[l] = (langCounts[l] || 0) + 1;
-  });
+  const langCounts = useMemo(() => {
+    const counts = {};
+    submissions.forEach((submission) => {
+      const language = submission.language?.toLowerCase() || 'python';
+      counts[language] = (counts[language] || 0) + 1;
+    });
+    return counts;
+  }, [submissions]);
 
   // Web Dev & DB Skills from Profile
-  const profileSkills = profile?.skills || [];
-  const webDevSkills = profileSkills.filter((s) =>
-    /react|next|node|javascript|html|css|tailwind|vue|angular/i.test(s.name)
-  );
-  const dbSkills = profileSkills.filter((s) =>
-    /sql|mongo|postgres|redis|database|prisma|dynamo/i.test(s.name)
-  );
+  const { webDevSkills, dbSkills } = useMemo(() => {
+    const profileSkills = profile?.skills || [];
+    return {
+      webDevSkills: profileSkills.filter((skill) =>
+        /react|next|node|javascript|html|css|tailwind|vue|angular/i.test(skill.name)
+      ),
+      dbSkills: profileSkills.filter((skill) =>
+        /sql|mongo|postgres|redis|database|prisma|dynamo/i.test(skill.name)
+      ),
+    };
+  }, [profile?.skills]);
 
   return (
     <div className="space-y-6">
@@ -255,7 +262,7 @@ export default function SkillProgressClient({
           <Card className="border-border/50">
             <CardHeader>
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <Terminal className="h-5 w-5 text-indigo-500" /> Programming Languages & Execution History
+                <Terminal className="h-5 w-5 text-primary" /> Programming Languages & Execution History
               </CardTitle>
               <CardDescription className="text-xs">
                 Real code submission execution frequency per supported programming language.
@@ -269,12 +276,12 @@ export default function SkillProgressClient({
               ) : (
                 <div className="grid gap-4 sm:grid-cols-3">
                   {Object.entries(langCounts).map(([lang, count]) => (
-                    <div key={lang} className="p-4 rounded-xl border border-border/50 bg-card/60 flex items-center justify-between">
+                    <div key={lang} className="p-4 rounded-md border border-border/50 bg-card/60 flex items-center justify-between">
                       <div>
                         <p className="font-bold text-sm text-foreground uppercase">{lang}</p>
                         <p className="text-xs text-muted-foreground">{count} submissions executed</p>
                       </div>
-                      <Badge className="bg-indigo-600 text-white">{count}</Badge>
+                      <Badge className="bg-primary text-primary-foreground">{count}</Badge>
                     </div>
                   ))}
                 </div>
@@ -346,7 +353,7 @@ export default function SkillProgressClient({
           <Card className="border-border/50">
             <CardHeader>
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <Cpu className="h-5 w-5 text-purple-500" /> Core Computer Science Fundamentals
+                <Cpu className="h-5 w-5 text-primary" /> Core Computer Science Fundamentals
               </CardTitle>
               <CardDescription className="text-xs">
                 System Design, Operating Systems, Networking, and OOP concepts.
@@ -414,13 +421,13 @@ export default function SkillProgressClient({
               ) : (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl border border-cyan-500/30 bg-cyan-500/5">
+                    <div className="p-4 rounded-md border border-cyan-500/30 bg-cyan-500/5">
                       <p className="text-xs text-muted-foreground">ATS Score</p>
                       <p className="text-2xl font-bold text-cyan-500">{latestAnalysis.atsScore}/100</p>
                     </div>
-                    <div className="p-4 rounded-xl border border-violet-500/30 bg-violet-500/5">
+                    <div className="p-4 rounded-md border border-primary/30 bg-primary/5">
                       <p className="text-xs text-muted-foreground">Overall Score</p>
-                      <p className="text-2xl font-bold text-violet-500">{latestAnalysis.overallScore}/100</p>
+                      <p className="text-2xl font-bold text-primary">{latestAnalysis.overallScore}/100</p>
                     </div>
                   </div>
                   {latestAnalysis.missingSkills?.length > 0 && (

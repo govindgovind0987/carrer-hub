@@ -39,7 +39,7 @@ function PaginationLink({ className, isActive, size = 'icon', ...props }) {
           variant: isActive ? 'outline' : 'ghost',
           size,
         }),
-        isActive && 'border-violet-500/50 bg-violet-500/5 text-violet-600',
+        isActive && 'border-primary/50 bg-primary/5 text-primary',
         className
       )}
       {...props}

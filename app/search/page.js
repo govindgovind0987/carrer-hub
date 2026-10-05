@@ -49,8 +49,8 @@ export default async function GlobalSearchPage({ searchParams }) {
               Search across active position listings, technology companies, and skill keywords.
             </p>
 
-            <form method="GET" action="/search" className="mx-auto max-w-2xl flex gap-3 bg-card p-3 rounded-2xl border border-border/60 shadow-lg">
-              <div className="flex-1 flex items-center gap-2 px-3 bg-muted/40 rounded-xl">
+            <form method="GET" action="/search" className="mx-auto max-w-2xl flex gap-3 bg-card p-3 rounded-lg border border-border/60 shadow-sm">
+              <div className="flex-1 flex items-center gap-2 px-3 bg-muted/40 rounded-md">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <Input
                   name="q"
@@ -59,7 +59,7 @@ export default async function GlobalSearchPage({ searchParams }) {
                   className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 h-11"
                 />
               </div>
-              <Button type="submit" className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl px-6 h-11">
+              <Button type="submit" className="bg-primary   text-primary-foreground rounded-md px-6 h-11">
                 Search
               </Button>
             </form>
@@ -71,7 +71,7 @@ export default async function GlobalSearchPage({ searchParams }) {
               {/* Jobs Section */}
               <div className="space-y-4">
                 <h2 className="text-xl font-bold flex items-center gap-2 border-b border-border/40 pb-2">
-                  <Briefcase className="h-5 w-5 text-violet-600" /> Jobs ({jobs.length})
+                  <Briefcase className="h-5 w-5 text-primary" /> Jobs ({jobs.length})
                 </h2>
 
                 {jobs.length === 0 ? (
@@ -82,7 +82,7 @@ export default async function GlobalSearchPage({ searchParams }) {
                       <Card key={j.id} className="border-border/50 bg-card hover:shadow-md transition-all">
                         <CardContent className="p-5 flex flex-col justify-between h-full space-y-3">
                           <div>
-                            <h3 className="font-bold text-base hover:text-violet-600 transition-colors">
+                            <h3 className="font-bold text-base hover:text-primary transition-colors">
                               <Link href={`/jobs/${j.slug}`}>{j.title}</Link>
                             </h3>
                             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
@@ -91,7 +91,7 @@ export default async function GlobalSearchPage({ searchParams }) {
                           </div>
                           <div className="flex justify-between items-center pt-2 border-t border-border/40 text-xs">
                             <Badge variant="secondary" className="text-[10px]">{j.jobType.replace('_', ' ')}</Badge>
-                            <Button asChild size="sm" variant="ghost" className="text-xs text-violet-600">
+                            <Button asChild size="sm" variant="ghost" className="text-xs text-primary">
                               <Link href={`/jobs/${j.slug}`}>View Job <ArrowRight className="ml-1 h-3 w-3" /></Link>
                             </Button>
                           </div>
@@ -105,7 +105,7 @@ export default async function GlobalSearchPage({ searchParams }) {
               {/* Companies Section */}
               <div className="space-y-4">
                 <h2 className="text-xl font-bold flex items-center gap-2 border-b border-border/40 pb-2">
-                  <Building2 className="h-5 w-5 text-violet-600" /> Companies ({companies.length})
+                  <Building2 className="h-5 w-5 text-primary" /> Companies ({companies.length})
                 </h2>
 
                 {companies.length === 0 ? (

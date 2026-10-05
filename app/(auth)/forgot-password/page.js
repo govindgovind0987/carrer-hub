@@ -17,7 +17,7 @@ export const metadata = {
 
 export default function ForgotPasswordPage() {
   return (
-    <Card className="w-full border-border/50 shadow-xl backdrop-blur-sm bg-card/80">
+    <Card className="w-full border-border/50 shadow-sm backdrop-blur-sm bg-card/80">
       <CardHeader className="space-y-1 text-center">
         <CardTitle className="text-2xl font-bold">Forgot password?</CardTitle>
         <CardDescription>
@@ -37,7 +37,7 @@ export default function ForgotPasswordPage() {
           </div>
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-md shadow-violet-500/25"
+            className="w-full bg-primary     text-primary-foreground shadow-sm"
             disabled
           >
             Send Reset Link

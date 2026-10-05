@@ -80,7 +80,7 @@ export default function AdminRecruitersPage() {
                 <p className="text-xs text-muted-foreground">
                   Recruiter Contact: <strong>{r.name}</strong> ({r.email})
                 </p>
-                <a href={r.website} target="_blank" rel="noreferrer" className="text-xs text-violet-600 hover:underline flex items-center gap-1 pt-1">
+                <a href={r.website} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1 pt-1">
                   {r.website} <ExternalLink className="h-3 w-3" />
                 </a>
               </div>

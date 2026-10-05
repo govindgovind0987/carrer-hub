@@ -270,7 +270,7 @@ export default function LiveInterviewRoomPage({ params }) {
   if (loading) {
     return (
       <div className="flex flex-col h-[70vh] items-center justify-center space-y-4">
-        <Loader2 className="h-10 w-10 animate-spin text-violet-600" />
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
         <p className="text-sm font-medium text-muted-foreground">Preparing Live AI Interview Room...</p>
       </div>
     );
@@ -282,9 +282,9 @@ export default function LiveInterviewRoomPage({ params }) {
   return (
     <div className="space-y-6 pb-16 max-w-6xl mx-auto">
       {/* Top Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-lg border border-border/50 bg-card/80 backdrop-blur-xl shadow-sm">
         <div className="flex items-center gap-3">
-          <Badge variant="outline" className="text-xs uppercase border-violet-500/30 text-violet-600 bg-violet-500/10 font-bold">
+          <Badge variant="outline" className="text-xs uppercase border-primary/30 text-primary bg-primary/10 font-bold">
             {session?.type || 'Live Mock Interview'}
           </Badge>
           <span className="text-sm font-semibold text-foreground">{session?.technology} ({session?.role})</span>
@@ -293,11 +293,11 @@ export default function LiveInterviewRoomPage({ params }) {
         {/* Timer & Controls */}
         <div className="flex flex-wrap items-center gap-3">
           <Badge variant="secondary" className="font-mono text-xs py-1.5 px-3 flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5 text-violet-600" /> Total Remaining: {formatTime(totalSecondsLeft)}
+            <Clock className="h-3.5 w-3.5 text-primary" /> Total Remaining: {formatTime(totalSecondsLeft)}
           </Badge>
 
           <Button variant="outline" size="sm" onClick={() => setReadQuestionAloud(!readQuestionAloud)}>
-            {readQuestionAloud ? <Volume2 className="h-4 w-4 text-violet-600" /> : <VolumeX className="h-4 w-4 text-muted-foreground" />}
+            {readQuestionAloud ? <Volume2 className="h-4 w-4 text-primary" /> : <VolumeX className="h-4 w-4 text-muted-foreground" />}
           </Button>
 
           <Button variant="outline" size="sm" onClick={handleTogglePause}>
@@ -317,7 +317,7 @@ export default function LiveInterviewRoomPage({ params }) {
           <span>
             Question {currentIndex + 1} of {questions.length}
           </span>
-          <span className="text-violet-600">{autoSaveStatus}</span>
+          <span className="text-primary">{autoSaveStatus}</span>
         </div>
         <Progress value={progressPercent} className="h-2 bg-muted" />
       </div>
@@ -344,8 +344,8 @@ export default function LiveInterviewRoomPage({ params }) {
             <CardContent className="p-6 space-y-4">
               {/* Question Hints */}
               {currentQuestion.hints?.length > 0 && (
-                <div className="p-3 rounded-xl bg-violet-500/5 border border-violet-500/20 space-y-1 text-xs">
-                  <span className="font-semibold text-violet-600 flex items-center gap-1">
+                <div className="p-3 rounded-md bg-primary/5 border border-primary/20 space-y-1 text-xs">
+                  <span className="font-semibold text-primary flex items-center gap-1">
                     <Sparkles className="h-3.5 w-3.5" /> AI Hint
                   </span>
                   <p className="text-muted-foreground">{currentQuestion.hints[0]}</p>
@@ -395,7 +395,7 @@ export default function LiveInterviewRoomPage({ params }) {
             <CardHeader className="pb-3 border-b border-border/40">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-bold flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-violet-600" /> Candidate Response Input
+                  <FileText className="h-4 w-4 text-primary" /> Candidate Response Input
                 </CardTitle>
                 <Badge variant="outline" className="text-[10px] uppercase font-mono">
                   Type: {currentQuestion.questionType || 'TEXT'}
@@ -439,9 +439,9 @@ export default function LiveInterviewRoomPage({ params }) {
                   {currentQuestion.options.map((opt, oIdx) => (
                     <div
                       key={oIdx}
-                      className={`flex items-center space-x-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                      className={`flex items-center space-x-3 p-4 rounded-md border cursor-pointer transition-all ${
                         currentAnswerObj.selectedOption === opt
-                          ? 'border-violet-600 bg-violet-500/10'
+                          ? 'border-primary bg-primary/10'
                           : 'border-border/50 hover:bg-accent'
                       }`}
                     >
@@ -484,11 +484,11 @@ export default function LiveInterviewRoomPage({ params }) {
                     onClick={handleSubmitCurrentAnswer}
                     disabled={isSubmitting}
                   >
-                    <Sparkles className="mr-1.5 h-3.5 w-3.5 text-violet-600" /> Evaluate Answer
+                    <Sparkles className="mr-1.5 h-3.5 w-3.5 text-primary" /> Evaluate Answer
                   </Button>
 
                   {currentIndex < questions.length - 1 ? (
-                    <Button onClick={handleNext} className="bg-violet-600 hover:bg-violet-700 text-white">
+                    <Button onClick={handleNext} className="bg-primary hover:bg-primary text-primary-foreground">
                       Next Question <ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   ) : (

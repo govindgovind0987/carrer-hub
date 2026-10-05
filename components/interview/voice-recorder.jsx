@@ -59,7 +59,7 @@ export function VoiceRecorder({ voice, onAnswerChange }) {
         {/* Header Bar */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="border-violet-500/30 text-violet-500 bg-violet-500/10">
+            <Badge variant="outline" className="border-primary/30 text-primary bg-primary/10">
               <Mic className="mr-1.5 h-3.5 w-3.5" /> Speech & Voice Engine
             </Badge>
             {confidence > 0 && (
@@ -81,7 +81,7 @@ export function VoiceRecorder({ voice, onAnswerChange }) {
         </div>
 
         {/* VAD Animated Waveform */}
-        <div className="h-20 bg-muted/40 rounded-xl border border-border/40 flex items-center justify-center gap-1.5 px-4 overflow-hidden relative">
+        <div className="h-20 bg-muted/40 rounded-md border border-border/40 flex items-center justify-center gap-1.5 px-4 overflow-hidden relative">
           {isRecording ? (
             Array.from({ length: 24 }).map((_, i) => {
               // Dynamic height based on audio level and index pattern
@@ -93,7 +93,7 @@ export function VoiceRecorder({ voice, onAnswerChange }) {
                   key={i}
                   animate={{ height: barHeight }}
                   transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                  className="w-1.5 rounded-full bg-gradient-to-t from-violet-600 to-indigo-400"
+                  className="w-1.5 rounded-full bg-primary  "
                 />
               );
             })
@@ -110,12 +110,12 @@ export function VoiceRecorder({ voice, onAnswerChange }) {
           <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
             <span>Live Speech Transcript</span>
             {transcript && (
-              <button onClick={handleClear} className="text-xs text-violet-500 hover:underline flex items-center gap-1">
+              <button onClick={handleClear} className="text-xs text-primary hover:underline flex items-center gap-1">
                 <RefreshCw className="h-3 w-3" /> Clear Transcript
               </button>
             )}
           </label>
-          <div className="min-h-24 max-h-48 overflow-y-auto p-4 rounded-xl bg-muted/20 border border-border/50 text-sm leading-relaxed text-foreground">
+          <div className="min-h-24 max-h-48 overflow-y-auto p-4 rounded-md bg-muted/20 border border-border/50 text-sm leading-relaxed text-foreground">
             {transcript || interimTranscript ? (
               <p>
                 {transcript}
@@ -129,7 +129,7 @@ export function VoiceRecorder({ voice, onAnswerChange }) {
 
         {/* Audio Player Preview */}
         {audioUrl && !isRecording && (
-          <div className="flex items-center justify-between p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
+          <div className="flex items-center justify-between p-3 rounded-md bg-primary/10 border border-primary/20">
             <div className="flex items-center gap-3">
               <audio src={audioUrl} id="voice-playback-audio" onEnded={() => setIsPlayingAudio(false)} />
               <Button
@@ -151,7 +151,7 @@ export function VoiceRecorder({ voice, onAnswerChange }) {
               >
                 {isPlayingAudio ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
               </Button>
-              <span className="text-xs font-medium text-violet-600">Voice Recording Playback</span>
+              <span className="text-xs font-medium text-primary">Voice Recording Playback</span>
             </div>
             <Badge variant="outline" className="text-[10px]">
               Ready for submission
@@ -161,7 +161,7 @@ export function VoiceRecorder({ voice, onAnswerChange }) {
 
         {/* Mic Permission Warning */}
         {hasPermission === false && (
-          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-600 flex items-center gap-2">
+          <div className="p-3 rounded-md bg-amber-500/10 border border-amber-500/20 text-xs text-amber-600 flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>Microphone access is blocked in browser settings. Please enable microphone permission to use voice features.</span>
           </div>
@@ -172,7 +172,7 @@ export function VoiceRecorder({ voice, onAnswerChange }) {
           <Button
             onClick={handleToggleRecording}
             variant={isRecording ? 'destructive' : 'default'}
-            className={isRecording ? 'animate-pulse' : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white'}
+            className={isRecording ? 'animate-pulse' : 'bg-primary   text-primary-foreground'}
           >
             {isRecording ? (
               <>
@@ -193,7 +193,7 @@ export function VoiceRecorder({ voice, onAnswerChange }) {
                 if (onAnswerChange) onAnswerChange(transcript);
               }}
             >
-              <Sparkles className="mr-2 h-4 w-4 text-violet-500" /> Apply Transcript to Answer
+              <Sparkles className="mr-2 h-4 w-4 text-primary" /> Apply Transcript to Answer
             </Button>
           )}
         </div>

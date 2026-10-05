@@ -102,7 +102,7 @@ export default function CreateInterviewPage() {
           <Button variant="ghost" size="sm" onClick={() => router.back()} className="mb-2 text-muted-foreground">
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
           </Button>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
             Create AI Mock Interview
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -110,7 +110,7 @@ export default function CreateInterviewPage() {
           </p>
         </div>
 
-        <Badge variant="outline" className="hidden sm:flex items-center gap-1.5 px-3 py-1 border-violet-500/30 text-violet-600 bg-violet-500/5">
+        <Badge variant="outline" className="hidden sm:flex items-center gap-1.5 px-3 py-1 border-primary/30 text-primary bg-primary/5">
           <Sparkles className="h-4 w-4" /> Groq Llama 3.3 Engine
         </Badge>
       </div>
@@ -129,7 +129,7 @@ export default function CreateInterviewPage() {
               <div
                 className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
                   isActive
-                    ? 'bg-violet-600 text-white shadow-md shadow-violet-500/30 ring-2 ring-violet-500/20'
+                    ? 'bg-primary text-primary-foreground shadow-sm ring-2 ring-ring'
                     : isDone
                     ? 'bg-emerald-500 text-white'
                     : 'bg-muted text-muted-foreground'
@@ -151,7 +151,7 @@ export default function CreateInterviewPage() {
           <Card className="border-border/50 bg-card">
             <CardHeader>
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Briefcase className="h-5 w-5 text-violet-600" /> Target Position & Role
+                <Briefcase className="h-5 w-5 text-primary" /> Target Position & Role
               </CardTitle>
               <CardDescription>Enter the position title you want to practice interviewing for.</CardDescription>
             </CardHeader>
@@ -172,7 +172,7 @@ export default function CreateInterviewPage() {
           <Card className="border-border/50 bg-card">
             <CardHeader>
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Layers className="h-5 w-5 text-violet-600" /> Select Interview Type
+                <Layers className="h-5 w-5 text-primary" /> Select Interview Type
               </CardTitle>
               <CardDescription>Choose the primary format and objective of this mock interview.</CardDescription>
             </CardHeader>
@@ -184,15 +184,15 @@ export default function CreateInterviewPage() {
                     <div
                       key={t.id}
                       onClick={() => setInterviewType(t.id)}
-                      className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 ${
+                      className={`p-4 rounded-md border cursor-pointer transition-all duration-200 ${
                         selected
-                          ? 'border-violet-600 bg-violet-500/10 shadow-md ring-1 ring-violet-500'
-                          : 'border-border/50 bg-muted/20 hover:border-violet-500/40'
+                          ? 'border-primary bg-primary/10 shadow-md ring-1 ring-ring'
+                          : 'border-border/50 bg-muted/20 hover:border-primary/40'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
                         <h4 className="font-semibold text-sm">{t.label}</h4>
-                        {selected && <CheckCircle2 className="h-4 w-4 text-violet-600" />}
+                        {selected && <CheckCircle2 className="h-4 w-4 text-primary" />}
                       </div>
                       <p className="text-xs text-muted-foreground leading-relaxed">{t.desc}</p>
                     </div>
@@ -203,7 +203,7 @@ export default function CreateInterviewPage() {
           </Card>
 
           <div className="flex justify-end pt-4">
-            <Button onClick={() => setStep(2)} className="bg-violet-600 hover:bg-violet-700 text-white">
+            <Button onClick={() => setStep(2)} className="bg-primary hover:bg-primary text-primary-foreground">
               Next: Technology Stack <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
@@ -216,7 +216,7 @@ export default function CreateInterviewPage() {
           <Card className="border-border/50 bg-card">
             <CardHeader>
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Code2 className="h-5 w-5 text-violet-600" /> Select Primary Technology
+                <Code2 className="h-5 w-5 text-primary" /> Select Primary Technology
               </CardTitle>
               <CardDescription>Choose from the 23 supported enterprise frameworks, languages, and core subjects.</CardDescription>
             </CardHeader>
@@ -231,8 +231,8 @@ export default function CreateInterviewPage() {
                       variant={isSel ? 'default' : 'outline'}
                       className={`cursor-pointer px-3.5 py-2 text-xs transition-all ${
                         isSel
-                          ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold shadow-md'
-                          : 'hover:border-violet-500 hover:bg-violet-500/5'
+                          ? 'bg-primary   text-primary-foreground font-semibold shadow-md'
+                          : 'hover:border-primary hover:bg-primary/5'
                       }`}
                     >
                       {tech}
@@ -246,7 +246,7 @@ export default function CreateInterviewPage() {
           <Card className="border-border/50 bg-card">
             <CardHeader>
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <BrainCircuit className="h-5 w-5 text-violet-600" /> Question Categories
+                <BrainCircuit className="h-5 w-5 text-primary" /> Question Categories
               </CardTitle>
               <CardDescription>Select topic categories to include in this session.</CardDescription>
             </CardHeader>
@@ -268,7 +268,7 @@ export default function CreateInterviewPage() {
                       onClick={() => toggleCategory(cat.id)}
                       className={`p-3 rounded-lg border text-center cursor-pointer text-xs font-medium transition-all ${
                         isChecked
-                          ? 'border-violet-600 bg-violet-600 text-white font-bold shadow-sm'
+                          ? 'border-primary bg-primary text-primary-foreground font-bold shadow-sm'
                           : 'border-border/60 bg-muted/20 hover:bg-accent'
                       }`}
                     >
@@ -284,7 +284,7 @@ export default function CreateInterviewPage() {
             <Button variant="outline" onClick={() => setStep(1)}>
               Back
             </Button>
-            <Button onClick={() => setStep(3)} className="bg-violet-600 hover:bg-violet-700 text-white">
+            <Button onClick={() => setStep(3)} className="bg-primary hover:bg-primary text-primary-foreground">
               Next: Parameters & Rules <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
@@ -297,7 +297,7 @@ export default function CreateInterviewPage() {
           <Card className="border-border/50 bg-card">
             <CardHeader>
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Sliders className="h-5 w-5 text-violet-600" /> Interview Parameters
+                <Sliders className="h-5 w-5 text-primary" /> Interview Parameters
               </CardTitle>
               <CardDescription>Configure difficulty, experience level, session timer, and question count.</CardDescription>
             </CardHeader>
@@ -364,9 +364,9 @@ export default function CreateInterviewPage() {
           </Card>
 
           {/* Review Summary Box */}
-          <Card className="border-violet-500/30 bg-violet-500/5">
+          <Card className="border-primary/30 bg-primary/5">
             <CardContent className="p-6 space-y-3">
-              <h4 className="font-semibold text-sm text-violet-600 flex items-center gap-2">
+              <h4 className="font-semibold text-sm text-primary flex items-center gap-2">
                 <Wand2 className="h-4 w-4" /> Ready to Generate AI Interview Session
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
@@ -397,7 +397,7 @@ export default function CreateInterviewPage() {
             <Button
               onClick={handleGenerate}
               disabled={loading}
-              className="bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 text-white font-semibold shadow-lg shadow-violet-500/25 px-8"
+              className="bg-primary    text-primary-foreground font-semibold shadow-sm px-8"
             >
               {loading ? (
                 <>

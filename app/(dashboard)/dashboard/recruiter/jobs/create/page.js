@@ -163,7 +163,7 @@ export default function CreateJobPage() {
               {errors.requirements && <p className="text-xs text-destructive">{errors.requirements.message}</p>}
             </div>
 
-            <Button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold">
+            <Button type="submit" disabled={loading} className="w-full bg-primary   text-primary-foreground font-semibold">
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />} Publish Requisition
             </Button>
           </form>

@@ -11,19 +11,37 @@ export const metadata = {
   title: 'Manage Jobs | CareerHub',
 };
 
-export default async function RecruiterJobsPage() {
+export default async function RecruiterJobsPage({ searchParams }) {
   const session = await auth();
   const userId = session?.user?.id;
+  const params = await searchParams;
+  const page = Math.max(1, Number(params?.page) || 1);
+  const pageSize = 20;
 
-  const jobs = await prisma.job.findMany({
-    where: { recruiterId: userId },
-    include: {
-      _count: {
-        select: { applications: true },
+  const [jobs, total] = await Promise.all([
+    prisma.job.findMany({
+      where: { recruiterId: userId },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        status: true,
+        category: true,
+        location: true,
+        jobType: true,
+        viewsCount: true,
+        createdAt: true,
+        _count: {
+          select: { applications: true },
+        },
       },
-    },
-    orderBy: { createdAt: 'desc' },
-  });
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.job.count({ where: { recruiterId: userId } }),
+  ]);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
     <div className="space-y-6">
@@ -35,7 +53,7 @@ export default async function RecruiterJobsPage() {
           </p>
         </div>
 
-        <Button asChild className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white">
+        <Button asChild className="bg-primary   text-primary-foreground">
           <Link href="/dashboard/recruiter/jobs/create">
             <PlusCircle className="mr-2 h-4 w-4" /> Post New Job
           </Link>
@@ -48,7 +66,7 @@ export default async function RecruiterJobsPage() {
             <Briefcase className="mx-auto h-12 w-12 text-muted-foreground/40 mb-3" />
             <h3 className="text-lg font-semibold text-foreground">No jobs posted yet</h3>
             <p className="text-sm mt-1">Create your first job requisition to start receiving applicant resumes.</p>
-            <Button asChild className="mt-6 bg-violet-600 text-white">
+            <Button asChild className="mt-6 bg-primary text-primary-foreground">
               <Link href="/dashboard/recruiter/jobs/create">Post New Job</Link>
             </Button>
           </CardContent>
@@ -60,7 +78,7 @@ export default async function RecruiterJobsPage() {
               <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <h3 className="font-bold text-lg hover:text-violet-600 transition-colors">
+                    <h3 className="font-bold text-lg hover:text-primary transition-colors">
                       <Link href={`/jobs/${job.slug}`}>{job.title}</Link>
                     </h3>
                     <Badge variant={job.status === 'PUBLISHED' ? 'default' : 'secondary'} className="text-[10px]">
@@ -77,7 +95,7 @@ export default async function RecruiterJobsPage() {
                   </p>
 
                   <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
-                    <span className="flex items-center gap-1 font-semibold text-violet-600">
+                    <span className="flex items-center gap-1 font-semibold text-primary">
                       <Users className="h-3.5 w-3.5" /> {job._count.applications} Applicants
                     </span>
                     <span className="flex items-center gap-1">
@@ -101,6 +119,27 @@ export default async function RecruiterJobsPage() {
               </CardContent>
             </Card>
           ))}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-end gap-2 pt-2">
+              {page > 1 ? (
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/dashboard/recruiter/jobs?page=${page - 1}`}>Previous</Link>
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" disabled>Previous</Button>
+              )}
+              <span className="text-xs text-muted-foreground">
+                Page {Math.min(page, totalPages)} of {totalPages}
+              </span>
+              {page < totalPages ? (
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/dashboard/recruiter/jobs?page=${page + 1}`}>Next</Link>
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" disabled>Next</Button>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

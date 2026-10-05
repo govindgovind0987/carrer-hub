@@ -1,6 +1,3 @@
-'use client';
-
-import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,14 +18,8 @@ export function Pricing() {
     <section className="py-24 sm:py-32 bg-muted/30" id="pricing">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <motion.div
-          className="mx-auto max-w-2xl text-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-violet-600">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">
             Pricing
           </h2>
           <p className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
@@ -37,28 +28,22 @@ export function Pricing() {
           <p className="mt-4 text-lg text-muted-foreground">
             Choose the plan that fits your needs. Upgrade or downgrade anytime.
           </p>
-        </motion.div>
+        </div>
 
         {/* Pricing Cards */}
         <div className="mt-16 grid gap-8 md:grid-cols-3 items-start">
-          {PRICING_PLANS.map((plan, index) => (
-            <motion.div
-              key={plan.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
+          {PRICING_PLANS.map((plan) => (
+            <div key={plan.name}>
               <Card
                 className={cn(
                   'relative h-full border-border/50',
                   plan.highlighted &&
-                    'border-violet-500/50 shadow-xl shadow-violet-500/10 scale-[1.02]'
+                    'border-[#C58B32] shadow-sm'
                 )}
               >
                 {plan.highlighted && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-md">
+                    <Badge variant="secondary" className="border-[#C58B32]/40">
                       Most Popular
                     </Badge>
                   </div>
@@ -84,7 +69,7 @@ export function Pricing() {
                         key={feature}
                         className="flex items-start gap-3 text-sm"
                       >
-                        <Check className="h-4 w-4 mt-0.5 text-violet-600 shrink-0" />
+                        <Check className="h-4 w-4 mt-0.5 text-primary shrink-0" />
                         <span className="text-muted-foreground">{feature}</span>
                       </li>
                     ))}
@@ -96,7 +81,7 @@ export function Pricing() {
                     className={cn(
                       'w-full',
                       plan.highlighted
-                        ? 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-md shadow-violet-500/25'
+                        ? ''
                         : ''
                     )}
                     variant={plan.highlighted ? 'default' : 'outline'}
@@ -105,7 +90,7 @@ export function Pricing() {
                   </Button>
                 </CardFooter>
               </Card>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

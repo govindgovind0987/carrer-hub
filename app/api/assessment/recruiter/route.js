@@ -13,15 +13,30 @@ export async function GET(req) {
       return NextResponse.json({ error: 'Unauthorized. Recruiter role required.' }, { status: 403 });
     }
 
-    const assessments = await prisma.recruiterAssessment.findMany({
-      where: { recruiterId: session.user.id },
-      include: {
-        candidateResults: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    const { searchParams } = new URL(req.url);
+    const requestedPage = Number.parseInt(searchParams.get('page') || '1', 10);
+    const requestedLimit = Number.parseInt(searchParams.get('limit') || '20', 10);
+    const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+    const limit = Number.isFinite(requestedLimit) && requestedLimit > 0
+      ? Math.min(requestedLimit, 100)
+      : 20;
+    const where = { recruiterId: session.user.id };
 
-    return NextResponse.json({ assessments });
+    const [assessments, total] = await Promise.all([
+      prisma.recruiterAssessment.findMany({
+        where,
+        include: { candidateResults: true },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.recruiterAssessment.count({ where }),
+    ]);
+
+    return NextResponse.json({
+      assessments,
+      pagination: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) },
+    });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch assessments' }, { status: 500 });
   }

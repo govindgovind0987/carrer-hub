@@ -1,9 +1,6 @@
 @import "tailwindcss";
 
-/*
- * CareerHub Design System
- * Inspired by Linear, Vercel, Notion
- */
+/* CareerHub design system — restrained navy, brass and warm neutrals. */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -40,49 +37,49 @@
 
 /* Light mode tokens */
 :root {
-  --radius: 0.5rem;
-  --background: oklch(0.985 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.96 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.48 0 0);
-  --accent: oklch(0.96 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.915 0 0);
-  --input: oklch(0.915 0 0);
-  --ring: oklch(0.45 0.16 260);
+  --radius: 0.625rem;
+  --background: #f5f4f0;
+  --foreground: #17212b;
+  --card: #ffffff;
+  --card-foreground: #17212b;
+  --popover: #ffffff;
+  --popover-foreground: #17212b;
+  --primary: #18364d;
+  --primary-foreground: #ffffff;
+  --secondary: #efe5cf;
+  --secondary-foreground: #684813;
+  --muted: #ebeae5;
+  --muted-foreground: #69717a;
+  --accent: #e5ebee;
+  --accent-foreground: #18364d;
+  --destructive: #b5403a;
+  --destructive-foreground: #ffffff;
+  --border: #dcdad3;
+  --input: #dcdad3;
+  --ring: #a96f1f;
 }
 
 /* Dark mode tokens */
 .dark {
-  --background: oklch(0.12 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.15 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.15 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.12 0 0);
-  --secondary: oklch(0.20 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.20 0 0);
-  --muted-foreground: oklch(0.62 0 0);
-  --accent: oklch(0.20 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.24 0 0);
-  --input: oklch(0.24 0 0);
-  --ring: oklch(0.60 0.16 260);
+  --background: #11171d;
+  --foreground: #edf0f2;
+  --card: #192129;
+  --card-foreground: #edf0f2;
+  --popover: #192129;
+  --popover-foreground: #edf0f2;
+  --primary: #d7a044;
+  --primary-foreground: #17212b;
+  --secondary: #2c3031;
+  --secondary-foreground: #f0d9aa;
+  --muted: #242c33;
+  --muted-foreground: #a3abb2;
+  --accent: #253746;
+  --accent-foreground: #eef3f6;
+  --destructive: #d1625c;
+  --destructive-foreground: #ffffff;
+  --border: #34404a;
+  --input: #34404a;
+  --ring: #d7a044;
 }
 
 /* Base styles */
@@ -96,6 +93,7 @@ body {
   font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
 }
 
 /* Accordion animations */
@@ -144,5 +142,5 @@ body {
 
 /* Selection color */
 ::selection {
-  background: oklch(0.617 0.175 275.75 / 0.3);
+  background: rgb(215 160 68 / 0.28);
 }

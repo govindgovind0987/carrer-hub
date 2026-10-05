@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Trash2, CheckCircle2, Clock, ShieldCheck, ArrowRight } from 'lucide-react';
+import { PlusCircle, Trash2, CheckCircle2, Clock, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function CreateAssessmentPage() {
@@ -19,19 +19,35 @@ export default function CreateAssessmentPage() {
   const [timeLimitMinutes, setTimeLimitMinutes] = useState(60);
   const [passingScore, setPassingScore] = useState(70);
   const [availableProblems, setAvailableProblems] = useState([]);
+  const [problemsPage, setProblemsPage] = useState(1);
+  const [totalProblemPages, setTotalProblemPages] = useState(1);
+  const [problemsLoading, setProblemsLoading] = useState(true);
   const [selectedProblemIds, setSelectedProblemIds] = useState([]);
   const [customQuestionTitle, setCustomQuestionTitle] = useState('');
   const [customQuestionDesc, setCustomQuestionDesc] = useState('');
   const [customQuestions, setCustomQuestions] = useState([]);
 
   useEffect(() => {
-    fetch('/api/assessment/problems')
+    const controller = new AbortController();
+    setProblemsLoading(true);
+    fetch(`/api/assessment/problems?page=${problemsPage}&limit=25`, {
+      signal: controller.signal,
+    })
       .then((res) => res.json())
       .then((data) => {
-        if (data.problems) setAvailableProblems(data.problems);
+        if (data.problems) {
+          setAvailableProblems(data.problems);
+          setTotalProblemPages(data.pagination?.totalPages || 1);
+        }
       })
-      .catch(() => {});
-  }, []);
+      .catch((error) => {
+        if (error.name !== 'AbortError') toast.error('Failed to load problem bank');
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setProblemsLoading(false);
+      });
+    return () => controller.abort();
+  }, [problemsPage]);
 
   const handleToggleProblem = (id) => {
     if (selectedProblemIds.includes(id)) {
@@ -182,15 +198,19 @@ export default function CreateAssessmentPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="divide-y divide-border/40 max-h-72 overflow-y-auto pr-2">
-              {availableProblems.map((prob) => {
+              {problemsLoading ? (
+                <div className="flex h-40 items-center justify-center text-xs text-muted-foreground">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading problem bank…
+                </div>
+              ) : availableProblems.map((prob) => {
                 const isSelected = selectedProblemIds.includes(prob.id);
                 return (
                   <div
                     key={prob.id}
                     onClick={() => handleToggleProblem(prob.id)}
-                    className={`p-3 rounded-xl flex items-center justify-between cursor-pointer transition-all ${
+                    className={`p-3 rounded-md flex items-center justify-between cursor-pointer transition-all ${
                       isSelected
-                        ? 'bg-violet-500/10 border border-violet-500/30'
+                        ? 'bg-primary/10 border border-primary/30'
                         : 'hover:bg-muted/40 border border-transparent'
                     }`}
                   >
@@ -201,10 +221,35 @@ export default function CreateAssessmentPage() {
                         <span>{prob.category}</span>
                       </div>
                     </div>
-                    {isSelected && <CheckCircle2 className="h-5 w-5 text-violet-600" />}
+                    {isSelected && <CheckCircle2 className="h-5 w-5 text-primary" />}
                   </div>
                 );
               })}
+            </div>
+            <div className="flex items-center justify-between border-t border-border/40 pt-3">
+              <span className="text-[11px] text-muted-foreground">
+                {selectedProblemIds.length} selected · Page {problemsPage} of {totalProblemPages}
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={problemsLoading || problemsPage <= 1}
+                  onClick={() => setProblemsPage((current) => Math.max(1, current - 1))}
+                >
+                  Previous
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={problemsLoading || problemsPage >= totalProblemPages}
+                  onClick={() => setProblemsPage((current) => current + 1)}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -215,7 +260,7 @@ export default function CreateAssessmentPage() {
             <CardTitle className="text-lg font-bold">3. Add Custom Coding Question (Optional)</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-3 p-4 bg-muted/20 rounded-xl border border-border/40">
+            <div className="space-y-3 p-4 bg-muted/20 rounded-md border border-border/40">
               <Input
                 value={customQuestionTitle}
                 onChange={(e) => setCustomQuestionTitle(e.target.value)}
@@ -267,7 +312,7 @@ export default function CreateAssessmentPage() {
         <Button
           type="submit"
           disabled={loading}
-          className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold py-6 text-sm shadow-xl"
+          className="w-full bg-primary   text-primary-foreground font-bold py-6 text-sm shadow-sm"
         >
           {loading ? 'Creating Assessment...' : 'Publish Assessment & Generate Invite Link'}
         </Button>

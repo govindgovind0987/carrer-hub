@@ -14,7 +14,7 @@ export const metadata = {
 
 export default function SignInPage() {
   return (
-    <Card className="w-full border-border/50 shadow-xl backdrop-blur-sm bg-card/80">
+    <Card className="w-full border-border/50 shadow-sm backdrop-blur-sm bg-card/80">
       <CardHeader className="space-y-1 text-center">
         <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
         <CardDescription>

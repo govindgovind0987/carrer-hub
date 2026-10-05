@@ -66,7 +66,7 @@ export function NotificationDropdown() {
         <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-accent" aria-label="Notifications">
           <Bell className="h-5 w-5 text-muted-foreground" />
           {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center animate-pulse">
+            <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse">
               {unreadCount}
             </span>
           )}
@@ -78,7 +78,7 @@ export function NotificationDropdown() {
           <div className="flex items-center gap-2">
             <span className="font-bold text-sm">Notifications</span>
             {unreadCount > 0 && (
-              <Badge variant="secondary" className="text-[10px] bg-violet-500/10 text-violet-600 font-semibold">
+              <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary font-semibold">
                 {unreadCount} New
               </Badge>
             )}
@@ -86,7 +86,7 @@ export function NotificationDropdown() {
           {unreadCount > 0 && (
             <button
               onClick={handleMarkAllRead}
-              className="text-xs text-violet-600 hover:underline flex items-center gap-1 font-medium"
+              className="text-xs text-primary hover:underline flex items-center gap-1 font-medium"
             >
               <CheckCheck className="h-3.5 w-3.5" /> Mark all read
             </button>
@@ -104,19 +104,19 @@ export function NotificationDropdown() {
               <div
                 key={n.id}
                 className={`p-4 transition-colors flex items-start justify-between gap-3 ${
-                  !n.isRead ? 'bg-violet-500/5' : 'hover:bg-accent/40'
+                  !n.isRead ? 'bg-primary/5' : 'hover:bg-accent/40'
                 }`}
               >
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center gap-1.5">
-                    {!n.isRead && <span className="h-2 w-2 rounded-full bg-violet-600 inline-block" />}
+                    {!n.isRead && <span className="h-2 w-2 rounded-full bg-primary inline-block" />}
                     <h5 className="font-bold text-xs text-foreground leading-tight">{n.title}</h5>
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">{n.message}</p>
                   {n.link && (
                     <Link
                       href={n.link}
-                      className="text-[11px] font-semibold text-violet-600 hover:underline inline-flex items-center gap-1 pt-1"
+                      className="text-[11px] font-semibold text-primary hover:underline inline-flex items-center gap-1 pt-1"
                     >
                       View Details <ExternalLink className="h-3 w-3" />
                     </Link>

@@ -26,20 +26,24 @@ export default async function CareerCoachPage() {
     await Promise.all([
       prisma.profile.findUnique({
         where: { userId },
-        include: { skills: true, experiences: true, educations: true, projects: true },
+        select: {
+          headline: true,
+          bio: true,
+          _count: { select: { skills: true, experiences: true, educations: true, projects: true } },
+        },
       }),
       prisma.resume.count({ where: { userId } }),
       prisma.resumeAnalysis.findFirst({
         where: { userId },
         orderBy: { createdAt: 'desc' },
+        select: { atsScore: true },
       }),
-      prisma.userCodingStats.findUnique({ where: { userId } }),
-      prisma.interviewSession.findMany({
+      prisma.userCodingStats.findUnique({ where: { userId }, select: { solvedCount: true } }),
+      prisma.interviewSession.count({ where: { userId } }),
+      prisma.interviewReport.aggregate({
         where: { userId },
-      }),
-      prisma.interviewReport.findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
+        _avg: { overallScore: true },
+        _count: { _all: true },
       }),
     ]);
 
@@ -47,10 +51,10 @@ export default async function CareerCoachPage() {
   let profileStrength = 20;
   if (profile?.headline) profileStrength += 15;
   if (profile?.bio) profileStrength += 15;
-  if (profile?.skills?.length > 0) profileStrength += 15;
-  if (profile?.experiences?.length > 0) profileStrength += 15;
-  if (profile?.educations?.length > 0) profileStrength += 10;
-  if (profile?.projects?.length > 0) profileStrength += 10;
+  if (profile?._count.skills > 0) profileStrength += 15;
+  if (profile?._count.experiences > 0) profileStrength += 15;
+  if (profile?._count.educations > 0) profileStrength += 10;
+  if (profile?._count.projects > 0) profileStrength += 10;
   profileStrength = Math.min(100, profileStrength);
 
   // Resume Readiness (0-100)
@@ -61,14 +65,14 @@ export default async function CareerCoachPage() {
   const dsaReadiness = Math.min(100, Math.round((solvedCount / 20) * 100));
 
   // Technical Readiness (combination of DSA + Skills)
-  const skillCount = profile?.skills?.length || 0;
+  const skillCount = profile?._count.skills || 0;
   const technicalReadiness = Math.min(100, Math.round(dsaReadiness * 0.6 + Math.min(40, skillCount * 8)));
 
   // Interview Readiness (0-100)
   const avgMock =
-    interviewReports.length > 0
-      ? Math.round(interviewReports.reduce((acc, r) => acc + r.overallScore, 0) / interviewReports.length)
-      : mockSessions.length > 0
+    interviewReports._count._all > 0
+      ? Math.round(interviewReports._avg.overallScore ?? 0)
+      : mockSessions > 0
       ? 40
       : 0;
   const interviewReadiness = avgMock;
@@ -90,7 +94,7 @@ export default async function CareerCoachPage() {
     solvedCount,
     resumeCount,
     atsScore: latestAnalysis?.atsScore ?? null,
-    mockCount: mockSessions.length,
+    mockCount: mockSessions,
   };
 
   return <CareerCoachClient initialContext={initialContext} />;

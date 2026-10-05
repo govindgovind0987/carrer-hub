@@ -38,7 +38,7 @@ export function GraphPlaceholders({
     <div className="space-y-4 font-sans text-xs">
       {/* Top Percentile Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="p-3.5 rounded-xl bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/30 flex items-center justify-between">
+        <div className="p-3.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-[11px] font-sans uppercase font-semibold text-emerald-400 flex items-center gap-1">
               <Zap className="h-3.5 w-3.5" /> Runtime Percentile
@@ -50,24 +50,24 @@ export function GraphPlaceholders({
               Your runtime: <strong className="text-foreground">{runtimeMs} ms</strong> (Avg: {averageRuntimeMs} ms)
             </p>
           </div>
-          <div className="h-10 w-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
+          <div className="h-10 w-10 rounded-md bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
             ⚡
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-gradient-to-br from-indigo-500/10 via-indigo-500/5 to-transparent border border-indigo-500/30 flex items-center justify-between">
+        <div className="p-3.5 rounded-md bg-secondary/50 border border-primary/30 flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-[11px] font-sans uppercase font-semibold text-indigo-400 flex items-center gap-1">
+            <span className="text-[11px] font-sans uppercase font-semibold text-primary flex items-center gap-1">
               <Cpu className="h-3.5 w-3.5" /> Memory Percentile
             </span>
             <div className="text-xl font-extrabold text-foreground tracking-tight font-mono">
-              Beats <span className="text-indigo-500">{memoryPercentile}%</span>
+              Beats <span className="text-primary">{memoryPercentile}%</span>
             </div>
             <p className="text-[11px] text-muted-foreground font-sans">
               Your memory: <strong className="text-foreground">{memoryMb} MB</strong> (Avg: {averageMemoryMb} MB)
             </p>
           </div>
-          <div className="h-10 w-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">
+          <div className="h-10 w-10 rounded-md bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
             💾
           </div>
         </div>
@@ -94,7 +94,7 @@ export function GraphPlaceholders({
         <TabsContent value="distribution" className="pt-3 space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Runtime Graph Placeholder */}
-            <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+            <div className="p-3.5 rounded-md bg-slate-950 border border-slate-800 space-y-3">
               <div className="flex items-center justify-between text-xs font-semibold text-slate-200">
                 <span className="flex items-center gap-1 text-emerald-400">
                   <Zap className="h-3.5 w-3.5" /> Runtime Distribution (ms)
@@ -122,9 +122,9 @@ export function GraphPlaceholders({
             </div>
 
             {/* Memory Graph Placeholder */}
-            <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+            <div className="p-3.5 rounded-md bg-slate-950 border border-slate-800 space-y-3">
               <div className="flex items-center justify-between text-xs font-semibold text-slate-200">
-                <span className="flex items-center gap-1 text-indigo-400">
+                <span className="flex items-center gap-1 text-primary">
                   <Cpu className="h-3.5 w-3.5" /> Memory Usage Distribution (MB)
                 </span>
                 <span className="text-[10px] text-slate-400 font-mono">Lower = Leaner</span>
@@ -134,13 +134,13 @@ export function GraphPlaceholders({
                   <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
                     <div
                       className={`w-full rounded-t transition-all ${
-                        b.current ? 'bg-indigo-500 ring-2 ring-indigo-400/50' : 'bg-slate-800 hover:bg-slate-700'
+                        b.current ? 'bg-primary ring-2 ring-ring' : 'bg-slate-800 hover:bg-slate-700'
                       }`}
                       style={{ height: `${b.pct * 2.2}px` }}
                     />
                     <span className="text-[9px] font-mono text-slate-400">{b.mb}</span>
                     {b.current && (
-                      <Badge className="absolute -top-6 bg-indigo-500 text-white text-[9px] font-bold px-1 py-0">
+                      <Badge className="absolute -top-6 bg-primary text-primary-foreground text-[9px] font-bold px-1 py-0">
                         You
                       </Badge>
                     )}
@@ -153,7 +153,7 @@ export function GraphPlaceholders({
 
         {/* Tab 2: Acceptance Trend */}
         <TabsContent value="trend" className="pt-3">
-          <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+          <div className="p-4 rounded-md bg-slate-950 border border-slate-800 space-y-3">
             <h4 className="font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5 text-xs">
               <TrendingUp className="h-3.5 w-3.5 text-amber-400" /> Acceptance Trend Graph
             </h4>
@@ -169,9 +169,9 @@ export function GraphPlaceholders({
 
         {/* Tab 3: Submission History */}
         <TabsContent value="history" className="pt-3">
-          <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+          <div className="p-4 rounded-md bg-slate-950 border border-slate-800 space-y-3">
             <h4 className="font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5 text-xs">
-              <History className="h-3.5 w-3.5 text-violet-400" /> Historical Performance
+              <History className="h-3.5 w-3.5 text-primary" /> Historical Performance
             </h4>
             {submissionHistory.length > 0 ? (
               <div className="space-y-1.5 font-mono text-xs">
@@ -191,7 +191,7 @@ export function GraphPlaceholders({
 
         {/* Tab 4: Leaderboard Placeholder */}
         <TabsContent value="leaderboard" className="pt-3">
-          <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+          <div className="p-4 rounded-md bg-slate-950 border border-slate-800 space-y-3">
             <h4 className="font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5 text-xs">
               <Trophy className="h-3.5 w-3.5 text-amber-400" /> Top Performer Leaderboard
             </h4>

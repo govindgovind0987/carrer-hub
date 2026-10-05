@@ -149,11 +149,8 @@ export async function verifyCompanyAction(companyId) {
 export async function getAdminAnalyticsAction() {
   try {
     const admin = await getAdminUser();
-    // Allow fallback mock preview if logged in as candidate in dev
-    const userId = admin?.id || 'admin';
-
     try {
-      const [totalUsers, totalCandidates, totalRecruiters, totalJobs, totalApplications, totalInterviews, totalResumes] =
+      const [totalUsers, totalCandidates, totalRecruiters, totalJobs, totalApplications, totalInterviews, totalResumes, recentUsers] =
         await Promise.all([
           prisma.user.count(),
           prisma.user.count({ where: { role: 'CANDIDATE' } }),
@@ -162,13 +159,12 @@ export async function getAdminAnalyticsAction() {
           prisma.application.count(),
           prisma.interviewSession.count(),
           prisma.resume.count(),
+          prisma.user.findMany({
+            orderBy: { createdAt: 'desc' },
+            take: 10,
+            select: { id: true, name: true, email: true, role: true, status: true, createdAt: true },
+          }),
         ]);
-
-      const recentUsers = await prisma.user.findMany({
-        orderBy: { createdAt: 'desc' },
-        take: 10,
-        select: { id: true, name: true, email: true, role: true, status: true, createdAt: true },
-      });
 
       return {
         success: true,

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
 import { StatusUpdateButton } from '@/components/jobs/status-update-button';
+import Link from 'next/link';
 
 export const metadata = {
   title: 'Review Applicants | CareerHub',
@@ -17,30 +18,45 @@ export default async function RecruiterApplicantsPage({ searchParams }) {
   const userId = session?.user?.id;
   const params = await searchParams;
   const jobId = params?.jobId || '';
+  const page = Math.max(1, Number(params?.page) || 1);
+  const pageSize = 20;
 
-  const applications = await prisma.application.findMany({
-    where: {
-      job: {
-        recruiterId: userId,
-        ...(jobId && { id: jobId }),
-      },
+  const where = {
+    job: {
+      recruiterId: userId,
+      ...(jobId && { id: jobId }),
     },
-    include: {
-      candidate: {
-        include: {
-          profile: {
-            include: {
-              skills: true,
-              experiences: true,
+  };
+
+  const [applications, total] = await Promise.all([
+    prisma.application.findMany({
+      where,
+      select: {
+        id: true,
+        status: true,
+        appliedAt: true,
+        candidate: {
+          select: {
+            name: true,
+            image: true,
+            profile: {
+              select: {
+                headline: true,
+                skills: { select: { id: true, name: true }, take: 4 },
+              },
             },
           },
         },
+        job: { select: { title: true } },
+        resume: { select: { fileUrl: true } },
       },
-      job: { select: { title: true, slug: true } },
-      resume: true,
-    },
-    orderBy: { appliedAt: 'desc' },
-  });
+      orderBy: { appliedAt: 'desc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.application.count({ where }),
+  ]);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
     <div className="space-y-6">
@@ -67,7 +83,7 @@ export default async function RecruiterApplicantsPage({ searchParams }) {
                 <div className="flex items-start gap-4">
                   <Avatar className="h-12 w-12 border border-border shrink-0">
                     {app.candidate?.image && <AvatarImage src={app.candidate.image} />}
-                    <AvatarFallback className="bg-gradient-to-br from-violet-600 to-indigo-600 text-white font-bold">
+                    <AvatarFallback className="bg-primary   text-primary-foreground font-bold">
                       {getInitials(app.candidate?.name)}
                     </AvatarFallback>
                   </Avatar>
@@ -85,7 +101,7 @@ export default async function RecruiterApplicantsPage({ searchParams }) {
                     </p>
 
                     {app.candidate?.profile?.headline && (
-                      <p className="text-xs font-medium text-violet-600">{app.candidate.profile.headline}</p>
+                      <p className="text-xs font-medium text-primary">{app.candidate.profile.headline}</p>
                     )}
 
                     {/* Candidate Skills preview */}
@@ -105,7 +121,7 @@ export default async function RecruiterApplicantsPage({ searchParams }) {
                   {app.resume && (
                     <Button asChild variant="outline" size="sm" className="text-xs w-full sm:w-auto">
                       <a href={app.resume.fileUrl} target="_blank" rel="noreferrer">
-                        <FileText className="mr-1.5 h-3.5 w-3.5 text-violet-600" /> View Resume PDF
+                        <FileText className="mr-1.5 h-3.5 w-3.5 text-primary" /> View Resume PDF
                       </a>
                     </Button>
                   )}
@@ -115,6 +131,23 @@ export default async function RecruiterApplicantsPage({ searchParams }) {
               </CardContent>
             </Card>
           ))}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button asChild variant="outline" size="sm" disabled={page <= 1}>
+                <Link href={`/dashboard/recruiter/applicants?${jobId ? `jobId=${jobId}&` : ''}page=${page - 1}`}>
+                  Previous
+                </Link>
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                Page {Math.min(page, totalPages)} of {totalPages}
+              </span>
+              <Button asChild variant="outline" size="sm" disabled={page >= totalPages}>
+                <Link href={`/dashboard/recruiter/applicants?${jobId ? `jobId=${jobId}&` : ''}page=${page + 1}`}>
+                  Next
+                </Link>
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

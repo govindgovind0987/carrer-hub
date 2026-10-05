@@ -111,19 +111,19 @@ export default function InterviewReportPage({ params }) {
   if (loading) {
     return (
       <div className="flex flex-col h-[70vh] items-center justify-center space-y-4">
-        <Loader2 className="h-10 w-10 animate-spin text-violet-600" />
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
         <p className="text-sm font-medium text-muted-foreground">Synthesizing AI Evaluation & Report Analytics...</p>
       </div>
     );
   }
 
   const scoreMetrics = [
-    { label: 'Technical Score', score: report?.technicalScore || 85, color: 'from-violet-600 to-indigo-600' },
-    { label: 'Coding Score', score: report?.codingScore || 82, color: 'from-blue-600 to-cyan-600' },
-    { label: 'Problem Solving', score: report?.problemSolvingScore || 88, color: 'from-emerald-600 to-teal-600' },
-    { label: 'Communication', score: report?.communicationScore || 80, color: 'from-purple-600 to-pink-600' },
-    { label: 'Confidence Score', score: report?.confidenceScore || 86, color: 'from-amber-500 to-orange-600' },
-    { label: 'Behavioral Score', score: report?.behaviorScore || 80, color: 'from-rose-600 to-red-600' },
+    { label: 'Technical Score', score: report?.technicalScore || 85, color: ' ' },
+    { label: 'Coding Score', score: report?.codingScore || 82, color: ' ' },
+    { label: 'Problem Solving', score: report?.problemSolvingScore || 88, color: ' ' },
+    { label: 'Communication', score: report?.communicationScore || 80, color: ' ' },
+    { label: 'Confidence Score', score: report?.confidenceScore || 86, color: ' ' },
+    { label: 'Behavioral Score', score: report?.behaviorScore || 80, color: ' ' },
   ];
 
   return (
@@ -141,14 +141,14 @@ export default function InterviewReportPage({ params }) {
       </div>
 
       {/* Top Banner Card: Overall Score & Recommendation */}
-      <Card className="border-border/50 bg-gradient-to-br from-violet-950/20 via-background to-indigo-950/20 shadow-xl overflow-hidden relative">
+      <Card className="border-border/50 bg-card shadow-sm overflow-hidden relative">
         <CardContent className="p-8">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
             {/* Score Ring / Badge (4 cols) */}
             <div className="md:col-span-4 flex flex-col items-center justify-center text-center border-b md:border-b-0 md:border-r border-border/50 pb-6 md:pb-0 md:pr-6">
-              <div className="relative flex items-center justify-center w-36 h-36 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-600 p-1.5 shadow-xl shadow-violet-500/25">
+              <div className="relative flex items-center justify-center w-36 h-36 rounded-full bg-primary   p-1.5 shadow-sm">
                 <div className="w-full h-full rounded-full bg-card flex flex-col items-center justify-center">
-                  <span className="text-4xl font-extrabold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+                  <span className="text-4xl font-extrabold text-foreground">
                     {report?.overallScore}%
                   </span>
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mt-0.5">
@@ -156,7 +156,7 @@ export default function InterviewReportPage({ params }) {
                   </span>
                 </div>
               </div>
-              <Badge variant="outline" className="mt-4 border-violet-500/30 text-violet-600 bg-violet-500/10 font-bold px-3 py-1">
+              <Badge variant="outline" className="mt-4 border-primary/30 text-primary bg-primary/10 font-bold px-3 py-1">
                 Enterprise AI Verified
               </Badge>
             </div>
@@ -164,14 +164,14 @@ export default function InterviewReportPage({ params }) {
             {/* Recommendation & Summary (8 cols) */}
             <div className="md:col-span-8 space-y-4">
               <div className="space-y-1">
-                <span className="text-xs font-semibold uppercase tracking-wider text-violet-600 flex items-center gap-1.5">
+                <span className="text-xs font-semibold uppercase tracking-wider text-primary flex items-center gap-1.5">
                   <Award className="h-4 w-4" /> AI Hiring Recommendation
                 </span>
                 <h2 className="text-2xl font-bold text-foreground">
                   {report?.recommendation || 'RECOMMENDED FOR HIRE'}
                 </h2>
               </div>
-              <p className="text-sm leading-relaxed text-muted-foreground bg-card/60 p-4 rounded-xl border border-border/40">
+              <p className="text-sm leading-relaxed text-muted-foreground bg-card/60 p-4 rounded-md border border-border/40">
                 {report?.summary}
               </p>
             </div>
@@ -214,7 +214,7 @@ export default function InterviewReportPage({ params }) {
                 >
                   <div className="space-y-1.5 pr-4">
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[10px] border-violet-500/30 text-violet-600">
+                      <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
                         Q{q.questionOrder || idx + 1}
                       </Badge>
                       <Badge variant="secondary" className="text-[10px] font-mono">
@@ -239,7 +239,7 @@ export default function InterviewReportPage({ params }) {
                     </div>
 
                     <div className="space-y-2">
-                      <h4 className="text-xs font-semibold uppercase tracking-wider text-violet-600 flex items-center gap-1.5">
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-primary flex items-center gap-1.5">
                         <Sparkles className="h-3.5 w-3.5" /> AI Feedback & Evaluation
                       </h4>
                       <p className="text-xs leading-relaxed text-muted-foreground bg-card p-3 rounded-lg border border-border/50">
@@ -296,7 +296,7 @@ export default function InterviewReportPage({ params }) {
             <Card className="border-border/50 bg-card">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-bold flex items-center gap-2">
-                  <Target className="h-5 w-5 text-violet-600" /> Missing Concepts to Review
+                  <Target className="h-5 w-5 text-primary" /> Missing Concepts to Review
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-2">
@@ -315,14 +315,14 @@ export default function InterviewReportPage({ params }) {
           <Card className="border-border/50 bg-card">
             <CardHeader>
               <CardTitle className="text-base font-bold flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-violet-600" /> Recommended Actionable Learning Plan
+                <BookOpen className="h-5 w-5 text-primary" /> Recommended Actionable Learning Plan
               </CardTitle>
               <CardDescription>Step-by-step roadmap to achieve top candidate performance.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {(report?.learningPlan || []).map((item, idx) => (
-                <div key={idx} className="flex items-start gap-3 p-4 rounded-xl border border-border/40 bg-muted/20">
-                  <div className="h-7 w-7 rounded-full bg-violet-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                <div key={idx} className="flex items-start gap-3 p-4 rounded-md border border-border/40 bg-muted/20">
+                  <div className="h-7 w-7 rounded-full bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center shrink-0">
                     {idx + 1}
                   </div>
                   <div className="space-y-1">
@@ -338,7 +338,7 @@ export default function InterviewReportPage({ params }) {
             <Card className="border-border/50 bg-card">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-bold flex items-center gap-2">
-                  <ExternalLink className="h-5 w-5 text-violet-600" /> Recommended Learning Resources
+                  <ExternalLink className="h-5 w-5 text-primary" /> Recommended Learning Resources
                 </CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -348,13 +348,13 @@ export default function InterviewReportPage({ params }) {
                     href={res.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="p-4 rounded-xl border border-border/50 bg-muted/20 hover:border-violet-500/50 transition-all flex items-center justify-between"
+                    className="p-4 rounded-md border border-border/50 bg-muted/20 hover:border-primary/50 transition-all flex items-center justify-between"
                   >
                     <div>
                       <h5 className="font-bold text-sm text-foreground">{res.title}</h5>
                       <span className="text-xs text-muted-foreground">{res.type}</span>
                     </div>
-                    <ExternalLink className="h-4 w-4 text-violet-500 shrink-0" />
+                    <ExternalLink className="h-4 w-4 text-primary shrink-0" />
                   </a>
                 ))}
               </CardContent>

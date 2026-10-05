@@ -42,7 +42,7 @@ export default async function LeaderboardPage() {
         </p>
       </div>
 
-      <Card className="border-border/50 bg-card/80 backdrop-blur-xl overflow-hidden shadow-2xl">
+      <Card className="border-border/50 bg-card/80 backdrop-blur-xl overflow-hidden shadow-md">
         <CardContent className="p-0">
           <div className="divide-y divide-border/40">
             {leaderStats.length > 0 ? (
@@ -70,7 +70,7 @@ export default async function LeaderboardPage() {
                       {/* User Avatar & Name */}
                       <Avatar className="h-10 w-10 border border-border/50">
                         {stat.user?.image && <AvatarImage src={stat.user.image} />}
-                        <AvatarFallback className="bg-gradient-to-br from-violet-600 to-indigo-600 text-white text-xs font-bold">
+                        <AvatarFallback className="bg-primary   text-primary-foreground text-xs font-bold">
                           {getInitials(stat.user?.name)}
                         </AvatarFallback>
                       </Avatar>
@@ -105,7 +105,7 @@ export default async function LeaderboardPage() {
 
                       <div>
                         <p className="text-xs text-muted-foreground font-medium">Points</p>
-                        <Badge className="bg-violet-500/10 text-violet-600 border-violet-500/30 font-bold text-xs">
+                        <Badge className="bg-primary/10 text-primary border-primary/30 font-bold text-xs">
                           <Zap className="h-3 w-3 mr-1 fill-current" /> {stat.points} PTS
                         </Badge>
                       </div>

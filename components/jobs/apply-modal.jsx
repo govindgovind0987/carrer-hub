@@ -24,7 +24,7 @@ export function JobApplyModal({ job, userResumes = [], isLoggedIn = false }) {
 
   if (!isLoggedIn) {
     return (
-      <Button asChild size="lg" className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold shadow-lg shadow-violet-500/25 px-8">
+      <Button asChild size="lg" className="bg-primary   text-primary-foreground font-semibold shadow-sm px-8">
         <Link href={`/sign-in?callbackUrl=/jobs/${job.slug}`}>Sign in to Apply</Link>
       </Button>
     );
@@ -71,7 +71,7 @@ export function JobApplyModal({ job, userResumes = [], isLoggedIn = false }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg" className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-semibold shadow-lg shadow-violet-500/25 px-8">
+        <Button size="lg" className="bg-primary     text-primary-foreground font-semibold shadow-sm px-8">
           <Send className="mr-2 h-4 w-4" /> Apply Now
         </Button>
       </DialogTrigger>
@@ -83,7 +83,7 @@ export function JobApplyModal({ job, userResumes = [], isLoggedIn = false }) {
         {userResumes.length === 0 ? (
           <div className="py-6 text-center space-y-4">
             <p className="text-sm text-muted-foreground">You haven&apos;t uploaded any resumes yet.</p>
-            <Button asChild className="bg-violet-600 text-white">
+            <Button asChild className="bg-primary text-primary-foreground">
               <Link href="/dashboard/resumes">Go to Upload Resume</Link>
             </Button>
           </div>
@@ -115,7 +115,7 @@ export function JobApplyModal({ job, userResumes = [], isLoggedIn = false }) {
               />
             </div>
 
-            <Button type="submit" disabled={submitting} className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold">
+            <Button type="submit" disabled={submitting} className="w-full bg-primary   text-primary-foreground font-semibold">
               {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />} Submit Application
             </Button>
           </form>

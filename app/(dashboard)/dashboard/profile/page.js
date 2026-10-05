@@ -350,7 +350,7 @@ export default function ProfilePage() {
             <h3 className="text-lg font-semibold">Work History</h3>
             <Dialog open={dialogOpen.exp} onOpenChange={(open) => setDialogOpen((prev) => ({ ...prev, exp: open }))}>
               <DialogTrigger asChild>
-                <Button size="sm" className="bg-violet-600 text-white"><Plus className="mr-1 h-4 w-4" /> Add Experience</Button>
+                <Button size="sm" className="bg-primary text-primary-foreground"><Plus className="mr-1 h-4 w-4" /> Add Experience</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader><DialogTitle>Add Work Experience</DialogTitle></DialogHeader>
@@ -377,7 +377,7 @@ export default function ProfilePage() {
                     <Label>Description</Label>
                     <Textarea {...regExp('description')} placeholder="Key accomplishments and responsibilities..." />
                   </div>
-                  <Button type="submit" className="w-full bg-violet-600 text-white">Save Experience</Button>
+                  <Button type="submit" className="w-full bg-primary text-primary-foreground">Save Experience</Button>
                 </form>
               </DialogContent>
             </Dialog>
@@ -391,7 +391,7 @@ export default function ProfilePage() {
                 <CardContent className="p-6 flex items-start justify-between">
                   <div className="space-y-1">
                     <h4 className="font-bold text-base">{exp.title}</h4>
-                    <p className="text-sm font-medium text-violet-600">{exp.company}</p>
+                    <p className="text-sm font-medium text-primary">{exp.company}</p>
                     <p className="text-xs text-muted-foreground">
                       {new Date(exp.startDate).toLocaleDateString()} - {exp.current ? 'Present' : exp.endDate ? new Date(exp.endDate).toLocaleDateString() : 'N/A'}
                     </p>
@@ -412,7 +412,7 @@ export default function ProfilePage() {
             <h3 className="text-lg font-semibold">Education & Degrees</h3>
             <Dialog open={dialogOpen.edu} onOpenChange={(open) => setDialogOpen((prev) => ({ ...prev, edu: open }))}>
               <DialogTrigger asChild>
-                <Button size="sm" className="bg-violet-600 text-white"><Plus className="mr-1 h-4 w-4" /> Add Education</Button>
+                <Button size="sm" className="bg-primary text-primary-foreground"><Plus className="mr-1 h-4 w-4" /> Add Education</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader><DialogTitle>Add Education</DialogTitle></DialogHeader>
@@ -439,7 +439,7 @@ export default function ProfilePage() {
                       <Input type="date" {...regEdu('endDate')} />
                     </div>
                   </div>
-                  <Button type="submit" className="w-full bg-violet-600 text-white">Save Education</Button>
+                  <Button type="submit" className="w-full bg-primary text-primary-foreground">Save Education</Button>
                 </form>
               </DialogContent>
             </Dialog>
@@ -453,7 +453,7 @@ export default function ProfilePage() {
                 <CardContent className="p-6 flex items-start justify-between">
                   <div className="space-y-1">
                     <h4 className="font-bold text-base">{edu.degree} in {edu.fieldOfStudy}</h4>
-                    <p className="text-sm font-medium text-violet-600">{edu.institution}</p>
+                    <p className="text-sm font-medium text-primary">{edu.institution}</p>
                     <p className="text-xs text-muted-foreground">
                       {new Date(edu.startDate).toLocaleDateString()} - {edu.endDate ? new Date(edu.endDate).toLocaleDateString() : 'Present'}
                     </p>
@@ -473,7 +473,7 @@ export default function ProfilePage() {
             <h3 className="text-lg font-semibold">Technical & Professional Skills</h3>
             <Dialog open={dialogOpen.skill} onOpenChange={(open) => setDialogOpen((prev) => ({ ...prev, skill: open }))}>
               <DialogTrigger asChild>
-                <Button size="sm" className="bg-violet-600 text-white"><Plus className="mr-1 h-4 w-4" /> Add Skill</Button>
+                <Button size="sm" className="bg-primary text-primary-foreground"><Plus className="mr-1 h-4 w-4" /> Add Skill</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader><DialogTitle>Add Skill</DialogTitle></DialogHeader>
@@ -486,7 +486,7 @@ export default function ProfilePage() {
                     <Label>Category</Label>
                     <Input {...regSkill('category')} placeholder="Frontend, Backend, DevOps..." />
                   </div>
-                  <Button type="submit" className="w-full bg-violet-600 text-white">Save Skill</Button>
+                  <Button type="submit" className="w-full bg-primary text-primary-foreground">Save Skill</Button>
                 </form>
               </DialogContent>
             </Dialog>
@@ -514,7 +514,7 @@ export default function ProfilePage() {
             <h3 className="text-lg font-semibold">Highlighted Projects</h3>
             <Dialog open={dialogOpen.proj} onOpenChange={(open) => setDialogOpen((prev) => ({ ...prev, proj: open }))}>
               <DialogTrigger asChild>
-                <Button size="sm" className="bg-violet-600 text-white"><Plus className="mr-1 h-4 w-4" /> Add Project</Button>
+                <Button size="sm" className="bg-primary text-primary-foreground"><Plus className="mr-1 h-4 w-4" /> Add Project</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader><DialogTitle>Add Project</DialogTitle></DialogHeader>
@@ -535,7 +535,7 @@ export default function ProfilePage() {
                     <Label>GitHub URL</Label>
                     <Input {...regProj('githubUrl')} placeholder="https://github.com/user/project" />
                   </div>
-                  <Button type="submit" className="w-full bg-violet-600 text-white">Save Project</Button>
+                  <Button type="submit" className="w-full bg-primary text-primary-foreground">Save Project</Button>
                 </form>
               </DialogContent>
             </Dialog>
@@ -550,7 +550,7 @@ export default function ProfilePage() {
                   <div className="space-y-1">
                     <h4 className="font-bold text-base">{proj.title}</h4>
                     <p className="text-sm text-muted-foreground">{proj.description}</p>
-                    <div className="flex gap-4 pt-2 text-xs text-violet-600">
+                    <div className="flex gap-4 pt-2 text-xs text-primary">
                       {proj.link && <a href={proj.link} target="_blank" rel="noreferrer" className="hover:underline flex items-center gap-1"><Globe className="h-3 w-3" /> Live Demo</a>}
                       {proj.githubUrl && <a href={proj.githubUrl} target="_blank" rel="noreferrer" className="hover:underline flex items-center gap-1"><FaGithub className="h-3 w-3" /> Code Repository</a>}
                     </div>

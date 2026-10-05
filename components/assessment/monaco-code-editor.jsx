@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Editor from '@monaco-editor/react';
+import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -9,14 +9,24 @@ import {
   Minimize2,
   Copy,
   Check,
-  RotateCcw,
   Sun,
   Moon,
   Type,
   WrapText,
-  Code2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+
+const Editor = dynamic(
+  () => import('@monaco-editor/react').then((module) => module.default),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full min-h-[360px] items-center justify-center bg-slate-950 text-sm text-slate-400">
+        Loading editor…
+      </div>
+    ),
+  }
+);
 
 export function MonacoCodeEditor({
   value,
@@ -67,7 +77,7 @@ export function MonacoCodeEditor({
 
   return (
     <div
-      className={`flex flex-col border border-border/60 rounded-xl overflow-hidden bg-slate-950 shadow-lg transition-all duration-200 ${
+      className={`flex flex-col border border-border/60 rounded-md overflow-hidden bg-slate-950 shadow-sm transition-all duration-200 ${
         isFullscreen ? 'fixed inset-0 z-50 rounded-none' : 'h-full min-h-[450px]'
       }`}
     >
@@ -76,7 +86,7 @@ export function MonacoCodeEditor({
         <div className="flex items-center gap-3">
           <Badge
             variant="outline"
-            className="bg-violet-500/10 text-violet-400 border-violet-500/30 text-xs font-mono uppercase px-2.5 py-0.5"
+            className="bg-primary/10 text-primary border-primary/30 text-xs font-mono uppercase px-2.5 py-0.5"
           >
             {language}
           </Badge>
@@ -120,7 +130,7 @@ export function MonacoCodeEditor({
             size="icon"
             onClick={() => setWordWrap(wordWrap === 'on' ? 'off' : 'on')}
             className={`h-8 w-8 hover:bg-slate-800 ${
-              wordWrap === 'on' ? 'text-violet-400' : 'text-slate-400'
+              wordWrap === 'on' ? 'text-primary' : 'text-slate-400'
             }`}
             title="Toggle Word Wrap"
           >

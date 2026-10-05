@@ -16,10 +16,10 @@ export const metadata = {
 
 export default function VerifyEmailPage() {
   return (
-    <Card className="w-full border-border/50 shadow-xl backdrop-blur-sm bg-card/80">
+    <Card className="w-full border-border/50 shadow-sm backdrop-blur-sm bg-card/80">
       <CardHeader className="space-y-1 text-center">
-        <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-violet-500/10">
-          <MailCheck className="h-6 w-6 text-violet-600" />
+        <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+          <MailCheck className="h-6 w-6 text-primary" />
         </div>
         <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
         <CardDescription>

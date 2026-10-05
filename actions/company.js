@@ -13,9 +13,6 @@ export async function getCompany() {
 
     let company = await prisma.company.findUnique({
       where: { recruiterId: session.user.id },
-      include: {
-        jobs: { orderBy: { createdAt: 'desc' } },
-      },
     });
 
     if (!company) {
@@ -27,7 +24,6 @@ export async function getCompany() {
           name,
           slug: slugify(`${name}-${Date.now().toString().slice(-4)}`),
         },
-        include: { jobs: true },
       });
     }
 

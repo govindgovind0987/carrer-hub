@@ -46,14 +46,14 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <div className="flex flex-col h-[70vh] items-center justify-center space-y-4">
-        <Loader2 className="h-10 w-10 animate-spin text-violet-600" />
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
         <p className="text-sm font-medium text-muted-foreground">Loading Admin Control Center...</p>
       </div>
     );
   }
 
   const kpiStats = [
-    { label: 'Total Platform Users', value: analytics?.totalUsers || 142, icon: Users, color: 'text-violet-500 bg-violet-500/10' },
+    { label: 'Total Platform Users', value: analytics?.totalUsers || 142, icon: Users, color: 'text-primary bg-primary/10' },
     { label: 'Candidate Profiles', value: analytics?.totalCandidates || 118, icon: UserCheck, color: 'text-emerald-500 bg-emerald-500/10' },
     { label: 'Recruiters & Companies', value: analytics?.totalRecruiters || 24, icon: Building2, color: 'text-cyan-500 bg-cyan-500/10' },
     { label: 'Estimated SaaS MRR', value: analytics?.estimatedMRR || '$14,850', icon: DollarSign, color: 'text-amber-500 bg-amber-500/10' },
@@ -65,7 +65,7 @@ export default function AdminDashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Badge variant="outline" className="text-xs uppercase font-bold border-violet-500/40 text-violet-600 bg-violet-500/10">
+            <Badge variant="outline" className="text-xs uppercase font-bold border-primary/40 text-primary bg-primary/10">
               Admin Control Center
             </Badge>
             <Badge variant="secondary" className="text-xs font-mono">
@@ -84,7 +84,7 @@ export default function AdminDashboardPage() {
               <Activity className="mr-2 h-4 w-4" /> Audit Logs
             </Link>
           </Button>
-          <Button asChild className="bg-violet-600 hover:bg-violet-700 text-white">
+          <Button asChild className="bg-primary hover:bg-primary text-primary-foreground">
             <Link href="/dashboard/admin/users">
               <UserCheck className="mr-2 h-4 w-4" /> Manage Users
             </Link>
@@ -102,7 +102,7 @@ export default function AdminDashboardPage() {
                 <div className="text-2xl font-bold text-foreground font-mono">{kpi.value}</div>
                 <span className="text-[11px] text-emerald-600 font-semibold">{analytics?.growthRate || '+18.4%'} MoM</span>
               </div>
-              <div className={`p-3 rounded-2xl ${kpi.color}`}>
+              <div className={`p-3 rounded-lg ${kpi.color}`}>
                 <kpi.icon className="h-6 w-6" />
               </div>
             </CardContent>
@@ -112,10 +112,10 @@ export default function AdminDashboardPage() {
 
       {/* Quick Navigation Admin Sections */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-border/50 bg-card hover:border-violet-500/50 transition-all">
+        <Card className="border-border/50 bg-card hover:border-primary/50 transition-all">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-bold flex items-center gap-2">
-              <Users className="h-5 w-5 text-violet-600" /> User Management
+              <Users className="h-5 w-5 text-primary" /> User Management
             </CardTitle>
             <CardDescription className="text-xs">
               View candidates, recruiters, role assignments, suspend or delete users.
@@ -130,10 +130,10 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-border/50 bg-card hover:border-violet-500/50 transition-all">
+        <Card className="border-border/50 bg-card hover:border-primary/50 transition-all">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-bold flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-violet-600" /> Recruiter Approvals
+              <Building2 className="h-5 w-5 text-primary" /> Recruiter Approvals
             </CardTitle>
             <CardDescription className="text-xs">
               Verify company profiles, approve pending recruiter access requests.
@@ -148,10 +148,10 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-border/50 bg-card hover:border-violet-500/50 transition-all">
+        <Card className="border-border/50 bg-card hover:border-primary/50 transition-all">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-bold flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-violet-600" /> Platform Analytics
+              <BarChart3 className="h-5 w-5 text-primary" /> Platform Analytics
             </CardTitle>
             <CardDescription className="text-xs">
               Daily active users, interview counts, job applications, ATS score trends.
@@ -175,7 +175,7 @@ export default function AdminDashboardPage() {
             <CardDescription>Latest users joined across Candidate and Recruiter roles.</CardDescription>
           </div>
           <Button asChild variant="ghost" size="sm">
-            <Link href="/dashboard/admin/users" className="text-xs text-violet-600">
+            <Link href="/dashboard/admin/users" className="text-xs text-primary">
               View All Users
             </Link>
           </Button>

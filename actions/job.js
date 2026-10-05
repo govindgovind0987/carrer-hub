@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jobSchema, applicationSchema } from '@/schemas/job';
 import { revalidatePath } from 'next/cache';
+import { after } from 'next/server';
 import { slugify } from '@/utils';
 
 /**
@@ -42,7 +43,19 @@ export async function getJobs(filters = {}) {
     const [jobs, total] = await Promise.all([
       prisma.job.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          category: true,
+          location: true,
+          jobType: true,
+          experienceLevel: true,
+          salaryMin: true,
+          salaryMax: true,
+          salaryCurrency: true,
+          featured: true,
+          createdAt: true,
           company: {
             select: { name: true, logo: true, location: true, industry: true },
           },
@@ -81,11 +94,15 @@ export async function getJobBySlug(slug) {
     });
 
     if (job) {
-      // Increment views count asynchronously
-      await prisma.job.update({
-        where: { id: job.id },
-        data: { viewsCount: { increment: 1 } },
-      }).catch(() => {});
+      // Analytics should not delay the job detail response.
+      after(() =>
+        prisma.job
+          .update({
+            where: { id: job.id },
+            data: { viewsCount: { increment: 1 } },
+          })
+          .catch(() => {})
+      );
     }
 
     return { success: true, job };

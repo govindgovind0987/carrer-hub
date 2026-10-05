@@ -113,7 +113,7 @@ export function GenerateInterviewModal({ isOpen, onClose, onGenerate, isGenerati
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl bg-card border-border/60 backdrop-blur-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center gap-2 text-violet-500 text-xs font-semibold uppercase tracking-wider">
+          <div className="flex items-center gap-2 text-primary text-xs font-semibold uppercase tracking-wider">
             <Sparkles className="h-4 w-4 animate-pulse" /> AI Interview Configurator
           </div>
           <DialogTitle className="text-xl font-extrabold tracking-tight">
@@ -128,12 +128,12 @@ export function GenerateInterviewModal({ isOpen, onClose, onGenerate, isGenerati
           {/* Job Role Select */}
           <div className="space-y-2">
             <label className="text-xs font-bold flex items-center gap-1.5 text-foreground/90">
-              <Briefcase className="h-3.5 w-3.5 text-violet-500" /> Target Job Role
+              <Briefcase className="h-3.5 w-3.5 text-primary" /> Target Job Role
             </label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full bg-muted/50 border border-border/60 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-violet-500"
+              className="w-full bg-muted/50 border border-border/60 rounded-md px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-ring"
             >
               {JOB_ROLES.map((r) => (
                 <option key={r} value={r}>
@@ -154,12 +154,12 @@ export function GenerateInterviewModal({ isOpen, onClose, onGenerate, isGenerati
           {/* Category Select */}
           <div className="space-y-2">
             <label className="text-xs font-bold flex items-center gap-1.5 text-foreground/90">
-              <Layers className="h-3.5 w-3.5 text-indigo-500" /> Interview Category / Topic
+              <Layers className="h-3.5 w-3.5 text-primary" /> Interview Category / Topic
             </label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full bg-muted/50 border border-border/60 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-violet-500"
+              className="w-full bg-muted/50 border border-border/60 rounded-md px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-ring"
             >
               {CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -187,7 +187,7 @@ export function GenerateInterviewModal({ isOpen, onClose, onGenerate, isGenerati
               <select
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value)}
-                className="w-full bg-muted/50 border border-border/60 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-violet-500"
+                className="w-full bg-muted/50 border border-border/60 rounded-md px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-ring"
               >
                 {DIFFICULTIES.map((d) => (
                   <option key={d} value={d}>
@@ -205,7 +205,7 @@ export function GenerateInterviewModal({ isOpen, onClose, onGenerate, isGenerati
               <select
                 value={experience}
                 onChange={(e) => setExperience(e.target.value)}
-                className="w-full bg-muted/50 border border-border/60 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-violet-500"
+                className="w-full bg-muted/50 border border-border/60 rounded-md px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-ring"
               >
                 {EXPERIENCES.map((exp) => (
                   <option key={exp} value={exp}>
@@ -226,7 +226,7 @@ export function GenerateInterviewModal({ isOpen, onClose, onGenerate, isGenerati
               <select
                 value={numQuestions}
                 onChange={(e) => setNumQuestions(parseInt(e.target.value))}
-                className="w-full bg-muted/50 border border-border/60 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-violet-500"
+                className="w-full bg-muted/50 border border-border/60 rounded-md px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-ring"
               >
                 {QUESTION_COUNTS.map((cnt) => (
                   <option key={cnt} value={cnt}>
@@ -244,7 +244,7 @@ export function GenerateInterviewModal({ isOpen, onClose, onGenerate, isGenerati
               <select
                 value={companyStyle}
                 onChange={(e) => setCompanyStyle(e.target.value)}
-                className="w-full bg-muted/50 border border-border/60 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-violet-500"
+                className="w-full bg-muted/50 border border-border/60 rounded-md px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-ring"
               >
                 {COMPANY_STYLES.map((style) => (
                   <option key={style} value={style}>
@@ -262,7 +262,7 @@ export function GenerateInterviewModal({ isOpen, onClose, onGenerate, isGenerati
             <Button
               type="submit"
               disabled={isGenerating}
-              className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-xs shadow-lg shadow-violet-500/25"
+              className="bg-primary   text-primary-foreground font-bold text-xs shadow-sm"
             >
               {isGenerating ? (
                 <>

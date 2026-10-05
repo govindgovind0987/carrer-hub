@@ -47,7 +47,7 @@ export function SubmissionsTable({ submissions = [] }) {
 
   if (!submissions || submissions.length === 0) {
     return (
-      <div className="p-6 rounded-xl border border-dashed border-border/50 text-center text-xs text-muted-foreground">
+      <div className="p-6 rounded-md border border-dashed border-border/50 text-center text-xs text-muted-foreground">
         No submission attempts recorded yet.
       </div>
     );
@@ -56,7 +56,7 @@ export function SubmissionsTable({ submissions = [] }) {
   return (
     <div className="space-y-3 font-sans text-xs">
       <h4 className="font-bold text-sm text-foreground tracking-tight">Submission History</h4>
-      <div className="border border-border/50 rounded-xl overflow-hidden bg-card/80">
+      <div className="border border-border/50 rounded-md overflow-hidden bg-card/80">
         <Table>
           <TableHeader className="bg-muted/40 text-[11px] uppercase">
             <TableRow>
@@ -81,14 +81,14 @@ export function SubmissionsTable({ submissions = [] }) {
                     <TableCell>{getVerdictBadge(sub.verdict)}</TableCell>
                     <TableCell className="uppercase font-semibold text-slate-300">{sub.language}</TableCell>
                     <TableCell className="text-emerald-400 font-bold">{sub.runtimeMs} ms</TableCell>
-                    <TableCell className="text-indigo-400 font-bold">{sub.memoryMb || 14.2} MB</TableCell>
+                    <TableCell className="text-primary font-bold">{sub.memoryMb || 14.2} MB</TableCell>
                     <TableCell className="text-slate-400 font-sans text-[11px]">{subDate}</TableCell>
                     <TableCell className="text-right">
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={() => setExpandedIndex(isExpanded ? null : idx)}
-                        className="text-xs text-violet-500 hover:text-violet-600 flex items-center gap-1 ml-auto"
+                        className="text-xs text-primary hover:text-primary flex items-center gap-1 ml-auto"
                       >
                         <Eye className="h-3.5 w-3.5" />
                         {isExpanded ? 'Hide Code' : 'View Code'}

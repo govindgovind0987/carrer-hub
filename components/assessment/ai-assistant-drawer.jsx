@@ -68,15 +68,15 @@ export function AIAssistantDrawer({ code, language, problemTitle, problemDescrip
   };
 
   return (
-    <Card className="border-border/60 bg-card/80 backdrop-blur-xl shadow-xl flex flex-col h-full overflow-hidden">
-      <div className="p-4 border-b border-border/50 bg-violet-500/5 flex items-center justify-between">
+    <Card className="border-border/60 bg-card/80 backdrop-blur-xl shadow-sm flex flex-col h-full overflow-hidden">
+      <div className="p-4 border-b border-border/50 bg-primary/5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-violet-500 animate-pulse" />
-          <h3 className="font-bold text-base bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+          <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+          <h3 className="font-bold text-base text-foreground">
             Groq AI Copilot
           </h3>
         </div>
-        <Badge variant="outline" className="border-violet-500/30 text-violet-600 text-[10px]">
+        <Badge variant="outline" className="border-primary/30 text-primary text-[10px]">
           Llama 3.3 70B
         </Badge>
       </div>
@@ -96,7 +96,7 @@ export function AIAssistantDrawer({ code, language, problemTitle, problemDescrip
                 }}
                 className={`p-2 rounded-lg text-[11px] font-medium flex items-center gap-1.5 text-left transition-all ${
                   isSelected
-                    ? 'bg-violet-600 text-white font-bold shadow'
+                    ? 'bg-primary text-primary-foreground font-bold shadow'
                     : 'bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted'
                 }`}
               >
@@ -110,19 +110,19 @@ export function AIAssistantDrawer({ code, language, problemTitle, problemDescrip
 
       <CardContent className="flex-1 p-4 overflow-y-auto space-y-4">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 text-violet-500 gap-2">
+          <div className="flex flex-col items-center justify-center py-16 text-primary gap-2">
             <Loader2 className="h-8 w-8 animate-spin" />
             <span className="font-sans font-semibold text-xs text-muted-foreground">
               Generating Groq AI Insights for {activeMode.replace(/_/g, ' ')}...
             </span>
           </div>
         ) : aiResult && aiResult.mode === activeMode ? (
-          <div className="space-y-3 pt-2 text-xs leading-relaxed whitespace-pre-line text-foreground/90 bg-muted/30 p-4 rounded-xl border border-border/50 font-sans">
+          <div className="space-y-3 pt-2 text-xs leading-relaxed whitespace-pre-line text-foreground/90 bg-muted/30 p-4 rounded-md border border-border/50 font-sans">
             {aiResult.content}
           </div>
         ) : (
           <div className="text-center py-12 space-y-3 text-muted-foreground">
-            <HelpCircle className="h-10 w-10 mx-auto text-violet-400/50" />
+            <HelpCircle className="h-10 w-10 mx-auto text-primary" />
             <p className="text-xs max-w-xs mx-auto">
               Select any of the 9 AI copilot modes above to receive instant explanations, hints, bug analysis, time/space complexity, or optimization advice!
             </p>

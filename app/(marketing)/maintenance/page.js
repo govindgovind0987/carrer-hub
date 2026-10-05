@@ -10,8 +10,8 @@ export default function MaintenancePage() {
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="text-center max-w-md">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-violet-500/10">
-          <Wrench className="h-8 w-8 text-violet-500" />
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+          <Wrench className="h-8 w-8 text-primary" />
         </div>
         <h1 className="text-3xl font-bold tracking-tight">
           Under Maintenance

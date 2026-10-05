@@ -189,7 +189,7 @@ export default function AIAnalysisPage() {
       {!analysis ? (
         <Card className="border-dashed border-2">
           <CardContent className="py-16 text-center text-muted-foreground">
-            <Bot className="mx-auto h-14 w-14 text-violet-600 mb-4 animate-pulse" />
+            <Bot className="mx-auto h-14 w-14 text-primary mb-4 animate-pulse" />
             <h3 className="text-lg font-bold text-foreground">No AI Analysis Report Found</h3>
             <p className="text-sm max-w-md mx-auto mt-1">
               Select your resume above and click &quot;Run AI Audit&quot; to generate your detailed 10-category ATS compatibility report.
@@ -200,14 +200,14 @@ export default function AIAnalysisPage() {
         <div className="space-y-8">
           {/* Top Score Summary Cards */}
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <Card className="border-violet-500/20 bg-gradient-to-br from-violet-500/5 via-card to-background relative overflow-hidden">
+            <Card className="border-primary/20 bg-card relative overflow-hidden">
               <CardContent className="p-6 flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Overall Score</p>
                     <Badge className={getQualityBadgeColor(qualityLevel)}>{qualityLevel}</Badge>
                   </div>
-                  <p className="mt-1 text-4xl font-extrabold tracking-tight text-violet-600">
+                  <p className="mt-1 text-4xl font-extrabold tracking-tight text-primary">
                     {analysis.overallScore} <span className="text-lg font-normal text-muted-foreground">/ 100</span>
                   </p>
                   <p className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1">
@@ -218,33 +218,33 @@ export default function AIAnalysisPage() {
                     </span>
                   </p>
                 </div>
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-600 text-white font-bold shadow-lg shrink-0">
+                <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold shadow-sm shrink-0">
                   <Bot className="h-7 w-7" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-indigo-500/20 bg-gradient-to-br from-indigo-500/5 via-card to-background">
+            <Card className="border-primary/20 bg-card">
               <CardContent className="p-6 flex items-center justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">ATS Compatibility</p>
-                  <p className="mt-1 text-4xl font-extrabold tracking-tight text-indigo-600">{analysis.atsScore}%</p>
+                  <p className="mt-1 text-4xl font-extrabold tracking-tight text-primary">{analysis.atsScore}%</p>
                   <p className="text-xs text-muted-foreground mt-1">Section & heading parseability</p>
                 </div>
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 text-white font-bold shadow-lg shrink-0">
+                <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold shadow-sm shrink-0">
                   <ShieldCheck className="h-7 w-7" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 via-card to-background">
+            <Card className="border-emerald-500/20 bg-emerald-500/5">
               <CardContent className="p-6 flex items-center justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Interview Readiness</p>
                   <p className="mt-1 text-3xl font-extrabold tracking-tight text-emerald-600">{analysis.interviewReadiness || 'High'}</p>
                   <p className="text-xs text-muted-foreground mt-1">Market technical competitiveness</p>
                 </div>
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-600 text-white font-bold shadow-lg shrink-0">
+                <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold shadow-sm shrink-0">
                   <TrendingUp className="h-7 w-7" />
                 </div>
               </CardContent>
@@ -257,13 +257,13 @@ export default function AIAnalysisPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-lg font-bold flex items-center gap-2">
-                    <Layers className="h-5 w-5 text-violet-600" /> Multi-Dimensional Category Score Breakdown
+                    <Layers className="h-5 w-5 text-primary" /> Multi-Dimensional Category Score Breakdown
                   </CardTitle>
                   <CardDescription className="text-xs">
                     Deterministic score evaluated across 10 distinct quality dimensions (Total Base = 100 points).
                   </CardDescription>
                 </div>
-                <Badge variant="outline" className="text-xs border-violet-500/30 text-violet-600">
+                <Badge variant="outline" className="text-xs border-primary/30 text-primary">
                   Total Base: {baseScore}/100
                 </Badge>
               </div>
@@ -277,17 +277,17 @@ export default function AIAnalysisPage() {
                   const explanation = categoryExplanations[key] || '';
 
                   return (
-                    <div key={key} className="p-3.5 rounded-xl border border-border/50 bg-card/60 space-y-2">
+                    <div key={key} className="p-3.5 rounded-md border border-border/50 bg-card/60 space-y-2">
                       <div className="flex items-center justify-between text-xs font-semibold">
                         <span className="text-foreground">{name}</span>
-                        <span className="text-violet-600">
+                        <span className="text-primary">
                           {score} / {max} pts
                         </span>
                       </div>
                       <Progress value={pct} className="h-2" />
                       {explanation && (
                         <p className="text-[11px] text-muted-foreground leading-relaxed flex items-start gap-1">
-                          <Info className="h-3 w-3 text-violet-500 shrink-0 mt-0.5" />
+                          <Info className="h-3 w-3 text-primary shrink-0 mt-0.5" />
                           <span>{explanation}</span>
                         </p>
                       )}
@@ -302,11 +302,11 @@ export default function AIAnalysisPage() {
           <Card className="border-border/50">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-violet-600" /> AI Executive Summary
+                <Sparkles className="h-5 w-5 text-primary" /> AI Executive Summary
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm leading-relaxed text-muted-foreground bg-muted/30 p-4 rounded-xl border border-border/40">
+              <p className="text-sm leading-relaxed text-muted-foreground bg-muted/30 p-4 rounded-md border border-border/40">
                 {analysis.summary}
               </p>
             </CardContent>
@@ -375,7 +375,7 @@ export default function AIAnalysisPage() {
           <Card className="border-border/50">
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-bold flex items-center gap-2">
-                <ListChecks className="h-5 w-5 text-violet-600" /> High-Value Missing Keywords & Skills
+                <ListChecks className="h-5 w-5 text-primary" /> High-Value Missing Keywords & Skills
               </CardTitle>
               <CardDescription className="text-xs">Adding these keywords to your resume increases ATS parser matching rate.</CardDescription>
             </CardHeader>
@@ -383,7 +383,7 @@ export default function AIAnalysisPage() {
               {analysis.missingSkills?.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {analysis.missingSkills.map((skill, idx) => (
-                    <Badge key={idx} variant="outline" className="px-3 py-1 text-xs border-violet-500/30 text-violet-600 bg-violet-500/5">
+                    <Badge key={idx} variant="outline" className="px-3 py-1 text-xs border-primary/30 text-primary bg-primary/5">
                       + {skill}
                     </Badge>
                   ))}

@@ -25,11 +25,36 @@ export async function GET(req, { params }) {
       return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
     }
 
-    // 1. Fetch Similar & Navigation Problems
-    const [allProblems, sameTopic, sameDifficulty] = await Promise.all([
-      prisma.problem.findMany({
-        select: { id: true, slug: true, title: true, difficulty: true, category: true },
-        orderBy: { createdAt: 'asc' },
+    const navigationSelect = {
+      id: true,
+      slug: true,
+      title: true,
+      difficulty: true,
+      category: true,
+    };
+
+    // All remaining reads depend only on the problem id and can run concurrently.
+    const [prevProblem, nextProblem, sameTopic, sameDifficulty, avgStats, userProgress, submissions] =
+      await Promise.all([
+      prisma.problem.findFirst({
+        where: {
+          OR: [
+            { createdAt: { lt: problem.createdAt } },
+            { createdAt: problem.createdAt, id: { lt: problem.id } },
+          ],
+        },
+        select: navigationSelect,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      }),
+      prisma.problem.findFirst({
+        where: {
+          OR: [
+            { createdAt: { gt: problem.createdAt } },
+            { createdAt: problem.createdAt, id: { gt: problem.id } },
+          ],
+        },
+        select: navigationSelect,
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
       }),
       prisma.problem.findMany({
         where: { category: problem.category, NOT: { id: problem.id } },
@@ -41,46 +66,38 @@ export async function GET(req, { params }) {
         take: 3,
         select: { id: true, slug: true, title: true, difficulty: true, category: true, acceptanceRate: true },
       }),
+      prisma.problemSubmission.aggregate({
+        where: { problemId: problem.id, verdict: 'ACCEPTED' },
+        _avg: { runtimeMs: true, memoryMb: true },
+      }),
+      userId
+        ? prisma.userProblemProgress.findUnique({
+            where: { userId_problemId: { userId, problemId: problem.id } },
+            select: { status: true, bookmarked: true, savedCode: true, lastSubmittedAt: true },
+          })
+        : null,
+      userId
+        ? prisma.problemSubmission.findMany({
+            where: { userId, problemId: problem.id },
+            orderBy: { createdAt: 'desc' },
+            take: 20,
+            select: {
+              id: true,
+              verdict: true,
+              language: true,
+              code: true,
+              runtimeMs: true,
+              memoryMb: true,
+              passedCases: true,
+              totalCases: true,
+              createdAt: true,
+            },
+          })
+        : [],
     ]);
-
-    const currentIndex = allProblems.findIndex((p) => p.id === problem.id);
-    const prevProblem = currentIndex > 0 ? allProblems[currentIndex - 1] : null;
-    const nextProblem = currentIndex < allProblems.length - 1 ? allProblems[currentIndex + 1] : null;
-
-    // 2. Compute Average Metrics for Problem
-    const avgStats = await prisma.problemSubmission.aggregate({
-      where: { problemId: problem.id, verdict: 'ACCEPTED' },
-      _avg: { runtimeMs: true, memoryMb: true },
-    });
 
     const averageRuntimeMs = Math.round(avgStats._avg.runtimeMs || 42);
     const averageMemoryMb = Math.round((avgStats._avg.memoryMb || 14.5) * 10) / 10;
-
-    let userProgress = null;
-    let submissions = [];
-
-    if (userId) {
-      userProgress = await prisma.userProblemProgress.findUnique({
-        where: { userId_problemId: { userId, problemId: problem.id } },
-      });
-
-      submissions = await prisma.problemSubmission.findMany({
-        where: { userId, problemId: problem.id },
-        orderBy: { createdAt: 'desc' },
-        take: 20,
-        select: {
-          id: true,
-          verdict: true,
-          language: true,
-          code: true,
-          runtimeMs: true,
-          memoryMb: true,
-          passedCases: true,
-          totalCases: true,
-          createdAt: true,
-        },
-      });
-    }
 
     // Hide reference solution from candidate editor API response
     const { referenceSolution, ...safeProblem } = problem;

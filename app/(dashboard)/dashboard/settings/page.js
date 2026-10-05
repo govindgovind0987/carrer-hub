@@ -58,7 +58,7 @@ export default function SettingsPage() {
             Manage your account credentials, privacy parameters, notifications, and security preferences.
           </p>
         </div>
-        <Badge variant="outline" className="text-xs uppercase font-bold border-violet-500/30 text-violet-600">
+        <Badge variant="outline" className="text-xs uppercase font-bold border-primary/30 text-primary">
           Role: {userRole}
         </Badge>
       </div>
@@ -76,7 +76,7 @@ export default function SettingsPage() {
           <Card className="border-border/50 bg-card">
             <CardHeader>
               <CardTitle className="text-base font-bold flex items-center gap-2">
-                <User className="h-5 w-5 text-violet-600" /> General Account Information
+                <User className="h-5 w-5 text-primary" /> General Account Information
               </CardTitle>
               <CardDescription>Update your display name and email address.</CardDescription>
             </CardHeader>
@@ -92,7 +92,7 @@ export default function SettingsPage() {
                   <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="bg-background" />
                 </div>
 
-                <Button type="submit" disabled={isSaving} className="bg-violet-600 hover:bg-violet-700 text-white">
+                <Button type="submit" disabled={isSaving} className="bg-primary hover:bg-primary text-primary-foreground">
                   <Save className="mr-2 h-4 w-4" /> Save Account Changes
                 </Button>
               </form>
@@ -105,7 +105,7 @@ export default function SettingsPage() {
           <Card className="border-border/50 bg-card">
             <CardHeader>
               <CardTitle className="text-base font-bold flex items-center gap-2">
-                <KeyRound className="h-5 w-5 text-violet-600" /> Update Password & Authentication
+                <KeyRound className="h-5 w-5 text-primary" /> Update Password & Authentication
               </CardTitle>
               <CardDescription>Keep your password secure with complex credentials.</CardDescription>
             </CardHeader>
@@ -133,7 +133,7 @@ export default function SettingsPage() {
                   />
                 </div>
 
-                <Button type="submit" disabled={isSaving} className="bg-violet-600 hover:bg-violet-700 text-white">
+                <Button type="submit" disabled={isSaving} className="bg-primary hover:bg-primary text-primary-foreground">
                   <Lock className="mr-2 h-4 w-4" /> Update Password
                 </Button>
               </form>
@@ -146,11 +146,11 @@ export default function SettingsPage() {
           <Card className="border-border/50 bg-card">
             <CardHeader>
               <CardTitle className="text-base font-bold flex items-center gap-2">
-                <Bell className="h-5 w-5 text-violet-600" /> Notification Alert Preferences
+                <Bell className="h-5 w-5 text-primary" /> Notification Alert Preferences
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-muted/20">
+              <div className="flex items-center justify-between p-4 rounded-md border border-border/50 bg-muted/20">
                 <div>
                   <h4 className="font-semibold text-sm">Transactional Email Alerts</h4>
                   <p className="text-xs text-muted-foreground">Receive application updates, ATS score reports, and interview invitations.</p>
@@ -160,7 +160,7 @@ export default function SettingsPage() {
                 </Button>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-muted/20">
+              <div className="flex items-center justify-between p-4 rounded-md border border-border/50 bg-muted/20">
                 <div>
                   <h4 className="font-semibold text-sm">AI Interview Reminders</h4>
                   <p className="text-xs text-muted-foreground">Receive upcoming mock interview countdown alerts 15 minutes before start.</p>
@@ -178,11 +178,11 @@ export default function SettingsPage() {
           <Card className="border-border/50 bg-card">
             <CardHeader>
               <CardTitle className="text-base font-bold flex items-center gap-2">
-                <Eye className="h-5 w-5 text-violet-600" /> Candidate Profile Visibility
+                <Eye className="h-5 w-5 text-primary" /> Candidate Profile Visibility
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-muted/20">
+              <div className="flex items-center justify-between p-4 rounded-md border border-border/50 bg-muted/20">
                 <div>
                   <h4 className="font-semibold text-sm">Public Candidate Directory Listing</h4>
                   <p className="text-xs text-muted-foreground">Allow verified recruiters to discover your profile and match score.</p>

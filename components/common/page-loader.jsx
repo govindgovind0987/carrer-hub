@@ -18,7 +18,7 @@ export function PageLoader({ className, message = 'Loading...' }) {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <Spinner size="lg" className="text-violet-600" />
+      <Spinner size="lg" className="text-primary" />
       <p className="text-sm text-muted-foreground">{message}</p>
     </motion.div>
   );

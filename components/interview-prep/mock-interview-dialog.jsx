@@ -154,7 +154,7 @@ export function MockInterviewDialog({ isOpen, onClose, questions = [], role = 'S
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl bg-card border-border/60 backdrop-blur-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center gap-2 text-violet-500 text-xs font-semibold uppercase tracking-wider">
+          <div className="flex items-center gap-2 text-primary text-xs font-semibold uppercase tracking-wider">
             <Sparkles className="h-4 w-4 animate-pulse" /> Live AI Mock Interview
           </div>
           <DialogTitle className="text-xl font-extrabold tracking-tight">
@@ -179,9 +179,9 @@ export function MockInterviewDialog({ isOpen, onClose, questions = [], role = 'S
             </div>
 
             {/* Current Question */}
-            <div className="p-4 rounded-xl bg-violet-500/10 border border-violet-500/20 space-y-2">
+            <div className="p-4 rounded-md bg-primary/10 border border-primary/20 space-y-2">
               <div className="flex items-center gap-2">
-                <Badge className="bg-violet-600 text-white text-xs font-bold">Question {currentIndex + 1}</Badge>
+                <Badge className="bg-primary text-primary-foreground text-xs font-bold">Question {currentIndex + 1}</Badge>
                 <Badge variant="outline" className="text-xs">
                   {currentQ.difficulty}
                 </Badge>
@@ -210,14 +210,14 @@ export function MockInterviewDialog({ isOpen, onClose, questions = [], role = 'S
                   onChange={(e) => setUserAnswer(e.target.value)}
                   rows={5}
                   placeholder="Type your response here or use Voice Input to speak naturally..."
-                  className="font-sans text-xs bg-muted/30 focus-visible:ring-violet-500"
+                  className="font-sans text-xs bg-muted/30 focus:ring-ring"
                 />
 
                 <div className="flex justify-end pt-2">
                   <Button
                     onClick={handleSubmitAnswer}
                     disabled={isEvaluating || !userAnswer.trim()}
-                    className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-xs"
+                    className="bg-primary   text-primary-foreground font-bold text-xs"
                   >
                     {isEvaluating ? (
                       <>
@@ -233,7 +233,7 @@ export function MockInterviewDialog({ isOpen, onClose, questions = [], role = 'S
               </div>
             ) : (
               /* Instant Evaluation Feedback View */
-              <div className="space-y-4 p-4 rounded-xl bg-card border border-border/60">
+              <div className="space-y-4 p-4 rounded-md bg-card border border-border/60">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Badge className="bg-emerald-500 text-white text-xs font-bold">
@@ -250,7 +250,7 @@ export function MockInterviewDialog({ isOpen, onClose, questions = [], role = 'S
                 <div className="flex justify-end pt-2">
                   <Button
                     onClick={handleNextQuestion}
-                    className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-xs"
+                    className="bg-primary   text-primary-foreground font-bold text-xs"
                   >
                     {currentIndex < questions.length - 1 ? (
                       <>
@@ -269,22 +269,22 @@ export function MockInterviewDialog({ isOpen, onClose, questions = [], role = 'S
         ) : (
           /* Final Interview Report Screen */
           <div className="space-y-6 py-4">
-            <div className="p-6 rounded-2xl bg-gradient-to-r from-violet-950 via-slate-900 to-indigo-950 text-white border border-violet-500/30 text-center space-y-3">
-              <Award className="h-12 w-12 text-violet-400 mx-auto" />
+            <div className="p-6 rounded-lg bg-[#17212b] text-white border border-primary/30 text-center space-y-3">
+              <Award className="h-12 w-12 text-primary mx-auto" />
               <h3 className="text-2xl font-extrabold">Interview Completed!</h3>
-              <p className="text-xs text-violet-200">{finalReport?.recommendation}</p>
+              <p className="text-xs text-primary-foreground/75">{finalReport?.recommendation}</p>
               <div className="inline-block px-4 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold text-sm border border-emerald-500/30">
                 Overall AI Score: {finalReport?.overallScore} / 100
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-card border border-border/60 space-y-2 text-xs">
+            <div className="p-4 rounded-md bg-card border border-border/60 space-y-2 text-xs">
               <h4 className="font-bold text-foreground">Executive AI Summary:</h4>
               <p className="text-muted-foreground leading-relaxed">{finalReport?.summary}</p>
             </div>
 
             <DialogFooter className="pt-4 border-t border-border/40">
-              <Button onClick={onClose} className="bg-violet-600 text-white font-bold text-xs">
+              <Button onClick={onClose} className="bg-primary text-primary-foreground font-bold text-xs">
                 Done & Return to Prep Workspace
               </Button>
             </DialogFooter>

@@ -46,40 +46,58 @@ export default async function CandidateDashboardPage() {
     profile,
     resumesCount,
     codingStats,
-    userProgress,
+    progressByStatus,
     recentSubmissions,
     latestAnalysis,
-    mockSessions,
-    interviewReports,
+    mockSessionCount,
+    interviewReportStats,
     availableProblems,
   ] = await Promise.all([
     prisma.profile.findUnique({
       where: { userId },
-      include: {
-        educations: true,
-        experiences: true,
-        skills: true,
-        projects: true,
+      select: {
+        headline: true,
+        bio: true,
+        _count: {
+          select: {
+            educations: true,
+            experiences: true,
+            skills: true,
+            projects: true,
+          },
+        },
       },
     }),
     prisma.resume.count({ where: { userId } }),
     prisma.userCodingStats.findUnique({ where: { userId } }),
-    prisma.userProblemProgress.findMany({
+    prisma.userProblemProgress.groupBy({
+      by: ['status'],
       where: { userId },
-      include: { problem: true },
+      _count: { _all: true },
     }),
     prisma.problemSubmission.findMany({
       where: { userId },
-      include: { problem: true },
+      select: {
+        id: true,
+        language: true,
+        verdict: true,
+        createdAt: true,
+        problem: { select: { title: true, category: true } },
+      },
       orderBy: { createdAt: 'desc' },
       take: 5,
     }),
     prisma.resumeAnalysis.findFirst({
       where: { userId },
       orderBy: { createdAt: 'desc' },
+      select: { atsScore: true },
     }),
-    prisma.interviewSession.findMany({ where: { userId } }),
-    prisma.interviewReport.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } }),
+    prisma.interviewSession.count({ where: { userId } }),
+    prisma.interviewReport.aggregate({
+      where: { userId },
+      _avg: { overallScore: true },
+      _count: { _all: true },
+    }),
     prisma.problem.count(),
   ]);
 
@@ -87,15 +105,17 @@ export default async function CandidateDashboardPage() {
   let profileScore = 20;
   if (profile?.headline) profileScore += 15;
   if (profile?.bio) profileScore += 15;
-  if (profile?.skills?.length > 0) profileScore += 15;
-  if (profile?.experiences?.length > 0) profileScore += 15;
-  if (profile?.educations?.length > 0) profileScore += 10;
-  if (profile?.projects?.length > 0) profileScore += 10;
+  if (profile?._count.skills > 0) profileScore += 15;
+  if (profile?._count.experiences > 0) profileScore += 15;
+  if (profile?._count.educations > 0) profileScore += 10;
+  if (profile?._count.projects > 0) profileScore += 10;
   profileScore = Math.min(100, profileScore);
 
   // Solved counts
-  const solvedProgress = userProgress.filter((p) => p.status === 'SOLVED');
-  const solvedCount = codingStats?.solvedCount ?? solvedProgress.length;
+  const attemptedCount = progressByStatus.reduce((total, item) => total + item._count._all, 0);
+  const solvedProgressCount =
+    progressByStatus.find((item) => item.status === 'SOLVED')?._count._all ?? 0;
+  const solvedCount = codingStats?.solvedCount ?? solvedProgressCount;
   const totalPlatformProblems = availableProblems || 1;
   const dsaProgressPercentage = Math.round((solvedCount / totalPlatformProblems) * 100);
 
@@ -103,9 +123,9 @@ export default async function CandidateDashboardPage() {
   const resumeReadiness = latestAnalysis?.atsScore ?? (resumesCount > 0 ? 50 : 0);
   const dsaReadiness = Math.min(100, Math.round((solvedCount / 20) * 100));
   const avgMock =
-    interviewReports.length > 0
-      ? Math.round(interviewReports.reduce((acc, r) => acc + r.overallScore, 0) / interviewReports.length)
-      : mockSessions.length > 0
+    interviewReportStats._count._all > 0
+      ? Math.round(interviewReportStats._avg.overallScore ?? 0)
+      : mockSessionCount > 0
       ? 40
       : 0;
   const interviewReadiness = avgMock;
@@ -120,31 +140,35 @@ export default async function CandidateDashboardPage() {
       value: `${dsaProgressPercentage}%`,
       sub: `${solvedCount} topics mastered`,
       icon: BookOpen,
+      tone: 'bg-[#FFF1DC] text-[#B66E24]',
     },
     {
       title: 'DSA Solved',
       value: `${solvedCount}`,
-      sub: `${userProgress.length} attempted`,
+      sub: `${attemptedCount} attempted`,
       icon: Code2,
+      tone: 'bg-[#E5EBEE] text-[#18364D]',
     },
     {
       title: 'Interview Score',
       value: `${interviewReadiness}%`,
-      sub: `${mockSessions.length} sessions taken`,
+      sub: `${mockSessionCount} sessions taken`,
       icon: Video,
+      tone: 'bg-[#DFF1ED] text-[#3E8172]',
     },
     {
       title: 'Career Readiness Index',
       value: `${careerReadinessScore}%`,
       sub: 'AI Index Score',
       icon: Sparkles,
+      tone: 'bg-[#F8E4E7] text-[#B85E71]',
     },
   ];
 
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-border bg-card p-6 shadow-2xs">
+      <div className="flex flex-col gap-4 rounded-lg border border-border bg-card p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
@@ -173,14 +197,14 @@ export default async function CandidateDashboardPage() {
       {/* Metrics Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <Card key={stat.title}>
+          <Card key={stat.title} className="hover:border-foreground/15">
             <CardContent className="p-5 flex items-center justify-between">
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground">{stat.title}</p>
                 <p className="text-2xl font-bold tracking-tight text-foreground">{stat.value}</p>
                 <p className="text-[11px] text-muted-foreground">{stat.sub}</p>
               </div>
-              <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-muted/50 text-foreground shrink-0">
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md ${stat.tone}`}>
                 <stat.icon className="h-4.5 w-4.5" />
               </div>
             </CardContent>

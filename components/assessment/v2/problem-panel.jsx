@@ -113,10 +113,10 @@ export function ProblemPanel({
             <TrendingUp className="h-3.5 w-3.5 text-emerald-500" /> Acceptance: <strong className="text-foreground">{problem.acceptanceRate || 68.4}%</strong>
           </span>
           <span className="flex items-center gap-1">
-            <Award className="h-3.5 w-3.5 text-violet-500" /> Solved: <strong className="text-foreground">{problem.acceptedSubmissions || 0} / {problem.totalSubmissions || 0}</strong>
+            <Award className="h-3.5 w-3.5 text-primary" /> Solved: <strong className="text-foreground">{problem.acceptedSubmissions || 0} / {problem.totalSubmissions || 0}</strong>
           </span>
           <span className="flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5 text-indigo-500" /> Avg Runtime: <strong className="text-foreground">{problem.averageRuntimeMs || 42} ms</strong>
+            <Clock className="h-3.5 w-3.5 text-primary" /> Avg Runtime: <strong className="text-foreground">{problem.averageRuntimeMs || 42} ms</strong>
           </span>
         </div>
 
@@ -138,13 +138,13 @@ export function ProblemPanel({
           {problem.tags && problem.tags.length > 0 && (
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-[11px] font-sans text-muted-foreground flex items-center gap-1">
-                <Tag className="h-3 w-3 text-violet-500" /> Topics:
+                <Tag className="h-3 w-3 text-primary" /> Topics:
               </span>
               {problem.tags.map((t, idx) => (
                 <Badge
                   key={idx}
                   onClick={() => handleTopicClick(t)}
-                  className="bg-violet-500/10 text-violet-600 border-violet-500/30 hover:bg-violet-500/20 text-[10px] py-0 px-2 cursor-pointer font-mono"
+                  className="bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 text-[10px] py-0 px-2 cursor-pointer font-mono"
                 >
                   #{t}
                 </Badge>
@@ -176,8 +176,8 @@ export function ProblemPanel({
             <TabsTrigger value="discussion" className="text-xs py-1 px-2.5">
               <MessageSquare className="h-3.5 w-3.5 mr-1" /> Discussion
             </TabsTrigger>
-            <TabsTrigger value="ai-copilot" className="text-xs py-1 px-2.5 text-violet-600 font-semibold">
-              <Sparkles className="h-3.5 w-3.5 mr-1 text-violet-500 fill-violet-500" /> AI Copilot
+            <TabsTrigger value="ai-copilot" className="text-xs py-1 px-2.5 text-primary font-semibold">
+              <Sparkles className="h-3.5 w-3.5 mr-1 text-primary fill-primary" /> AI Copilot
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -228,9 +228,9 @@ export function ProblemPanel({
                 {problem.examples.map((ex, idx) => (
                   <div
                     key={idx}
-                    className="bg-slate-950 text-slate-200 p-3.5 rounded-xl border border-slate-800 space-y-2 font-mono text-xs"
+                    className="bg-slate-950 text-slate-200 p-3.5 rounded-md border border-slate-800 space-y-2 font-mono text-xs"
                   >
-                    <p className="font-bold text-violet-400">Example {idx + 1}:</p>
+                    <p className="font-bold text-primary">Example {idx + 1}:</p>
                     <div>
                       <span className="text-slate-400">Input: </span>
                       <span className="text-emerald-400 font-semibold">{ex.input}</span>
@@ -250,8 +250,8 @@ export function ProblemPanel({
             )}
 
             {/* 4. Follow-up Challenge */}
-            <div className="p-3.5 rounded-xl bg-violet-500/10 border border-violet-500/30 text-xs space-y-1">
-              <span className="font-bold text-violet-400 flex items-center gap-1">
+            <div className="p-3.5 rounded-md bg-primary/10 border border-primary/30 text-xs space-y-1">
+              <span className="font-bold text-primary flex items-center gap-1">
                 <Sparkles className="h-3.5 w-3.5" /> Follow-up Challenge:
               </span>
               <p className="text-foreground/90 font-sans">
@@ -279,7 +279,7 @@ export function ProblemPanel({
 
                 {nextSlug ? (
                   <Link href={`/dashboard/assessment/problems/${nextSlug}`}>
-                    <Button size="sm" className="text-xs bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold">
+                    <Button size="sm" className="text-xs bg-primary   text-primary-foreground font-semibold">
                       Next Problem <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
                   </Link>
@@ -292,9 +292,9 @@ export function ProblemPanel({
 
               {/* Similar Problems Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl bg-muted/30 border border-border/40 space-y-2">
+                <div className="p-3 rounded-md bg-muted/30 border border-border/40 space-y-2">
                   <h5 className="font-bold text-xs flex items-center gap-1.5 text-foreground">
-                    <BookOpen className="h-3.5 w-3.5 text-violet-500" /> Same Topic ({problem.category})
+                    <BookOpen className="h-3.5 w-3.5 text-primary" /> Same Topic ({problem.category})
                   </h5>
                   {sameTopic.length > 0 ? (
                     sameTopic.map((p, idx) => (
@@ -310,7 +310,7 @@ export function ProblemPanel({
                   )}
                 </div>
 
-                <div className="p-3 rounded-xl bg-muted/30 border border-border/40 space-y-2">
+                <div className="p-3 rounded-md bg-muted/30 border border-border/40 space-y-2">
                   <h5 className="font-bold text-xs flex items-center gap-1.5 text-foreground">
                     <Flame className="h-3.5 w-3.5 text-amber-500" /> Same Difficulty
                   </h5>
@@ -342,7 +342,7 @@ export function ProblemPanel({
                 return (
                   <div
                     key={idx}
-                    className={`p-4 rounded-xl border transition-all ${
+                    className={`p-4 rounded-md border transition-all ${
                       isUnlocked
                         ? 'bg-amber-500/10 border-amber-500/30 text-foreground'
                         : 'bg-muted/30 border-border/40 text-muted-foreground'
@@ -389,7 +389,7 @@ export function ProblemPanel({
                 <Button
                   size="sm"
                   onClick={() => setUnlockedEditorial(true)}
-                  className="text-xs bg-violet-600 hover:bg-violet-700 text-white font-semibold"
+                  className="text-xs bg-primary hover:bg-primary text-primary-foreground font-semibold"
                 >
                   <Unlock className="h-3.5 w-3.5 mr-1" /> Open Full Solution
                 </Button>
@@ -397,21 +397,21 @@ export function ProblemPanel({
             </div>
 
             {unlockedEditorial ? (
-              <div className="p-4 rounded-xl bg-muted/40 border border-border/50 text-xs leading-relaxed space-y-4 font-mono">
+              <div className="p-4 rounded-md bg-muted/40 border border-border/50 text-xs leading-relaxed space-y-4 font-mono">
                 <div className="prose dark:prose-invert max-w-none text-foreground/90 whitespace-pre-line font-sans">
                   {problem.editorial || '### Approach & Algorithm\n\nDetailed solution explanation breakdown.'}
                 </div>
 
                 {problem.complexityAnalysis && (
                   <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
-                    <p className="font-bold text-violet-400 font-sans">Complexity Analysis:</p>
+                    <p className="font-bold text-primary font-sans">Complexity Analysis:</p>
                     <p className="text-slate-300">{problem.complexityAnalysis}</p>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="p-6 rounded-xl bg-muted/20 border border-border/40 text-center space-y-3">
-                <Lock className="h-8 w-8 mx-auto text-violet-500/60" />
+              <div className="p-6 rounded-md bg-muted/20 border border-border/40 text-center space-y-3">
+                <Lock className="h-8 w-8 mx-auto text-primary" />
                 <p className="text-xs text-muted-foreground max-w-xs mx-auto">
                   Official editorial contains Intuition, Approach, Algorithm breakdown, Complexity Analysis, and Reference Solutions.
                 </p>
@@ -427,7 +427,7 @@ export function ProblemPanel({
             <p className="text-muted-foreground font-sans">
               Inspect multi-language optimal solutions (Python 3, Java 17, C++).
             </p>
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-emerald-400 whitespace-pre-wrap">
+            <div className="p-4 rounded-md bg-slate-950 border border-slate-800 font-mono text-emerald-400 whitespace-pre-wrap">
               {problem.referenceSolution?.python || '# Reference Python Solution\nprint("Reference Solution")'}
             </div>
           </div>
@@ -442,8 +442,8 @@ export function ProblemPanel({
         {activeTab === 'discussion' && (
           <div className="space-y-4 text-xs font-sans">
             <h4 className="font-semibold text-sm">Candidate Discussion Forum</h4>
-            <div className="p-4 rounded-xl bg-muted/30 border border-border/40 text-center text-muted-foreground py-10">
-              <MessageSquare className="h-8 w-8 mx-auto mb-2 text-violet-400" />
+            <div className="p-4 rounded-md bg-muted/30 border border-border/40 text-center text-muted-foreground py-10">
+              <MessageSquare className="h-8 w-8 mx-auto mb-2 text-primary" />
               Join the candidate discussion for {problem.title}. Share algorithmic approaches and Big-O optimizations.
             </div>
           </div>

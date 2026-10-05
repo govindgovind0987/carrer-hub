@@ -78,7 +78,7 @@ export default function AdminAnalyticsPage() {
       <Card className="border-border/50 bg-card">
         <CardHeader>
           <CardTitle className="text-base font-bold flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-violet-600" /> Monthly Platform Activity Growth
+            <BarChart3 className="h-5 w-5 text-primary" /> Monthly Platform Activity Growth
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -86,11 +86,11 @@ export default function AdminAnalyticsPage() {
             <div key={d.month} className="space-y-2">
               <div className="flex items-center justify-between text-xs font-semibold">
                 <span className="text-foreground">{d.month} 2026</span>
-                <span className="text-violet-600 font-mono">{d.candidates} Candidates • {d.interviews} Interviews • ${d.revenue} MRR</span>
+                <span className="text-primary font-mono">{d.candidates} Candidates • {d.interviews} Interviews • ${d.revenue} MRR</span>
               </div>
               <div className="h-3 rounded-full bg-muted overflow-hidden flex">
-                <div style={{ width: `${(d.candidates / 120) * 100}%` }} className="bg-violet-600 h-full" />
-                <div style={{ width: `${(d.interviews / 120) * 100}%` }} className="bg-indigo-400 h-full" />
+                <div style={{ width: `${(d.candidates / 120) * 100}%` }} className="bg-primary h-full" />
+                <div style={{ width: `${(d.interviews / 120) * 100}%` }} className="bg-primary h-full" />
               </div>
             </div>
           ))}

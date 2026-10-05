@@ -44,26 +44,26 @@ export default async function RecruiterDashboardPage() {
     ]);
 
   const stats = [
-    { title: 'Total Jobs Posted', value: jobsCount, icon: Briefcase, color: 'text-violet-600', bg: 'bg-violet-500/10' },
+    { title: 'Total Jobs Posted', value: jobsCount, icon: Briefcase, color: 'text-primary', bg: 'bg-primary/10' },
     { title: 'Active Listings', value: activeJobsCount, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-500/10' },
-    { title: 'Total Applicants', value: applicationsCount, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-500/10' },
+    { title: 'Total Applicants', value: applicationsCount, icon: Users, color: 'text-primary', bg: 'bg-primary/10' },
     { title: 'Shortlisted', value: shortlistedCount, icon: UserCheck, color: 'text-amber-600', bg: 'bg-amber-500/10' },
   ];
 
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl bg-gradient-to-r from-violet-700 via-indigo-700 to-purple-700 p-6 sm:p-8 text-white shadow-xl shadow-violet-500/10">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg bg-primary    p-6 sm:p-8 text-primary-foreground shadow-sm">
         <div>
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
             Recruiter Workspace — {company?.name || 'Hiring Team'} 👋
           </h1>
-          <p className="mt-2 text-sm text-violet-100 max-w-xl leading-relaxed">
+          <p className="mt-2 text-sm text-primary-foreground/70 max-w-xl leading-relaxed">
             Manage your open position requisitions, review candidate profiles, shortlist top talent, and build high-performing teams.
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <Button asChild className="bg-white text-violet-700 hover:bg-violet-50 font-medium shadow-md">
+          <Button asChild className="bg-white text-primary hover:bg-muted font-medium shadow-md">
             <Link href="/dashboard/recruiter/jobs/create">
               <PlusCircle className="mr-2 h-4 w-4" /> Post New Job
             </Link>
@@ -85,7 +85,7 @@ export default async function RecruiterDashboardPage() {
                 <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
                 <p className="mt-2 text-3xl font-bold tracking-tight">{stat.value}</p>
               </div>
-              <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.bg} ${stat.color}`}>
+              <div className={`flex h-12 w-12 items-center justify-center rounded-md ${stat.bg} ${stat.color}`}>
                 <stat.icon className="h-6 w-6" />
               </div>
             </CardContent>
@@ -116,7 +116,7 @@ export default async function RecruiterDashboardPage() {
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
                       {app.candidate?.image && <AvatarImage src={app.candidate.image} />}
-                      <AvatarFallback className="bg-violet-600 text-white font-semibold">
+                      <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
                         {getInitials(app.candidate?.name)}
                       </AvatarFallback>
                     </Avatar>

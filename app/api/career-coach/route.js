@@ -30,40 +30,52 @@ export async function POST(req) {
       resumeCount,
       latestAnalysis,
       codingStats,
-      userProgress,
       recentSubmissions,
       mockSessions,
       interviewReports,
     ] = await Promise.all([
       prisma.profile.findUnique({
         where: { userId },
-        include: { skills: true, experiences: true, educations: true, projects: true },
+        select: {
+          headline: true,
+          bio: true,
+          skills: { select: { name: true } },
+          experiences: { select: { title: true, company: true } },
+          educations: { select: { degree: true, fieldOfStudy: true, institution: true } },
+          projects: { select: { title: true, description: true } },
+        },
       }),
       prisma.resume.count({ where: { userId } }),
       prisma.resumeAnalysis.findFirst({
         where: { userId },
         orderBy: { createdAt: 'desc' },
+        select: { atsScore: true, overallScore: true, weakAreas: true, missingSkills: true },
       }),
-      prisma.userCodingStats.findUnique({ where: { userId } }),
-      prisma.userProblemProgress.findMany({
+      prisma.userCodingStats.findUnique({
         where: { userId },
-        include: { problem: true },
+        select: {
+          solvedCount: true,
+          easySolved: true,
+          mediumSolved: true,
+          hardSolved: true,
+          totalSubmissions: true,
+        },
       }),
       prisma.problemSubmission.findMany({
         where: { userId },
-        include: { problem: true },
+        select: {
+          verdict: true,
+          problem: { select: { category: true } },
+        },
         orderBy: { createdAt: 'desc' },
         take: 20,
       }),
-      prisma.interviewSession.findMany({
-        where: { userId },
-        include: { report: true },
-        orderBy: { createdAt: 'desc' },
-      }),
+      prisma.interviewSession.count({ where: { userId } }),
       prisma.interviewReport.findMany({
         where: { userId },
         orderBy: { createdAt: 'desc' },
         take: 5,
+        select: { overallScore: true, strengths: true, weaknesses: true },
       }),
     ]);
 
@@ -114,7 +126,7 @@ export async function POST(req) {
       totalSubmissions: codingStats?.totalSubmissions || 0,
       topPracticedTopics,
       weakTopics,
-      mockSessionsCount: mockSessions.length,
+      mockSessionsCount: mockSessions,
       avgInterviewScore,
       interviewStrengths,
       interviewWeaknesses,

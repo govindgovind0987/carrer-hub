@@ -65,7 +65,7 @@ export default function MockInterviewDashboardPage() {
       value: analytics?.interviewCount || 4,
       desc: 'Mock sessions conducted',
       icon: Video,
-      color: 'text-violet-500 bg-violet-500/10',
+      color: 'text-primary bg-primary/10',
     },
     {
       label: 'Best Performance Score',
@@ -88,7 +88,7 @@ export default function MockInterviewDashboardPage() {
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
             AI Mock Interview Platform
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -101,7 +101,7 @@ export default function MockInterviewDashboardPage() {
             <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
           </Button>
 
-          <Button asChild className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/25">
+          <Button asChild className="bg-primary   text-primary-foreground shadow-sm">
             <Link href="/dashboard/mock-interview/create">
               <PlusCircle className="mr-2 h-4 w-4" /> Start New Interview
             </Link>
@@ -119,7 +119,7 @@ export default function MockInterviewDashboardPage() {
                 <div className="text-2xl font-bold text-foreground font-mono">{s.value}</div>
                 <span className="text-[11px] text-muted-foreground">{s.desc}</span>
               </div>
-              <div className={`p-3 rounded-2xl ${s.color}`}>
+              <div className={`p-3 rounded-lg ${s.color}`}>
                 <s.icon className="h-6 w-6" />
               </div>
             </CardContent>
@@ -134,12 +134,12 @@ export default function MockInterviewDashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <div>
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Clock className="h-5 w-5 text-violet-600" /> Recent Mock Interview Sessions
+                <Clock className="h-5 w-5 text-primary" /> Recent Mock Interview Sessions
               </CardTitle>
               <CardDescription>Review past session scores, voice recordings, and AI feedback.</CardDescription>
             </div>
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/dashboard/mock-interview/create" className="text-xs text-violet-600">
+              <Link href="/dashboard/mock-interview/create" className="text-xs text-primary">
                 New Session <ArrowRight className="ml-1 h-3.5 w-3.5" />
               </Link>
             </Button>
@@ -148,19 +148,19 @@ export default function MockInterviewDashboardPage() {
           <CardContent className="p-6 pt-0 space-y-4">
             {loading ? (
               <div className="flex h-48 items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : analytics?.recentInterviews?.length > 0 ? (
               <div className="space-y-3">
                 {analytics.recentInterviews.map((sess) => (
                   <div
                     key={sess.id}
-                    className="p-4 rounded-xl border border-border/50 bg-muted/20 hover:border-violet-500/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    className="p-4 rounded-md border border-border/50 bg-muted/20 hover:border-primary/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-sm text-foreground">{sess.role || 'Software Engineer'}</span>
-                        <Badge variant="outline" className="text-[10px] border-violet-500/30 text-violet-600">
+                        <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
                           {sess.technology}
                         </Badge>
                         <Badge variant="secondary" className="text-[10px]">
@@ -173,7 +173,7 @@ export default function MockInterviewDashboardPage() {
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      <Badge variant="default" className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-mono px-3 py-1">
+                      <Badge variant="default" className="bg-primary   text-primary-foreground font-mono px-3 py-1">
                         Score: {sess.report?.overallScore || 85}%
                       </Badge>
 
@@ -188,12 +188,12 @@ export default function MockInterviewDashboardPage() {
               </div>
             ) : (
               <div className="text-center py-12 text-muted-foreground space-y-3">
-                <Video className="mx-auto h-12 w-12 text-violet-500/50" />
+                <Video className="mx-auto h-12 w-12 text-primary" />
                 <h4 className="font-semibold text-foreground">No interview sessions yet</h4>
                 <p className="text-xs max-w-sm mx-auto">
                   Launch your first AI mock interview to practice realistic voice and coding questions.
                 </p>
-                <Button asChild className="bg-violet-600 text-white mt-2">
+                <Button asChild className="bg-primary text-primary-foreground mt-2">
                   <Link href="/dashboard/mock-interview/create">
                     <PlusCircle className="mr-2 h-4 w-4" /> Start AI Interview
                   </Link>
@@ -205,9 +205,9 @@ export default function MockInterviewDashboardPage() {
 
         {/* Right Sidebar: Topics & AI Practice Launcher (4 Cols) */}
         <div className="lg:col-span-4 space-y-6">
-          <Card className="border-violet-500/30 bg-gradient-to-br from-violet-950/20 via-card to-indigo-950/20">
+          <Card className="border-primary/30 bg-card">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-bold flex items-center gap-2 text-violet-600">
+              <CardTitle className="text-base font-bold flex items-center gap-2 text-primary">
                 <BrainCircuit className="h-5 w-5" /> Quick Interview Launcher
               </CardTitle>
               <CardDescription className="text-xs">
@@ -224,10 +224,10 @@ export default function MockInterviewDashboardPage() {
                 <Link
                   key={item.tech}
                   href={`/dashboard/mock-interview/create`}
-                  className="p-3 rounded-xl border border-border/50 bg-card hover:border-violet-500 transition-all flex items-center justify-between text-xs font-semibold text-foreground group"
+                  className="p-3 rounded-md border border-border/50 bg-card hover:border-primary transition-all flex items-center justify-between text-xs font-semibold text-foreground group"
                 >
                   <span>{item.label}</span>
-                  <ArrowRight className="h-4 w-4 text-violet-500 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="h-4 w-4 text-primary group-hover:translate-x-1 transition-transform" />
                 </Link>
               ))}
             </CardContent>
@@ -236,7 +236,7 @@ export default function MockInterviewDashboardPage() {
           <Card className="border-border/50 bg-card">
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-bold flex items-center gap-2">
-                <Target className="h-5 w-5 text-violet-600" /> Focus Improvement Areas
+                <Target className="h-5 w-5 text-primary" /> Focus Improvement Areas
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">

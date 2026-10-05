@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import {
   Sparkles,
@@ -130,9 +130,10 @@ export default function InterviewPrepPage() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [pastSessions, setPastSessions] = useState([]);
   const [bookmarkedOnly, setBookmarkedOnly] = useState(false);
+  const hasInitialized = useRef(false);
 
   // Generate Custom Interview Submission
-  const handleGenerateInterview = async (overrideConfig = null) => {
+  const handleGenerateInterview = useCallback(async (overrideConfig = null) => {
     setIsGenerating(true);
     setApiError(null);
 
@@ -169,20 +170,13 @@ export default function InterviewPrepPage() {
       setIsGenerating(false);
       setLoading(false);
     }
-  };
+  }, [category, companyStyle, customCategory, customRole, difficulty, experience, numQuestions, role]);
 
   useEffect(() => {
-    let isMounted = true;
-    const init = async () => {
-      if (isMounted) {
-        await handleGenerateInterview();
-      }
-    };
-    init();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+    void handleGenerateInterview();
+  }, [handleGenerateInterview]);
 
   // Fetch History Sessions
   const handleOpenHistory = async () => {
@@ -331,12 +325,12 @@ export default function InterviewPrepPage() {
             {/* Job Role Select */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold flex items-center gap-1.5 text-foreground/90">
-                <Briefcase className="h-3.5 w-3.5 text-violet-500" /> Job Role
+                <Briefcase className="h-3.5 w-3.5 text-primary" /> Job Role
               </label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="w-full bg-muted/50 border border-border/60 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-violet-500 cursor-pointer"
+                className="w-full bg-muted/50 border border-border/60 rounded-md px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
               >
                 {JOB_ROLES.map((r) => (
                   <option key={r} value={r}>
@@ -357,12 +351,12 @@ export default function InterviewPrepPage() {
             {/* Category Select */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold flex items-center gap-1.5 text-foreground/90">
-                <Layers className="h-3.5 w-3.5 text-indigo-500" /> Category / Topic
+                <Layers className="h-3.5 w-3.5 text-primary" /> Category / Topic
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-muted/50 border border-border/60 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-violet-500 cursor-pointer"
+                className="w-full bg-muted/50 border border-border/60 rounded-md px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
               >
                 {CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
@@ -388,7 +382,7 @@ export default function InterviewPrepPage() {
               <select
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value)}
-                className="w-full bg-muted/50 border border-border/60 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-violet-500 cursor-pointer"
+                className="w-full bg-muted/50 border border-border/60 rounded-md px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
               >
                 {DIFFICULTIES.map((d) => (
                   <option key={d} value={d}>
@@ -406,7 +400,7 @@ export default function InterviewPrepPage() {
               <select
                 value={experience}
                 onChange={(e) => setExperience(e.target.value)}
-                className="w-full bg-muted/50 border border-border/60 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-violet-500 cursor-pointer"
+                className="w-full bg-muted/50 border border-border/60 rounded-md px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
               >
                 {EXPERIENCES.map((exp) => (
                   <option key={exp} value={exp}>
@@ -424,7 +418,7 @@ export default function InterviewPrepPage() {
               <select
                 value={numQuestions}
                 onChange={(e) => setNumQuestions(parseInt(e.target.value))}
-                className="w-full bg-muted/50 border border-border/60 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-violet-500 cursor-pointer"
+                className="w-full bg-muted/50 border border-border/60 rounded-md px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
               >
                 {QUESTION_COUNTS.map((cnt) => (
                   <option key={cnt} value={cnt}>
@@ -442,7 +436,7 @@ export default function InterviewPrepPage() {
               <select
                 value={companyStyle}
                 onChange={(e) => setCompanyStyle(e.target.value)}
-                className="w-full bg-muted/50 border border-border/60 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-violet-500 cursor-pointer"
+                className="w-full bg-muted/50 border border-border/60 rounded-md px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
               >
                 {COMPANY_STYLES.map((style) => (
                   <option key={style} value={style}>
@@ -470,7 +464,7 @@ export default function InterviewPrepPage() {
               <Button
                 onClick={() => handleGenerateInterview()}
                 disabled={isGenerating || loading}
-                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-violet-500/25 px-6"
+                className="bg-primary     text-primary-foreground font-bold text-xs shadow-sm px-6"
               >
                 {isGenerating ? (
                   <>
@@ -489,7 +483,7 @@ export default function InterviewPrepPage() {
 
       {/* Error Resiliency Banner */}
       {apiError && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs font-semibold">
+        <div className="p-4 rounded-md bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs font-semibold">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 shrink-0 text-rose-500" />
             <span>{apiError}</span>
@@ -507,9 +501,9 @@ export default function InterviewPrepPage() {
 
       {/* Active Session Badge Summary */}
       {activeSession && !apiError && (
-        <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-border/50 bg-card/60 backdrop-blur-xl">
+        <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-md border border-border/50 bg-card/60 backdrop-blur-xl">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className="bg-violet-600 text-white text-xs font-bold">{activeSession.role}</Badge>
+            <Badge className="bg-primary text-primary-foreground text-xs font-bold">{activeSession.role}</Badge>
             <Badge variant="outline" className="text-xs">
               {activeSession.technology || activeSession.category}
             </Badge>
@@ -531,7 +525,7 @@ export default function InterviewPrepPage() {
             disabled={loading || isGenerating}
             variant="ghost"
             size="sm"
-            className="text-xs text-violet-600 hover:bg-violet-500/10"
+            className="text-xs text-primary hover:bg-primary/10"
           >
             <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isGenerating ? 'animate-spin' : ''}`} /> Refresh Questions
           </Button>
@@ -540,7 +534,7 @@ export default function InterviewPrepPage() {
 
       {/* Generated Questions List */}
       {loading || isGenerating ? (
-        <div className="flex h-64 flex-col items-center justify-center gap-3 text-violet-600">
+        <div className="flex h-64 flex-col items-center justify-center gap-3 text-primary">
           <Loader2 className="h-10 w-10 animate-spin" />
           <span className="text-xs font-semibold text-muted-foreground">
             Synthesizing Fresh Interview Questions with Groq LLM (Llama 3.3 70B)...
@@ -549,7 +543,7 @@ export default function InterviewPrepPage() {
       ) : displayedQuestions.length === 0 ? (
         <Card className="border-dashed bg-card/40 backdrop-blur-xl">
           <CardContent className="py-16 text-center text-muted-foreground space-y-3">
-            <HelpCircle className="mx-auto h-12 w-12 text-violet-500" />
+            <HelpCircle className="mx-auto h-12 w-12 text-primary" />
             <h3 className="text-lg font-bold text-foreground">No questions found</h3>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
               Select your parameters in the Configurator above and click &quot;Generate Custom Interview&quot; to synthesize a fresh AI interview set.
@@ -557,7 +551,7 @@ export default function InterviewPrepPage() {
             <Button
               onClick={() => handleGenerateInterview()}
               size="sm"
-              className="bg-violet-600 text-white font-bold text-xs"
+              className="bg-primary text-primary-foreground font-bold text-xs"
             >
               Generate Interview
             </Button>

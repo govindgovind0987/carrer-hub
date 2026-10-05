@@ -53,32 +53,51 @@ export default async function LearningDashboardPage() {
   ] = await Promise.all([
     prisma.userProblemProgress.findMany({
       where: { userId },
-      include: { problem: true },
+      select: {
+        status: true,
+        problem: { select: { difficulty: true, category: true, tags: true } },
+      },
     }),
     prisma.problemSubmission.findMany({
       where: { userId },
-      include: { problem: true },
+      select: {
+        id: true,
+        verdict: true,
+        language: true,
+        createdAt: true,
+        problem: { select: { title: true, category: true } },
+      },
       orderBy: { createdAt: 'desc' },
       take: 8,
     }),
-    prisma.userCodingStats.findUnique({ where: { userId } }),
+    prisma.userCodingStats.findUnique({
+      where: { userId },
+      select: { solvedCount: true, easySolved: true, mediumSolved: true, hardSolved: true },
+    }),
     prisma.interviewSession.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       take: 5,
+      select: { status: true },
     }),
     prisma.interviewReport.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       take: 5,
+      select: { overallScore: true },
     }),
     prisma.resumeAnalysis.findFirst({
       where: { userId },
       orderBy: { createdAt: 'desc' },
+      select: { atsScore: true },
     }),
     prisma.profile.findUnique({
       where: { userId },
-      include: { skills: true, experiences: true, educations: true, projects: true },
+      select: {
+        headline: true,
+        bio: true,
+        _count: { select: { skills: true, experiences: true, educations: true, projects: true } },
+      },
     }),
     prisma.problem.findMany({
       select: { id: true, title: true, slug: true, category: true, difficulty: true, tags: true },
@@ -179,10 +198,10 @@ export default async function LearningDashboardPage() {
   let profileScore = 20;
   if (profile?.headline) profileScore += 15;
   if (profile?.bio) profileScore += 15;
-  if (profile?.skills?.length > 0) profileScore += 15;
-  if (profile?.experiences?.length > 0) profileScore += 15;
-  if (profile?.educations?.length > 0) profileScore += 10;
-  if (profile?.projects?.length > 0) profileScore += 10;
+  if (profile?._count.skills > 0) profileScore += 15;
+  if (profile?._count.experiences > 0) profileScore += 15;
+  if (profile?._count.educations > 0) profileScore += 10;
+  if (profile?._count.projects > 0) profileScore += 10;
   profileScore = Math.min(100, profileScore);
 
   const atsScore = latestAnalysis?.atsScore ?? 0;
@@ -213,8 +232,8 @@ export default async function LearningDashboardPage() {
       </div>
 
       {!hasActivity && (
-        <Card className="border-violet-500/30 bg-violet-500/5 p-8 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-violet-500/10 text-violet-500 mb-4">
+        <Card className="border-primary/30 bg-primary/5 p-8 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-4">
             <BookOpen className="h-6 w-6" />
           </div>
           <h2 className="text-xl font-bold text-foreground">Start practicing to build your progress.</h2>
@@ -222,7 +241,7 @@ export default async function LearningDashboardPage() {
             Solve coding problems, complete mock interviews, or run an AI resume audit to unlock real-time learning metrics and weak-topic analysis.
           </p>
           <div className="flex items-center justify-center gap-3 mt-6 flex-wrap">
-            <Button asChild size="sm" className="bg-violet-600 hover:bg-violet-700 text-white">
+            <Button asChild size="sm" className="bg-primary hover:bg-primary text-primary-foreground">
               <Link href="/dashboard/assessment">
                 <Code2 className="mr-2 h-4 w-4" /> Start DSA Practice
               </Link>
@@ -236,10 +255,10 @@ export default async function LearningDashboardPage() {
 
       {/* Recommended Next Topic & Continue Learning Hero Card */}
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-2 border-violet-500/30 bg-gradient-to-br from-violet-500/10 via-card to-background relative overflow-hidden">
+        <Card className="md:col-span-2 border-primary/30 bg-card relative overflow-hidden">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <Badge className="bg-violet-600 text-white border-0 text-xs">Recommended Next Topic</Badge>
+              <Badge className="bg-primary text-primary-foreground border-0 text-xs">Recommended Next Topic</Badge>
               {recommendedNextTopic.status === 'NEEDS_IMPROVEMENT' && (
                 <Badge variant="destructive" className="text-xs">
                   <AlertCircle className="mr-1 h-3 w-3" /> Needs Improvement
@@ -264,13 +283,13 @@ export default async function LearningDashboardPage() {
               </div>
               <div>•</div>
               <div>
-                Sequence: <span className="font-semibold text-violet-600">Arrays → Hashing → Two Pointers → Sliding Window</span>
+                Sequence: <span className="font-semibold text-primary">Arrays → Hashing → Two Pointers → Sliding Window</span>
               </div>
             </div>
 
             <div>
               <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                <PlayCircle className="h-4 w-4 text-violet-500" /> Suggested Practice Problems
+                <PlayCircle className="h-4 w-4 text-primary" /> Suggested Practice Problems
               </p>
               <div className="grid gap-2 sm:grid-cols-2">
                 {recommendedProblems.length > 0 ? (
@@ -278,7 +297,7 @@ export default async function LearningDashboardPage() {
                     <Link
                       key={prob.id}
                       href={`/dashboard/assessment`}
-                      className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-card/60 hover:border-violet-500/40 hover:bg-violet-500/5 transition-all text-xs"
+                      className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-card/60 hover:border-primary/40 hover:bg-primary/5 transition-all text-xs"
                     >
                       <div>
                         <span className="font-medium text-foreground">{prob.title}</span>
@@ -310,9 +329,9 @@ export default async function LearningDashboardPage() {
         </Card>
 
         {/* Continue Learning Callout */}
-        <Card className="border-indigo-500/30 bg-gradient-to-br from-indigo-500/10 via-card to-background flex flex-col justify-between">
+        <Card className="border-primary/30 bg-card flex flex-col justify-between">
           <CardHeader className="pb-3">
-            <Badge variant="outline" className="w-max border-indigo-500/30 text-indigo-600 text-xs">
+            <Badge variant="outline" className="w-max border-primary/30 text-primary text-xs">
               <Zap className="mr-1 h-3 w-3 text-amber-500 fill-amber-500" /> Continue Learning
             </Badge>
             <CardTitle className="text-lg font-semibold mt-2">Active Practice Tracker</CardTitle>
@@ -324,7 +343,7 @@ export default async function LearningDashboardPage() {
             <div className="space-y-2">
               <div className="flex justify-between text-xs font-semibold">
                 <span>DSA Platform Mastery</span>
-                <span className="text-violet-600">{dsaProgressPercentage}%</span>
+                <span className="text-primary">{dsaProgressPercentage}%</span>
               </div>
               <Progress value={dsaProgressPercentage} className="h-2" />
             </div>
@@ -340,11 +359,11 @@ export default async function LearningDashboardPage() {
               </div>
               <div className="flex justify-between text-muted-foreground">
                 <span>Mock Sessions:</span>
-                <span className="font-semibold text-indigo-500">{completedInterviewSessions}</span>
+                <span className="font-semibold text-primary">{completedInterviewSessions}</span>
               </div>
             </div>
 
-            <Button asChild className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs">
+            <Button asChild className="w-full bg-primary   text-primary-foreground text-xs">
               <Link href="/dashboard/assessment">
                 Resume Assessment <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
               </Link>
@@ -359,7 +378,7 @@ export default async function LearningDashboardPage() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Code2 className="h-4 w-4 text-violet-600" /> DSA Progress
+                <Code2 className="h-4 w-4 text-primary" /> DSA Progress
               </CardTitle>
               <Badge variant="secondary" className="text-[10px]">
                 {solvedCount} Solved
@@ -389,7 +408,7 @@ export default async function LearningDashboardPage() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-indigo-600" /> Interview Preparation
+                <TrendingUp className="h-4 w-4 text-primary" /> Interview Preparation
               </CardTitle>
               <Badge variant="secondary" className="text-[10px]">
                 {completedInterviewSessions} Sessions
@@ -403,7 +422,7 @@ export default async function LearningDashboardPage() {
             </div>
             <div className="flex justify-between items-center py-1 text-xs">
               <span className="text-muted-foreground">Avg Performance Score:</span>
-              <span className="font-semibold text-indigo-600">{avgInterviewScore}/100</span>
+              <span className="font-semibold text-primary">{avgInterviewScore}/100</span>
             </div>
             <Progress value={avgInterviewScore} className="h-1.5" />
           </CardContent>
@@ -413,7 +432,7 @@ export default async function LearningDashboardPage() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Bot className="h-4 w-4 text-purple-600" /> Resume Preparation
+                <Bot className="h-4 w-4 text-primary" /> Resume Preparation
               </CardTitle>
               <Badge variant="secondary" className="text-[10px]">
                 {atsScore > 0 ? `${atsScore}% ATS` : 'Pending'}
@@ -427,7 +446,7 @@ export default async function LearningDashboardPage() {
             </div>
             <div className="flex justify-between items-center py-1 text-xs">
               <span className="text-muted-foreground">ATS Audit Readiness:</span>
-              <span className="font-semibold text-purple-600">{atsScore}/100</span>
+              <span className="font-semibold text-primary">{atsScore}/100</span>
             </div>
             <Progress value={resumePrepProgress} className="h-1.5" />
           </CardContent>
@@ -440,13 +459,13 @@ export default async function LearningDashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <Award className="h-5 w-5 text-violet-600" /> Learning Roadmap & Topic Sequence
+                <Award className="h-5 w-5 text-primary" /> Learning Roadmap & Topic Sequence
               </CardTitle>
               <CardDescription className="text-xs">
                 Sequential topic recommendation automatically calculated based on your topic submissions and accuracy.
               </CardDescription>
             </div>
-            <Badge variant="outline" className="text-xs border-violet-500/30 text-violet-600">
+            <Badge variant="outline" className="text-xs border-primary/30 text-primary">
               Arrays → Hashing → Two Pointers → Sliding Window
             </Badge>
           </div>
@@ -456,13 +475,13 @@ export default async function LearningDashboardPage() {
             {roadmapStatus.map((step, idx) => (
               <div
                 key={step.name}
-                className={`p-4 rounded-xl border transition-all ${
+                className={`p-4 rounded-md border transition-all ${
                   step.status === 'MASTERED'
                     ? 'border-emerald-500/30 bg-emerald-500/5'
                     : step.status === 'NEEDS_IMPROVEMENT'
                     ? 'border-rose-500/40 bg-rose-500/5'
                     : step.status === 'IN_PROGRESS'
-                    ? 'border-violet-500/40 bg-violet-500/10'
+                    ? 'border-primary/40 bg-primary/10'
                     : 'border-border/40 bg-card/40 opacity-70'
                 }`}
               >
@@ -475,7 +494,7 @@ export default async function LearningDashboardPage() {
                     <Badge variant="destructive" className="text-[9px] px-1.5 py-0">Needs Improvement</Badge>
                   )}
                   {step.status === 'IN_PROGRESS' && (
-                    <Badge className="bg-violet-600 text-white text-[9px] px-1.5 py-0">Active</Badge>
+                    <Badge className="bg-primary text-primary-foreground text-[9px] px-1.5 py-0">Active</Badge>
                   )}
                   {step.status === 'UPCOMING' && (
                     <Badge variant="outline" className="text-[9px] px-1.5 py-0">Upcoming</Badge>
@@ -488,7 +507,7 @@ export default async function LearningDashboardPage() {
                   <span className="text-muted-foreground">{step.solvedCount} Solved</span>
                   <Link
                     href={`/dashboard/assessment`}
-                    className="text-violet-600 hover:underline font-semibold flex items-center gap-0.5"
+                    className="text-primary hover:underline font-semibold flex items-center gap-0.5"
                   >
                     Practice <ChevronRight className="h-3 w-3" />
                   </Link>
@@ -503,7 +522,7 @@ export default async function LearningDashboardPage() {
       <Card className="border-border/50">
         <CardHeader>
           <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            <Clock className="h-5 w-5 text-violet-600" /> Recently Practiced Submissions
+            <Clock className="h-5 w-5 text-primary" /> Recently Practiced Submissions
           </CardTitle>
           <CardDescription className="text-xs">Your latest problem submissions and judgment verdicts.</CardDescription>
         </CardHeader>
@@ -545,7 +564,7 @@ export default async function LearningDashboardPage() {
                     >
                       {sub.verdict}
                     </Badge>
-                    <Button asChild size="sm" variant="ghost" className="h-7 text-xs text-violet-600">
+                    <Button asChild size="sm" variant="ghost" className="h-7 text-xs text-primary">
                       <Link href="/dashboard/assessment">Solve Again</Link>
                     </Button>
                   </div>

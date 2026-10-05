@@ -26,8 +26,8 @@ const RadioGroupItem = React.forwardRef(({ className, value, selectedValue, onSe
       ref={ref}
       onClick={() => onSelectValue && onSelectValue(value)}
       className={cn(
-        'aspect-square h-4 w-4 rounded-full border border-violet-500 text-violet-600 flex items-center justify-center cursor-pointer transition-all',
-        isChecked ? 'bg-violet-600 border-violet-600' : 'bg-transparent border-muted-foreground/40',
+        'aspect-square h-4 w-4 rounded-full border border-primary text-primary flex items-center justify-center cursor-pointer transition-all',
+        isChecked ? 'bg-primary border-primary' : 'bg-transparent border-muted-foreground/40',
         className
       )}
       {...props}

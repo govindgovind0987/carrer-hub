@@ -79,7 +79,7 @@ export function EditorConsolePanel({
         );
       case 'COMPILATION_ERROR':
         return (
-          <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/40 text-xs py-1 px-2.5 font-bold flex items-center gap-1">
+          <Badge className="bg-primary/20 text-primary border-primary/40 text-xs py-1 px-2.5 font-bold flex items-center gap-1">
             <AlertTriangle className="h-3.5 w-3.5" /> Compilation Error
           </Badge>
         );
@@ -99,7 +99,7 @@ export function EditorConsolePanel({
       }`}
     >
       {/* Editor Control Toolbar */}
-      <div className="flex items-center justify-between bg-card/60 backdrop-blur-xl border border-border/50 p-2.5 rounded-xl flex-wrap gap-2">
+      <div className="flex items-center justify-between bg-card/60 backdrop-blur-xl border border-border/50 p-2.5 rounded-md flex-wrap gap-2">
         <div className="flex items-center gap-2 flex-wrap">
           {/* Language Selector */}
           <div className="flex items-center gap-1.5">
@@ -163,7 +163,7 @@ export function EditorConsolePanel({
             disabled={isEvaluating || !code.trim()}
             variant="outline"
             size="sm"
-            className="text-xs border-violet-500/30 text-violet-600 hover:bg-violet-500/10"
+            className="text-xs border-primary/30 text-primary hover:bg-primary/10"
           >
             <Play className="h-3.5 w-3.5 mr-1 fill-current" /> Run Code
           </Button>
@@ -175,7 +175,7 @@ export function EditorConsolePanel({
             }}
             disabled={isEvaluating || !code.trim()}
             size="sm"
-            className="text-xs bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold shadow-md"
+            className="text-xs bg-primary   text-primary-foreground font-semibold shadow-md"
           >
             <Send className="h-3.5 w-3.5 mr-1" /> Submit Solution
           </Button>
@@ -183,7 +183,7 @@ export function EditorConsolePanel({
       </div>
 
       {/* Monaco Code Editor Container */}
-      <div className="flex-1 min-h-[300px] rounded-xl overflow-hidden border border-border/50">
+      <div className="flex-1 min-h-[300px] rounded-md overflow-hidden border border-border/50">
         <MonacoCodeEditor
           value={code}
           onChange={onCodeChange}
@@ -235,7 +235,7 @@ export function EditorConsolePanel({
           {activeConsoleTab === 'output' && (
             <div className="space-y-3 font-mono text-xs">
               {isEvaluating ? (
-                <div className="flex items-center justify-center py-10 text-violet-500 gap-2">
+                <div className="flex items-center justify-center py-10 text-primary gap-2">
                   <Clock className="h-5 w-5 animate-spin" />
                   <span className="font-sans font-semibold text-xs text-muted-foreground">Compiling & Executing Code...</span>
                 </div>
@@ -274,14 +274,14 @@ export function EditorConsolePanel({
           {activeConsoleTab === 'result' && (
             <div className="space-y-3">
               {isEvaluating ? (
-                <div className="flex items-center justify-center py-10 text-violet-500 gap-2">
+                <div className="flex items-center justify-center py-10 text-primary gap-2">
                   <Clock className="h-5 w-5 animate-spin" />
                   <span className="font-sans font-semibold text-xs text-muted-foreground">Evaluating Submission Against 20+ Hidden Test Cases...</span>
                 </div>
               ) : submissionResult ? (
                 <div className="space-y-3 font-mono text-xs">
                   {/* Verdict & Metrics Row */}
-                  <div className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
+                  <div className="flex items-center justify-between bg-slate-950 p-3 rounded-md border border-slate-800">
                     <div className="flex items-center gap-3">
                       {getVerdictBadge(submissionResult.verdict)}
                       <span className="text-slate-300 font-bold">

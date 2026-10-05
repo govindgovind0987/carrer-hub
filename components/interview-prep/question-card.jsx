@@ -216,12 +216,12 @@ ${(question.interviewTips || []).map((t) => `- ${t}`).join('\n')}
     if (d === 'MEDIUM')
       return <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/30">Medium</Badge>;
     if (d === 'EXPERT')
-      return <Badge className="bg-purple-500/10 text-purple-600 border-purple-500/30">Expert</Badge>;
+      return <Badge className="bg-primary/10 text-primary border-primary/30">Expert</Badge>;
     return <Badge className="bg-rose-500/10 text-rose-600 border-rose-500/30">Hard</Badge>;
   };
 
   return (
-    <Card className="border-border/60 bg-card/90 backdrop-blur-xl overflow-hidden transition-all shadow-md hover:border-violet-500/30">
+    <Card className="border-border/60 bg-card/90 backdrop-blur-xl overflow-hidden transition-all shadow-md hover:border-primary/30">
       {/* Top Question Header */}
       <CardHeader
         className="p-5 flex flex-row items-start justify-between cursor-pointer hover:bg-muted/30 transition-colors"
@@ -229,7 +229,7 @@ ${(question.interviewTips || []).map((t) => `- ${t}`).join('\n')}
       >
         <div className="space-y-2 pr-4 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="text-violet-600 border-violet-500/30 text-xs font-bold">
+            <Badge variant="outline" className="text-primary border-primary/30 text-xs font-bold">
               Q{index + 1} of {totalCount}
             </Badge>
             {getDifficultyBadge(question.difficulty)}
@@ -269,7 +269,7 @@ ${(question.interviewTips || []).map((t) => `- ${t}`).join('\n')}
       {isExpanded && (
         <CardContent className="p-5 pt-0 space-y-5 border-t border-border/40">
           {/* Main Action Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-4 bg-muted/20 p-3 rounded-xl border border-border/40">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-4 bg-muted/20 p-3 rounded-md border border-border/40">
             {/* AI Magic Transformations */}
             <div className="flex flex-wrap items-center gap-1.5">
               <Button
@@ -277,7 +277,7 @@ ${(question.interviewTips || []).map((t) => `- ${t}`).join('\n')}
                 variant="outline"
                 onClick={handleExplainAI}
                 disabled={loadingAction === 'explain'}
-                className="text-xs bg-violet-500/10 text-violet-600 border-violet-500/30 hover:bg-violet-500/20"
+                className="text-xs bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
               >
                 {loadingAction === 'explain' ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
@@ -292,7 +292,7 @@ ${(question.interviewTips || []).map((t) => `- ${t}`).join('\n')}
                 variant="outline"
                 onClick={handleSimplifyAI}
                 disabled={loadingAction === 'simplify'}
-                className="text-xs bg-indigo-500/10 text-indigo-600 border-indigo-500/30 hover:bg-indigo-500/20"
+                className="text-xs bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
               >
                 {loadingAction === 'simplify' ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
@@ -312,7 +312,7 @@ ${(question.interviewTips || []).map((t) => `- ${t}`).join('\n')}
                 {loadingAction === 'similar' ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
                 ) : (
-                  <Sparkles className="h-3.5 w-3.5 mr-1 text-violet-500" />
+                  <Sparkles className="h-3.5 w-3.5 mr-1 text-primary" />
                 )}
                 Similar Questions
               </Button>
@@ -342,7 +342,7 @@ ${(question.interviewTips || []).map((t) => `- ${t}`).join('\n')}
                 size="icon"
                 variant={isSpeaking ? 'default' : 'ghost'}
                 onClick={handleToggleVoice}
-                className="h-8 w-8 text-violet-600"
+                className="h-8 w-8 text-primary"
                 title="Voice Reading Aloud"
               >
                 {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
@@ -382,15 +382,15 @@ ${(question.interviewTips || []).map((t) => `- ${t}`).join('\n')}
 
           {/* Question Details Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/60 p-1 rounded-xl">
+            <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/60 p-1 rounded-md">
               <TabsTrigger value="expected" className="text-xs py-1 px-3">
                 <CheckCircle2 className="h-3.5 w-3.5 mr-1 text-emerald-500" /> Expected Answer
               </TabsTrigger>
               <TabsTrigger value="explanation" className="text-xs py-1 px-3">
-                <FileText className="h-3.5 w-3.5 mr-1 text-violet-500" /> Detailed Explanation
+                <FileText className="h-3.5 w-3.5 mr-1 text-primary" /> Detailed Explanation
               </TabsTrigger>
               <TabsTrigger value="best" className="text-xs py-1 px-3">
-                <Sparkles className="h-3.5 w-3.5 mr-1 text-indigo-500" /> Model Answer
+                <Sparkles className="h-3.5 w-3.5 mr-1 text-primary" /> Model Answer
               </TabsTrigger>
               <TabsTrigger value="alternative" className="text-xs py-1 px-3">
                 <HelpCircle className="h-3.5 w-3.5 mr-1 text-cyan-500" /> Alternative Approach
@@ -405,7 +405,7 @@ ${(question.interviewTips || []).map((t) => `- ${t}`).join('\n')}
 
             {/* 1. Expected Answer Tab */}
             <TabsContent value="expected" className="pt-4 space-y-3">
-              <div className="p-4 rounded-xl bg-card border border-border/50 text-sm leading-relaxed text-foreground/90 whitespace-pre-line">
+              <div className="p-4 rounded-md bg-card border border-border/50 text-sm leading-relaxed text-foreground/90 whitespace-pre-line">
                 {question.sampleAnswer || 'No expected answer available.'}
               </div>
               {question.keyPoints && question.keyPoints.length > 0 && (
@@ -426,15 +426,15 @@ ${(question.interviewTips || []).map((t) => `- ${t}`).join('\n')}
 
             {/* 2. Detailed Explanation Tab */}
             <TabsContent value="explanation" className="pt-4 space-y-3">
-              <div className="p-4 rounded-xl bg-violet-500/5 border border-violet-500/20 text-sm leading-relaxed whitespace-pre-line text-foreground">
+              <div className="p-4 rounded-md bg-primary/5 border border-primary/20 text-sm leading-relaxed whitespace-pre-line text-foreground">
                 {aiExplanation || question.explanation || question.sampleAnswer || 'Detailed technical breakdown.'}
               </div>
             </TabsContent>
 
             {/* 3. Best Enterprise Answer Tab */}
             <TabsContent value="best" className="pt-4 space-y-3">
-              <div className="p-4 rounded-xl bg-slate-950 text-slate-100 border border-slate-800 text-sm leading-relaxed font-mono whitespace-pre-line">
-                <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 text-xs text-violet-400 font-sans font-bold">
+              <div className="p-4 rounded-md bg-slate-950 text-slate-100 border border-slate-800 text-sm leading-relaxed font-mono whitespace-pre-line">
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 text-xs text-primary font-sans font-bold">
                   <span>Enterprise Candidate Model Standard:</span>
                 </div>
                 {question.bestAnswer || question.sampleAnswer}
@@ -443,7 +443,7 @@ ${(question.interviewTips || []).map((t) => `- ${t}`).join('\n')}
 
             {/* 4. Alternative Answer Tab */}
             <TabsContent value="alternative" className="pt-4 space-y-3">
-              <div className="p-4 rounded-xl bg-muted/30 border border-border/50 text-sm leading-relaxed text-foreground/90 whitespace-pre-line">
+              <div className="p-4 rounded-md bg-muted/30 border border-border/50 text-sm leading-relaxed text-foreground/90 whitespace-pre-line">
                 {question.alternativeAnswer || 'Alternative architectural pattern or trade-off evaluation.'}
               </div>
             </TabsContent>
@@ -455,7 +455,7 @@ ${(question.interviewTips || []).map((t) => `- ${t}`).join('\n')}
                   question.commonMistakes.map((mst, idx) => (
                     <div
                       key={idx}
-                      className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-600 dark:text-rose-400 flex items-start gap-2"
+                      className="p-3.5 rounded-md bg-rose-500/10 border border-rose-500/20 text-xs text-rose-600 dark:text-rose-400 flex items-start gap-2"
                     >
                       <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
                       <span>{mst}</span>
@@ -474,7 +474,7 @@ ${(question.interviewTips || []).map((t) => `- ${t}`).join('\n')}
                   question.interviewTips.map((tip, idx) => (
                     <div
                       key={idx}
-                      className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-600 dark:text-amber-400 flex items-start gap-2"
+                      className="p-3.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-xs text-amber-600 dark:text-amber-400 flex items-start gap-2"
                     >
                       <Lightbulb className="h-4 w-4 shrink-0 mt-0.5" />
                       <span>{tip}</span>
@@ -488,7 +488,7 @@ ${(question.interviewTips || []).map((t) => `- ${t}`).join('\n')}
 
             {/* Simplified Answer View (Triggered by AI) */}
             {activeTab === 'simplified' && (
-              <div className="pt-4 p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-sm leading-relaxed text-indigo-700 dark:text-indigo-300">
+              <div className="pt-4 p-4 rounded-md bg-primary/10 border border-primary/20 text-sm leading-relaxed text-primary dark:text-primary">
                 <h5 className="font-bold text-xs uppercase tracking-wider mb-2">ELI5 Simplified Version:</h5>
                 {aiSimplified || 'Generating simplified version...'}
               </div>
@@ -502,7 +502,7 @@ ${(question.interviewTips || []).map((t) => `- ${t}`).join('\n')}
                 </h5>
                 {similarQuestions && similarQuestions.length > 0 ? (
                   similarQuestions.map((sq, idx) => (
-                    <div key={idx} className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-2 text-xs">
+                    <div key={idx} className="p-3.5 rounded-md bg-muted/40 border border-border/50 space-y-2 text-xs">
                       <p className="font-bold text-foreground">
                         {idx + 1}. {sq.question}
                       </p>
@@ -518,8 +518,8 @@ ${(question.interviewTips || []).map((t) => `- ${t}`).join('\n')}
 
           {/* Follow-up question banner */}
           {question.followUp && (
-            <div className="p-3.5 rounded-xl bg-violet-500/10 border border-violet-500/20 text-xs space-y-1">
-              <span className="font-bold text-violet-600 dark:text-violet-400">Likely Follow-Up Question:</span>
+            <div className="p-3.5 rounded-md bg-primary/10 border border-primary/20 text-xs space-y-1">
+              <span className="font-bold text-primary dark:text-primary">Likely Follow-Up Question:</span>
               <p className="text-foreground/90">{question.followUp}</p>
             </div>
           )}

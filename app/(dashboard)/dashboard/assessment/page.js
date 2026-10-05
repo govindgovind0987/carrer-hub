@@ -40,24 +40,7 @@ export default async function CodingAssessmentPage({ searchParams }) {
   const selectedStatus = sp?.status || 'ALL';
   const isBookmarkedOnly = sp?.bookmarked === 'true';
 
-  // 1. Fetch User Stats & Badges
-  let userStats = null;
-  let userBadges = [];
-  if (userId) {
-    if (prisma.userCodingStats?.findUnique) {
-      userStats = await prisma.userCodingStats.findUnique({
-        where: { userId },
-      });
-    }
-    if (prisma.userBadge?.findMany) {
-      userBadges = await prisma.userBadge.findMany({
-        where: { userId },
-        include: { badge: true },
-      });
-    }
-  }
-
-  // 2. Build Problem Query Filter
+  // Build the problem filter before starting independent database reads.
   const AND = [];
   if (selectedCategory !== 'ALL') {
     AND.push({
@@ -88,26 +71,52 @@ export default async function CodingAssessmentPage({ searchParams }) {
 
   const where = AND.length > 0 ? { AND } : {};
 
-  // 3. Fetch Problems
-  let problems = (prisma.problem?.findMany)
-    ? await prisma.problem.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-      })
-    : [];
+  // These reads are independent. Run them together and return only fields used by this page.
+  const [userStats, userBadges, fetchedProblems, userProgress] = await Promise.all([
+    userId
+      ? prisma.userCodingStats.findUnique({
+          where: { userId },
+          select: { solvedCount: true, streakDays: true, points: true },
+        })
+      : null,
+    userId
+      ? prisma.userBadge.findMany({
+          where: { userId },
+          select: {
+            id: true,
+            badge: { select: { icon: true, name: true, description: true } },
+          },
+        })
+      : [],
+    prisma.problem.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        difficulty: true,
+        category: true,
+        tags: true,
+        acceptanceRate: true,
+        totalSubmissions: true,
+      },
+    }),
+    userId
+      ? prisma.userProblemProgress.findMany({
+          where: { userId },
+          select: { problemId: true, status: true, bookmarked: true },
+        })
+      : [],
+  ]);
 
-  // 4. Fetch User Problem Progress
-  let progressMap = {};
-  let bookmarkMap = {};
-  if (userId && prisma.userProblemProgress?.findMany) {
-    const userProgress = await prisma.userProblemProgress.findMany({
-      where: { userId },
-    });
-    userProgress.forEach((p) => {
-      progressMap[p.problemId] = p.status;
-      bookmarkMap[p.problemId] = p.bookmarked;
-    });
-  }
+  let problems = fetchedProblems;
+  const progressMap = {};
+  const bookmarkMap = {};
+  userProgress.forEach((progress) => {
+    progressMap[progress.problemId] = progress.status;
+    bookmarkMap[progress.problemId] = progress.bookmarked;
+  });
 
   // Filter by status or bookmark if requested
   if (selectedStatus !== 'ALL') {
