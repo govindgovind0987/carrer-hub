@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { getResumes, createResume, setDefaultResume, deleteResume } from '@/actions/resume';
+import { CareerWorkspaceHeader } from '@/components/career-workspace/career-workspace-header';
 
 export default function ResumesPage() {
   const [resumes, setResumes] = useState([]);
@@ -127,84 +128,100 @@ export default function ResumesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Resume Management</h1>
-          <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
-            Upload multiple resume versions and manage default documents for one-click job applications.
-          </p>
-        </div>
-
-        <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm">
-              <Upload className="mr-1.5 h-3.5 w-3.5" /> Upload New Resume
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="text-base font-semibold">Upload Resume PDF</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleUpload} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="res-title">Resume Title / Label</Label>
-                <Input
-                  id="res-title"
-                  placeholder="e.g. Senior FullStack Resume 2026"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="res-file">PDF or Word Document (Max 10MB)</Label>
-                <Input
-                  id="res-file"
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  disabled={uploading}
-                  onChange={(e) => setSelectedFile(e.target.files[0])}
-                />
-              </div>
-
-              {selectedFile && (
-                <div className="text-xs text-muted-foreground bg-muted/50 p-2.5 rounded-lg flex items-center justify-between">
-                  <span className="truncate font-medium">{selectedFile.name}</span>
-                  <span className="shrink-0 font-mono">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</span>
-                </div>
-              )}
-
-              {uploading && (
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Uploading file...</span>
-                    <span>Processing</span>
-                  </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                    <div className="h-full w-full animate-pulse bg-primary rounded-full" />
-                  </div>
-                </div>
-              )}
-
-              <Button type="submit" disabled={uploading} className="w-full">
-                {uploading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="mr-2 h-4 w-4" /> Upload Resume
-                  </>
-                )}
+      <CareerWorkspaceHeader
+        title="My Resumes"
+        description="Upload multiple resume versions and manage default documents for one-click job applications."
+        action={
+          <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm">
+                <Upload className="mr-1.5 h-3.5 w-3.5" /> Upload New Resume
               </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="text-base font-semibold">Upload Resume PDF</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleUpload} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="res-title">Resume Title / Label</Label>
+                  <Input
+                    id="res-title"
+                    placeholder="e.g. Senior FullStack Resume 2026"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="res-file">PDF or Word Document (Max 10MB)</Label>
+                  <Input
+                    id="res-file"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    disabled={uploading}
+                    onChange={(e) => setSelectedFile(e.target.files[0])}
+                  />
+                </div>
+
+                {selectedFile && (
+                  <div className="text-xs text-muted-foreground bg-muted/50 p-2.5 rounded-lg flex items-center justify-between">
+                    <span className="truncate font-medium">{selectedFile.name}</span>
+                    <span className="shrink-0 font-mono">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</span>
+                  </div>
+                )}
+
+                {uploading && (
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Uploading file...</span>
+                      <span>Processing</span>
+                    </div>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                      <div className="h-full w-full animate-pulse bg-primary rounded-full" />
+                    </div>
+                  </div>
+                )}
+
+                <Button type="submit" disabled={uploading} className="w-full">
+                  {uploading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" /> Upload Resume
+                    </>
+                  )}
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        }
+      />
 
       {loading ? (
-        <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+          {[1, 2].map((i) => (
+            <Card key={i} className="border-border/60">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2">
+                    <div className="h-5 w-40 bg-muted rounded" />
+                    <div className="h-3 w-28 bg-muted/60 rounded" />
+                  </div>
+                  <div className="h-5 w-16 bg-muted rounded-full" />
+                </div>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <div className="h-10 bg-muted/40 rounded-lg mb-4" />
+                <div className="flex gap-2">
+                  <div className="h-8 flex-1 bg-muted rounded" />
+                  <div className="h-8 w-8 bg-muted rounded" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       ) : resumes.length === 0 ? (
         <Card className="border-dashed">

@@ -16,6 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getResumes } from '@/actions/resume';
 import { getJobs } from '@/actions/job';
@@ -73,8 +74,26 @@ export default function JobMatchPage() {
 
   if (loading) {
     return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-8 animate-in fade-in-50 duration-200">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">AI Job Matcher</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Compare your tailored resume directly against target job description requisitions to calculate match probability.
+          </p>
+        </div>
+        <Card className="border-border/50 bg-card p-6">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 items-end">
+            <div className="space-y-2">
+              <Skeleton className="h-3.5 w-24" />
+              <Skeleton className="h-9 w-full rounded-md" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-3.5 w-24" />
+              <Skeleton className="h-9 w-full rounded-md" />
+            </div>
+            <Skeleton className="h-9 w-full rounded-md" />
+          </div>
+        </Card>
       </div>
     );
   }

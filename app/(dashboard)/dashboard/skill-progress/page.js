@@ -41,6 +41,7 @@ export default async function SkillProgressPage() {
           problem: { select: { category: true, tags: true } },
         },
         orderBy: { createdAt: 'desc' },
+        take: 100,
       }),
       prisma.userCodingStats.findUnique({ where: { userId }, select: { solvedCount: true } }),
       prisma.interviewSession.findMany({

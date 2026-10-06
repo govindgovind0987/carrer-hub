@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, use, useMemo, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -44,10 +44,11 @@ import {
   submitCodingSubmissionAction,
 } from '@/actions/interview';
 
-export default function LiveInterviewRoomPage({ params }) {
-  const resolvedParams = use(params);
-  const sessionId = resolvedParams.id;
+export default function LiveInterviewRoomPage({ params: propsParams }) {
   const router = useRouter();
+  const routerParams = useParams();
+  const resolvedParams = propsParams && typeof propsParams.then === 'function' ? use(propsParams) : propsParams;
+  const sessionId = routerParams?.id || routerParams?.sessionId || resolvedParams?.id || resolvedParams?.sessionId;
 
   // Voice Interview Hook
   const voice = useVoiceInterview();
@@ -55,6 +56,7 @@ export default function LiveInterviewRoomPage({ params }) {
   // Session State
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,10 +76,19 @@ export default function LiveInterviewRoomPage({ params }) {
     let isMounted = true;
 
     async function loadData() {
+      if (!sessionId) {
+        if (isMounted) {
+          setError('Missing session ID parameter.');
+          setLoading(false);
+        }
+        return;
+      }
+
       setLoading(true);
+      setError(null);
 
       // Check local cached session first for fast instant load / reconnect
-      const cached = localStorage.getItem(`mock_session_${sessionId}`);
+      const cached = typeof window !== 'undefined' ? localStorage.getItem(`mock_session_${sessionId}`) : null;
       if (cached) {
         try {
           const parsed = JSON.parse(cached);
@@ -96,10 +107,42 @@ export default function LiveInterviewRoomPage({ params }) {
         if (isMounted) {
           setSession(res.session);
           setTotalSecondsLeft((res.session.durationMinutes || 30) * 60);
-          localStorage.setItem(`mock_session_${sessionId}`, JSON.stringify(res.session));
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(`mock_session_${sessionId}`, JSON.stringify(res.session));
+          }
+
+          // Restore previously persisted answers from database
+          if (Array.isArray(res.session.answers) && res.session.answers.length > 0) {
+            const answerMap = {};
+            res.session.answers.forEach((ans) => {
+              answerMap[ans.questionId] = {
+                answerType: ans.answerType,
+                textAnswer: ans.userAnswer,
+                codeSnippet: ans.codeSnippet,
+                selectedOption: ans.selectedOption,
+              };
+            });
+            setAnswers((prev) => ({ ...answerMap, ...prev }));
+          }
+
+          // Restore previously persisted feedbacks from database
+          if (Array.isArray(res.session.feedbacks) && res.session.feedbacks.length > 0) {
+            const feedbackMap = {};
+            res.session.feedbacks.forEach((fb) => {
+              feedbackMap[fb.questionId] = fb;
+            });
+            setFeedbacks((prev) => ({ ...feedbackMap, ...prev }));
+          }
+
+          if (typeof res.session.currentQuestionIndex === 'number' && res.session.currentQuestionIndex > 0) {
+            setCurrentIndex(res.session.currentQuestionIndex);
+          }
         }
       } else if (!cached) {
-        toast.error('Session not found or unavailable');
+        if (isMounted) {
+          setError(res.error || 'Interview session not found or unauthorized.');
+          toast.error(res.error || 'Session not found or unavailable');
+        }
       }
 
       if (isMounted) setLoading(false);
@@ -272,6 +315,28 @@ export default function LiveInterviewRoomPage({ params }) {
       <div className="flex flex-col h-[70vh] items-center justify-center space-y-4">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
         <p className="text-sm font-medium text-muted-foreground">Preparing Live AI Interview Room...</p>
+      </div>
+    );
+  }
+
+  if (error || !session) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] max-w-lg mx-auto text-center space-y-4 p-6">
+        <div className="h-16 w-16 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mb-2">
+          <AlertCircle className="h-8 w-8" />
+        </div>
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">Interview Session Unavailable</h2>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          {error || 'This interview session could not be found or you do not have permission to access it.'}
+        </p>
+        <div className="flex items-center gap-3 pt-4">
+          <Button variant="outline" onClick={() => router.push('/dashboard/mock-interview')}>
+            <ChevronLeft className="mr-2 h-4 w-4" /> All Interviews
+          </Button>
+          <Button onClick={() => router.push('/dashboard/mock-interview/create')} className="bg-primary text-primary-foreground">
+            <Sparkles className="mr-2 h-4 w-4" /> Start New Interview
+          </Button>
+        </div>
       </div>
     );
   }

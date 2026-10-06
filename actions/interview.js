@@ -9,6 +9,44 @@ import {
 } from '@/services/interview-ai';
 import { revalidatePath } from 'next/cache';
 
+const VALID_CATEGORIES = [
+  'JAVASCRIPT',
+  'REACT',
+  'NEXTJS',
+  'NODEJS',
+  'MONGODB',
+  'SQL',
+  'DSA',
+  'HR',
+  'BEHAVIORAL',
+  'TECHNICAL',
+];
+
+function normalizeCategory(cat) {
+  if (!cat) return 'TECHNICAL';
+  const clean = String(cat).toUpperCase().replace(/[^A-Z]/g, '');
+  if (VALID_CATEGORIES.includes(clean)) return clean;
+  if (clean.includes('REACT')) return 'REACT';
+  if (clean.includes('NEXT')) return 'NEXTJS';
+  if (clean.includes('NODE')) return 'NODEJS';
+  if (clean.includes('MONGO')) return 'MONGODB';
+  if (clean.includes('SQL')) return 'SQL';
+  if (clean.includes('DSA') || clean.includes('ALGO')) return 'DSA';
+  if (clean.includes('HR')) return 'HR';
+  if (clean.includes('BEHAVIOR')) return 'BEHAVIORAL';
+  if (clean.includes('JS') || clean.includes('JAVASCRIPT')) return 'JAVASCRIPT';
+  return 'TECHNICAL';
+}
+
+function normalizeDifficulty(diff) {
+  if (!diff) return 'MEDIUM';
+  const clean = String(diff).toUpperCase();
+  if (clean === 'EASY' || clean === 'MEDIUM' || clean === 'HARD') return clean;
+  if (clean.includes('EASY')) return 'EASY';
+  if (clean.includes('HARD')) return 'HARD';
+  return 'MEDIUM';
+}
+
 /**
  * Helper to ensure authenticated user
  */
@@ -35,102 +73,97 @@ export async function createInterviewSessionAction({
     const user = await getAuthenticatedUser();
     if (!user) return { success: false, error: 'Unauthorized. Please sign in.' };
 
+    const sanitizedRole = (role || 'Full Stack Developer').trim();
+    const sanitizedTech = (technology || 'React').trim();
+    const sanitizedExp = (experience || 'MID_LEVEL').trim();
+    const sanitizedDiff = normalizeDifficulty(difficulty);
+    const sanitizedDuration = Math.min(120, Math.max(5, Number(durationMinutes) || 30));
+    const sanitizedCount = Math.min(10, Math.max(1, Number(numberOfQuestions) || 5));
+    const sanitizedCategories =
+      Array.isArray(questionCategories) && questionCategories.length > 0
+        ? questionCategories
+        : ['TECHNICAL'];
+
     // 1. Generate questions using Groq / AI Service
     const aiQuestions = await generateInterviewSessionAI({
-      role,
-      technology,
-      experience,
-      difficulty,
+      role: sanitizedRole,
+      technology: sanitizedTech,
+      experience: sanitizedExp,
+      difficulty: sanitizedDiff,
       type,
-      numberOfQuestions,
-      questionCategories,
+      numberOfQuestions: sanitizedCount,
+      questionCategories: sanitizedCategories,
     });
 
-    // 2. Persist in database
-    try {
-      const dbSession = await prisma.interviewSession.create({
-        data: {
-          userId: user.id,
-          role,
-          technology,
-          experience,
-          difficulty,
-          type,
-          durationMinutes: Number(durationMinutes),
-          numberOfQuestions: Number(numberOfQuestions),
-          questionCategories,
-          status: 'IN_PROGRESS',
-          startedAt: new Date(),
-          questions: {
-            create: aiQuestions.map((q, idx) => ({
-              userId: user.id,
-              order: idx + 1,
-              question: q.question,
-              category: q.category || 'TECHNICAL',
-              difficulty: q.difficulty || difficulty,
-              questionType: q.questionType || 'TEXT',
-              sampleAnswer: q.sampleAnswer,
-              keyPoints: q.keyPoints || [],
-              hints: q.hints || [],
-              options: q.options || null,
-              codeTemplate: q.codeTemplate || null,
-            })),
-          },
-        },
-        include: {
-          questions: {
-            orderBy: { order: 'asc' },
-          },
-        },
-      });
-
-      revalidatePath('/dashboard/mock-interview');
-
-      return {
-        success: true,
-        sessionId: dbSession.id,
-        session: dbSession,
-      };
-    } catch (dbErr) {
-      console.warn('Database session creation fallback:', dbErr);
-      
-      // Memory fallback session ID for dev when database connection is unready
-      const fallbackId = `session_${Date.now()}`;
-      const fallbackQuestions = aiQuestions.map((q, idx) => ({
-        id: `q_${Date.now()}_${idx}`,
-        order: idx + 1,
-        question: q.question,
-        category: q.category || 'TECHNICAL',
-        difficulty: q.difficulty || difficulty,
-        questionType: q.questionType || 'TEXT',
-        sampleAnswer: q.sampleAnswer,
-        keyPoints: q.keyPoints || [],
-        hints: q.hints || [],
-        options: q.options || null,
-        codeTemplate: q.codeTemplate || null,
-      }));
-
-      return {
-        success: true,
-        sessionId: fallbackId,
-        session: {
-          id: fallbackId,
-          userId: user.id,
-          role,
-          technology,
-          experience,
-          difficulty,
-          type,
-          durationMinutes: Number(durationMinutes),
-          numberOfQuestions: Number(numberOfQuestions),
-          questionCategories,
-          status: 'IN_PROGRESS',
-          currentQuestionIndex: 0,
-          startedAt: new Date().toISOString(),
-          questions: fallbackQuestions,
-        },
-      };
+    if (!Array.isArray(aiQuestions) || aiQuestions.length === 0) {
+      return { success: false, error: 'Failed to generate interview questions. Please try again.' };
     }
+
+    // 2. Persist in database
+    const dbSession = await prisma.interviewSession.create({
+      data: {
+        userId: user.id,
+        role: sanitizedRole,
+        technology: sanitizedTech,
+        experience: sanitizedExp,
+        difficulty: sanitizedDiff,
+        type,
+        durationMinutes: sanitizedDuration,
+        numberOfQuestions: sanitizedCount,
+        questionCategories: sanitizedCategories,
+        status: 'IN_PROGRESS',
+        startedAt: new Date(),
+        questions: {
+          create: aiQuestions.map((q, idx) => ({
+            userId: user.id,
+            order: idx + 1,
+            question: q.question,
+            category: normalizeCategory(q.category || sanitizedCategories[0]),
+            categoryName: q.categoryName || q.category || sanitizedTech || 'Technical',
+            difficulty: normalizeDifficulty(q.difficulty || sanitizedDiff),
+            questionType: q.questionType || 'TEXT',
+            role: sanitizedRole,
+            companyStyle: q.companyStyle || 'General Interview',
+            sampleAnswer: q.sampleAnswer || '',
+            explanation: q.explanation || '',
+            bestAnswer: q.bestAnswer || '',
+            alternativeAnswer: q.alternativeAnswer || '',
+            commonMistakes: Array.isArray(q.commonMistakes) ? q.commonMistakes : [],
+            interviewTips: Array.isArray(q.interviewTips)
+              ? q.interviewTips
+              : Array.isArray(q.hints)
+                ? q.hints
+                : ['Structure your response clearly with practical examples.'],
+            keyPoints: Array.isArray(q.keyPoints) ? q.keyPoints : [],
+            followUp: q.followUp || null,
+            options: q.options || null,
+            codeTemplate: q.codeTemplate || null,
+          })),
+        },
+      },
+      include: {
+        questions: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+
+    // Enhance questions for frontend consumer with hints accessor
+    const formattedQuestions = dbSession.questions.map((q) => ({
+      ...q,
+      hints: q.interviewTips?.length > 0 ? q.interviewTips : ['Structure your response clearly.'],
+    }));
+
+    revalidatePath('/dashboard/mock-interview');
+
+    return {
+      success: true,
+      sessionId: dbSession.id,
+      session: {
+        ...dbSession,
+        questions: formattedQuestions,
+      },
+    };
   } catch (error) {
     console.error('Error creating interview session:', error);
     return { success: false, error: error.message || 'Failed to create interview session' };
@@ -143,28 +176,43 @@ export async function createInterviewSessionAction({
 export async function getInterviewSessionAction(sessionId) {
   try {
     const user = await getAuthenticatedUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    if (!user) return { success: false, error: 'Unauthorized. Please sign in.' };
 
-    try {
-      const session = await prisma.interviewSession.findUnique({
-        where: { id: sessionId },
-        include: {
-          questions: { orderBy: { order: 'asc' } },
-          answers: true,
-          feedbacks: true,
-          report: true,
-        },
-      });
-
-      if (!session) return { success: false, error: 'Session not found' };
-
-      return { success: true, session };
-    } catch (dbErr) {
-      return { success: false, error: 'Database session lookup failed' };
+    if (!sessionId) {
+      return { success: false, error: 'Session ID is required.' };
     }
+
+    const session = await prisma.interviewSession.findUnique({
+      where: { id: sessionId },
+      include: {
+        questions: { orderBy: { order: 'asc' } },
+        answers: true,
+        feedbacks: true,
+        report: true,
+      },
+    });
+
+    if (!session) {
+      return { success: false, error: 'Interview session not found.' };
+    }
+
+    if (session.userId !== user.id && user.role !== 'ADMIN') {
+      return { success: false, error: 'Unauthorized: You do not have permission to view this interview session.' };
+    }
+
+    // Enhance questions with hints accessor for UI components
+    const sessionWithHints = {
+      ...session,
+      questions: session.questions.map((q) => ({
+        ...q,
+        hints: q.interviewTips?.length > 0 ? q.interviewTips : ['Structure your answer clearly with practical examples.'],
+      })),
+    };
+
+    return { success: true, session: sessionWithHints };
   } catch (error) {
     console.error('Error getting interview session:', error);
-    return { success: false, error: 'Failed to retrieve session' };
+    return { success: false, error: 'Failed to retrieve session: ' + (error.message || 'Server error') };
   }
 }
 
@@ -183,10 +231,22 @@ export async function submitInterviewAnswerAction({
 }) {
   try {
     const user = await getAuthenticatedUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    if (!user) return { success: false, error: 'Unauthorized. Please sign in.' };
+
+    if (!sessionId || !questionId) {
+      return { success: false, error: 'Session ID and Question ID are required.' };
+    }
+
+    const session = await prisma.interviewSession.findUnique({
+      where: { id: sessionId },
+      select: { id: true, userId: true },
+    });
+
+    if (!session || (session.userId !== user.id && user.role !== 'ADMIN')) {
+      return { success: false, error: 'Interview session not found or unauthorized.' };
+    }
 
     let question = { question: 'Question detail' };
-
     try {
       const qRecord = await prisma.interviewQuestion.findUnique({
         where: { id: questionId },
@@ -196,59 +256,84 @@ export async function submitInterviewAnswerAction({
       // ignore
     }
 
-    // AI Evaluation
+    // AI Evaluation across 9 dimensions
     const evaluation = await evaluateInterviewAnswerAI({
       question,
       userAnswer: userAnswer || selectedOption,
       answerType,
       codeSnippet,
-      confidenceScore,
-      timeTakenSec,
+      confidenceScore: Number(confidenceScore) || 0.8,
+      timeTakenSec: Number(timeTakenSec) || 60,
     });
 
-    // Save to DB if possible
-    try {
-      await prisma.interviewAnswer.create({
-        data: {
-          sessionId,
-          questionId,
-          answerType,
-          userAnswer: userAnswer || selectedOption || codeSnippet || '',
-          codeSnippet,
-          selectedOption,
-          confidenceScore,
-          timeTakenSec,
-        },
-      });
+    // Save/Update Answer in Database (prevent duplicate row errors)
+    const existingAnswer = await prisma.interviewAnswer.findFirst({
+      where: { sessionId, questionId },
+    });
 
-      await prisma.interviewFeedback.create({
-        data: {
-          sessionId,
-          questionId,
-          feedback: evaluation.feedback || 'Evaluated answer.',
-          score: evaluation.score || 80,
-          correctness: evaluation.correctness || 80,
-          technicalKnowledge: evaluation.technicalKnowledge || 80,
-          communication: evaluation.communication || 80,
-          confidence: evaluation.confidence || 80,
-          problemSolving: evaluation.problemSolving || 80,
-          codingStyle: evaluation.codingStyle || 80,
-          cleanCode: evaluation.cleanCode || 80,
-          bestPractices: evaluation.bestPractices || 80,
-          logicalThinking: evaluation.logicalThinking || 80,
-        },
-      });
-    } catch (dbErr) {
-      console.warn('DB record save skipped (dev fallback mode):', dbErr.message);
-    }
+    const answerPayload = {
+      answerType,
+      userAnswer: userAnswer || selectedOption || codeSnippet || '',
+      codeSnippet: codeSnippet || null,
+      selectedOption: selectedOption || null,
+      confidenceScore: Number(confidenceScore) || 0.8,
+      timeTakenSec: Number(timeTakenSec) || 60,
+    };
+
+    const savedAnswer = existingAnswer
+      ? await prisma.interviewAnswer.update({
+          where: { id: existingAnswer.id },
+          data: answerPayload,
+        })
+      : await prisma.interviewAnswer.create({
+          data: {
+            sessionId,
+            questionId,
+            ...answerPayload,
+          },
+        });
+
+    // Save/Update Feedback in Database
+    const existingFeedback = await prisma.interviewFeedback.findFirst({
+      where: { sessionId, questionId },
+    });
+
+    const feedbackPayload = {
+      feedback: evaluation.feedback || 'Evaluated answer.',
+      score: evaluation.score || 80,
+      correctness: evaluation.correctness || 80,
+      technicalKnowledge: evaluation.technicalKnowledge || 80,
+      communication: evaluation.communication || 80,
+      confidence: evaluation.confidence || 80,
+      problemSolving: evaluation.problemSolving || 80,
+      codingStyle: evaluation.codingStyle || 80,
+      cleanCode: evaluation.cleanCode || 80,
+      bestPractices: evaluation.bestPractices || 80,
+      logicalThinking: evaluation.logicalThinking || 80,
+    };
+
+    const savedFeedback = existingFeedback
+      ? await prisma.interviewFeedback.update({
+          where: { id: existingFeedback.id },
+          data: feedbackPayload,
+        })
+      : await prisma.interviewFeedback.create({
+          data: {
+            sessionId,
+            questionId,
+            ...feedbackPayload,
+          },
+        });
 
     return {
       success: true,
       evaluation,
+      answer: savedAnswer,
+      feedback: savedFeedback,
     };
   } catch (error) {
     console.error('Error submitting interview answer:', error);
-    return { success: false, error: 'Failed to submit answer' };
+    return { success: false, error: 'Failed to submit answer: ' + (error.message || 'Server error') };
   }
 }
 
@@ -258,24 +343,31 @@ export async function submitInterviewAnswerAction({
 export async function updateInterviewStatusAction(sessionId, status, currentQuestionIndex = 0) {
   try {
     const user = await getAuthenticatedUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    if (!user) return { success: false, error: 'Unauthorized. Please sign in.' };
 
-    try {
-      await prisma.interviewSession.update({
-        where: { id: sessionId },
-        data: {
-          status,
-          currentQuestionIndex,
-          ...(status === 'COMPLETED' ? { endedAt: new Date() } : {}),
-        },
-      });
-    } catch (e) {
-      // fallback
+    if (!sessionId) return { success: false, error: 'Session ID required.' };
+
+    const session = await prisma.interviewSession.findUnique({
+      where: { id: sessionId },
+      select: { id: true, userId: true },
+    });
+
+    if (!session || (session.userId !== user.id && user.role !== 'ADMIN')) {
+      return { success: false, error: 'Session not found or unauthorized.' };
     }
+
+    await prisma.interviewSession.update({
+      where: { id: sessionId },
+      data: {
+        status,
+        currentQuestionIndex: Math.max(0, Number(currentQuestionIndex) || 0),
+        ...(status === 'COMPLETED' ? { endedAt: new Date() } : {}),
+      },
+    });
 
     return { success: true };
   } catch (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: error.message || 'Failed to update interview status' };
   }
 }
 
@@ -285,46 +377,37 @@ export async function updateInterviewStatusAction(sessionId, status, currentQues
 export async function generateFinalInterviewReportAction(sessionId, cachedData = null) {
   try {
     const user = await getAuthenticatedUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    if (!user) return { success: false, error: 'Unauthorized. Please sign in.' };
 
-    let session = cachedData?.session;
-    let questions = cachedData?.questions || [];
-    let answers = cachedData?.answers || [];
-    let feedbacks = cachedData?.feedbacks || [];
+    if (!sessionId) return { success: false, error: 'Session ID required.' };
 
-    try {
-      const dbSession = await prisma.interviewSession.findUnique({
-        where: { id: sessionId },
-        include: {
-          questions: { orderBy: { order: 'asc' } },
-          answers: true,
-          feedbacks: true,
-          report: true,
-        },
-      });
+    const dbSession = await prisma.interviewSession.findUnique({
+      where: { id: sessionId },
+      include: {
+        questions: { orderBy: { order: 'asc' } },
+        answers: true,
+        feedbacks: true,
+        report: true,
+      },
+    });
 
-      if (dbSession) {
-        if (dbSession.report) {
-          return { success: true, report: dbSession.report };
-        }
-        session = dbSession;
-        questions = dbSession.questions;
-        answers = dbSession.answers;
-        feedbacks = dbSession.feedbacks;
-      }
-    } catch (dbErr) {
-      console.warn('DB lookup fallback for final report synthesis:', dbErr.message);
+    if (!dbSession) {
+      return { success: false, error: 'Interview session not found.' };
     }
 
-    if (!session) {
-      session = {
-        id: sessionId,
-        role: 'Full Stack Engineer',
-        technology: 'React',
-        experience: 'MID_LEVEL',
-        difficulty: 'MEDIUM',
-      };
+    if (dbSession.userId !== user.id && user.role !== 'ADMIN') {
+      return { success: false, error: 'Unauthorized: You do not have access to this session report.' };
     }
+
+    // If report was already generated, return it immediately
+    if (dbSession.report) {
+      return { success: true, report: dbSession.report };
+    }
+
+    const session = dbSession;
+    const questions = dbSession.questions;
+    const answers = dbSession.answers;
+    const feedbacks = dbSession.feedbacks;
 
     // Synthesize final report using AI
     const reportData = await generateFinalInterviewReportAI({
@@ -367,48 +450,50 @@ export async function generateFinalInterviewReportAction(sessionId, cachedData =
         { topic: 'Confidence', score: reportData.confidenceScore },
         { topic: 'Coding & Execution', score: reportData.codingScore },
       ],
-      strengths: reportData.strengths,
-      weaknesses: reportData.weaknesses,
-      mistakes: reportData.mistakes,
-      missingConcepts: reportData.missingConcepts,
-      recommendedTopics: reportData.recommendedTopics,
-      recommendedResources: reportData.recommendedResources,
-      summary: reportData.summary,
-      recommendation: reportData.recommendation,
-      createdAt: new Date().toISOString(),
+      strengths: reportData.strengths || [],
+      weaknesses: reportData.weaknesses || [],
+      mistakes: reportData.mistakes || [],
+      missingConcepts: reportData.missingConcepts || [],
+      recommendedTopics: reportData.recommendedTopics || [],
+      recommendedResources: reportData.recommendedResources || [],
+      summary: reportData.summary || 'Completed interview session.',
+      recommendation: reportData.recommendation || 'RECOMMENDED FOR HIRE',
     };
 
-    try {
-      const savedReport = await prisma.interviewReport.upsert({
-        where: { sessionId },
-        update: reportObj,
-        create: reportObj,
-      });
+    const savedReport = await prisma.interviewReport.upsert({
+      where: { sessionId },
+      update: reportObj,
+      create: reportObj,
+    });
 
-      await prisma.interviewSession.update({
-        where: { id: sessionId },
-        data: { status: 'COMPLETED', endedAt: new Date() },
-      });
+    await prisma.interviewSession.update({
+      where: { id: sessionId },
+      data: { status: 'COMPLETED', endedAt: new Date() },
+    });
 
+    const existingHistory = await prisma.performanceHistory.findFirst({
+      where: { sessionId },
+    });
+
+    if (!existingHistory) {
       await prisma.performanceHistory.create({
         data: {
           userId: user.id,
           sessionId,
           averageScore: reportData.overallScore,
           technology: session.technology || 'React',
-          difficulty: session.difficulty || 'MEDIUM',
+          difficulty: normalizeDifficulty(session.difficulty),
           durationMinutes: session.durationMinutes || 30,
         },
       });
-
-      revalidatePath('/dashboard/mock-interview');
-      return { success: true, report: savedReport };
-    } catch (dbErr) {
-      return { success: true, report: reportObj };
     }
+
+    revalidatePath('/dashboard/mock-interview');
+    revalidatePath('/dashboard');
+    return { success: true, report: savedReport };
   } catch (error) {
     console.error('Error generating final report:', error);
-    return { success: false, error: 'Failed to generate interview report' };
+    return { success: false, error: 'Failed to generate interview report: ' + (error.message || 'Server error') };
   }
 }
 
@@ -435,9 +520,12 @@ export async function getCandidateInterviewAnalyticsAction() {
         }),
         prisma.performanceHistory.findMany({
           where: { userId: user.id },
-          orderBy: { createdAt: 'asc' },
+          orderBy: { createdAt: 'desc' },
+          take: 30,
         }),
       ]);
+
+      const reversedHistories = [...histories].reverse();
 
       const interviewCount = sessions.length;
       const scores = reports.map((r) => r.overallScore);
@@ -451,7 +539,7 @@ export async function getCandidateInterviewAnalyticsAction() {
           averageScore,
           bestPerformance,
           recentInterviews: sessions,
-          histories,
+          histories: reversedHistories,
         },
       };
     } catch (dbErr) {

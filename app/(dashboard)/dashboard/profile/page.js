@@ -42,6 +42,7 @@ import {
 import { Camera } from 'lucide-react';
 
 import { personalInfoSchema, educationSchema, experienceSchema, skillSchema, projectSchema } from '@/schemas/profile';
+import { CareerWorkspaceHeader } from '@/components/career-workspace/career-workspace-header';
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState(null);
@@ -219,20 +220,40 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="space-y-6 animate-pulse">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/40 pb-5">
+          <div className="space-y-2">
+            <div className="h-7 w-48 bg-muted rounded" />
+            <div className="h-4 w-96 bg-muted/60 rounded" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="p-6 border-border/50 bg-card">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="h-24 w-24 rounded-full bg-muted" />
+              <div className="h-5 w-36 bg-muted rounded" />
+              <div className="h-4 w-48 bg-muted/60 rounded" />
+            </div>
+          </Card>
+          <Card className="p-6 border-border/50 bg-card lg:col-span-2 space-y-4">
+            <div className="h-6 w-32 bg-muted rounded" />
+            <div className="space-y-3">
+              <div className="h-9 w-full bg-muted/40 rounded" />
+              <div className="h-9 w-full bg-muted/40 rounded" />
+              <div className="h-20 w-full bg-muted/40 rounded" />
+            </div>
+          </Card>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Candidate Profile</h1>
-        <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
-          Manage your personal details, career history, education, skills, and portfolio links.
-        </p>
-      </div>
+      <CareerWorkspaceHeader
+        title="My Profile"
+        description="Manage your personal details, career history, education, skills, and portfolio links."
+      />
 
       <Tabs defaultValue="personal" className="w-full">
         <TabsList className="grid w-full grid-cols-5 bg-card p-1 border border-border">

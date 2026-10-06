@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { CareerWorkspaceHeader } from '@/components/career-workspace/career-workspace-header';
 
 const ALL_DSA_TOPICS = [
   'Arrays',
@@ -140,24 +141,17 @@ export default function SkillProgressClient({
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-border bg-card p-6 shadow-2xs">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Skill Progress Analytics</h1>
-            <Badge variant="secondary" className="text-[10px]">20 DSA Topics</Badge>
-          </div>
-          <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl">
-            Monitor your skill levels, accuracy rates, and solved metrics across 20 Data Structures & Algorithms topics, programming languages, and interview readiness.
-          </p>
-        </div>
-        <div className="flex items-center gap-2.5 shrink-0">
+      <CareerWorkspaceHeader
+        title="Skill Progress"
+        description="Monitor your skill levels, accuracy rates, and solved metrics across 20 Data Structures & Algorithms topics, programming languages, and interview readiness."
+        action={
           <Button asChild size="sm">
             <Link href="/dashboard/assessment">
-              <Code2 className="mr-2 h-3.5 w-3.5" /> Practice Assessment
+              <Code2 className="mr-1.5 h-3.5 w-3.5" /> Practice Assessment
             </Link>
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Category Tabs */}
       <Tabs defaultValue="dsa" value={activeTab} onValueChange={setActiveTab} className="space-y-6">

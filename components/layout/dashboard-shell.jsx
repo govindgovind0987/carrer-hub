@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
@@ -9,14 +10,10 @@ import {
   User,
   FileText,
   Briefcase,
-  Send,
-  Bookmark,
   Building2,
   PlusCircle,
   Users,
   LogOut,
-  Menu,
-  X,
   ChevronDown,
   Sparkles,
   Bot,
@@ -26,11 +23,7 @@ import {
   Video,
   ShieldCheck,
   Settings,
-  BookOpen,
-  TrendingUp,
 } from 'lucide-react';
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -42,32 +35,51 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
 import { Logo } from '@/components/shared/logo';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
-import { cn, getInitials } from '@/lib/utils';
+import { getInitials } from '@/lib/utils';
 
 export function DashboardShell({ children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const { data: session } = useSession();
 
   const userRole = session?.user?.role || 'CANDIDATE';
 
+  // Candidate navigation links (Career Workspace is a normal navigation item)
   const candidateLinks = [
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    {
+      label: 'Career Workspace',
+      href: '/dashboard/career-workspace',
+      icon: Briefcase,
+      isWorkspace: true,
+    },
+    { label: 'Coding Assessment', href: '/dashboard/assessment', icon: Code2 },
     { label: 'AI Mock Interview', href: '/dashboard/mock-interview', icon: Video },
     { label: 'AI Resume Score', href: '/dashboard/ai-analysis', icon: Bot },
     { label: 'AI Job Matcher', href: '/dashboard/job-match', icon: Target },
-    { label: 'Coding Assessment', href: '/dashboard/assessment', icon: Code2 },
     { label: 'HR & Tech Questions', href: '/dashboard/interview-prep', icon: HelpCircle },
-    { label: 'My Learning', href: '/dashboard/learning', icon: BookOpen },
-    { label: 'Skill Progress', href: '/dashboard/skill-progress', icon: TrendingUp },
     { label: 'AI Career Coach', href: '/dashboard/career-coach', icon: Sparkles },
-    { label: 'My Profile', href: '/dashboard/profile', icon: User },
-    { label: 'My Resumes', href: '/dashboard/resumes', icon: FileText },
     { label: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];
 
+  // Recruiter navigation
   const recruiterLinks = [
     { label: 'Recruiter Dashboard', href: '/dashboard/recruiter', icon: LayoutDashboard },
     { label: 'Coding Assessments', href: '/dashboard/recruiter/assessments', icon: Code2 },
@@ -79,6 +91,7 @@ export function DashboardShell({ children }) {
     { label: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];
 
+  // Admin navigation
   const adminLinks = [
     { label: 'Admin Control Panel', href: '/dashboard/admin', icon: ShieldCheck },
     { label: 'User Accounts', href: '/dashboard/admin/users', icon: Users },
@@ -88,61 +101,220 @@ export function DashboardShell({ children }) {
     { label: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];
 
-  const links = userRole === 'ADMIN' ? adminLinks : userRole === 'RECRUITER' ? recruiterLinks : candidateLinks;
+  const handleSignOut = async () => {
+    try {
+      localStorage.setItem('careerhub_theme', 'light');
+      document.cookie =
+        'careerhub_theme=light; path=/; max-age=31536000; SameSite=Lax';
+    } catch {
+      // ignore
+    }
+    await signOut({ callbackUrl: '/' });
+  };
+
+  const getIsActive = (link) => {
+    if (link.isWorkspace) {
+      return (
+        pathname === '/dashboard/career-workspace' ||
+        pathname.startsWith('/dashboard/career-workspace') ||
+        pathname.startsWith('/dashboard/resumes') ||
+        pathname.startsWith('/dashboard/learning') ||
+        pathname.startsWith('/dashboard/skill-progress') ||
+        pathname.startsWith('/dashboard/profile')
+      );
+    }
+    if (link.href === '/dashboard') {
+      return pathname === '/dashboard';
+    }
+    return pathname.startsWith(link.href);
+  };
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r border-border bg-[#E8EBEA] dark:bg-card z-30">
-        <div className="flex h-[4.5rem] items-center justify-between px-5 border-b border-border/70">
-          <Logo />
-          <Badge variant="secondary" className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">
+    <SidebarProvider defaultOpen={true}>
+      {/* Official shadcn/ui Sidebar */}
+      <Sidebar collapsible="icon" className="border-r border-border bg-card">
+        {/* Sidebar Header with Brand Logo */}
+        <SidebarHeader className="border-b border-border/70 p-3 h-14 flex flex-row items-center justify-between">
+          <div className="flex items-center gap-2 overflow-hidden w-full group-data-[collapsible=icon]:justify-center">
+            <Logo
+              textClassName="group-data-[collapsible=icon]:hidden"
+              className="group-data-[collapsible=icon]:justify-center"
+            />
+          </div>
+          <Badge
+            variant="secondary"
+            className="text-[9px] uppercase font-semibold text-muted-foreground tracking-wider group-data-[collapsible=icon]:hidden shrink-0 ml-auto"
+          >
             {userRole}
           </Badge>
-        </div>
-        <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
-          {links.map((link) => {
-            const isActive = pathname === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  'flex items-center gap-2.5 rounded-md px-3 py-2.5 text-xs font-medium transition-all',
-                  isActive
-                    ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
-                    : 'text-muted-foreground hover:bg-card/80 hover:text-foreground'
-                )}
-              >
-                <link.icon className={cn('h-4 w-4 shrink-0', isActive ? 'text-primary-foreground' : 'text-muted-foreground')} />
-                <span>{link.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-      </aside>
+        </SidebarHeader>
 
-      {/* Main Content Area */}
-      <div className="flex flex-1 flex-col md:pl-64">
+        {/* Sidebar Navigation Content */}
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">
+              {userRole === 'CANDIDATE'
+                ? 'Platform'
+                : userRole === 'ADMIN'
+                  ? 'Administration'
+                  : 'Recruitment'}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {(userRole === 'CANDIDATE'
+                  ? candidateLinks
+                  : userRole === 'ADMIN'
+                    ? adminLinks
+                    : recruiterLinks
+                ).map((link) => {
+                  const isActive = getIsActive(link);
+                  return (
+                    <SidebarMenuItem key={link.href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={link.label}
+                      >
+                        <Link href={link.href}>
+                          <link.icon className="h-4 w-4 shrink-0" />
+                          <span>{link.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+
+        {/* Sidebar Footer with User Profile & Sign Out */}
+        <SidebarFooter className="border-t border-border/70 p-2">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton
+                    size="lg"
+                    className="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground group-data-[collapsible=icon]:justify-center"
+                    tooltip={session?.user?.name || 'Account'}
+                  >
+                    <Avatar className="h-7 w-7 rounded-md border border-border shrink-0">
+                      {session?.user?.image && (
+                        <AvatarImage src={session.user.image} />
+                      )}
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold rounded-md">
+                        {getInitials(session?.user?.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="grid flex-1 text-left text-xs leading-tight group-data-[collapsible=icon]:hidden">
+                      <span className="truncate font-semibold text-foreground">
+                        {session?.user?.name || 'User'}
+                      </span>
+                      <span className="truncate text-[10px] text-muted-foreground">
+                        {session?.user?.email}
+                      </span>
+                    </div>
+                    <ChevronDown className="ml-auto h-3.5 w-3.5 text-muted-foreground group-data-[collapsible=icon]:hidden" />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="w-56 rounded-lg"
+                  side="bottom"
+                  align="end"
+                  sideOffset={4}
+                >
+                  <DropdownMenuLabel className="p-0 font-normal">
+                    <div className="flex items-center gap-2 px-1 py-1.5 text-left text-xs">
+                      <Avatar className="h-8 w-8 rounded-md">
+                        {session?.user?.image && (
+                          <AvatarImage src={session.user.image} />
+                        )}
+                        <AvatarFallback className="rounded-md bg-primary text-primary-foreground text-xs font-semibold">
+                          {getInitials(session?.user?.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="grid flex-1 text-left text-xs leading-tight">
+                        <span className="truncate font-semibold">
+                          {session?.user?.name}
+                        </span>
+                        <span className="truncate text-[10px] text-muted-foreground">
+                          {session?.user?.email}
+                        </span>
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {userRole === 'CANDIDATE' ? (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard/career-workspace" className="text-xs cursor-pointer">
+                          <Briefcase className="mr-2 h-3.5 w-3.5" /> Career Workspace
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard/profile" className="text-xs cursor-pointer">
+                          <User className="mr-2 h-3.5 w-3.5" /> My Profile
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard/resumes" className="text-xs cursor-pointer">
+                          <FileText className="mr-2 h-3.5 w-3.5" /> My Resumes
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard/company" className="text-xs cursor-pointer">
+                          <Building2 className="mr-2 h-3.5 w-3.5" /> Company Profile
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard/recruiter/jobs" className="text-xs cursor-pointer">
+                          <Briefcase className="mr-2 h-3.5 w-3.5" /> Manage Jobs
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/settings" className="text-xs cursor-pointer">
+                      <Settings className="mr-2 h-3.5 w-3.5" /> Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleSignOut}
+                    className="text-destructive focus:text-destructive text-xs cursor-pointer"
+                  >
+                    <LogOut className="mr-2 h-3.5 w-3.5" /> Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+
+        <SidebarRail />
+      </Sidebar>
+
+      {/* Main Content Layout with SidebarInset */}
+      <SidebarInset className="min-w-0 flex-1">
         {/* Top Header Navigation */}
-        <header className="sticky top-0 z-40 flex h-[4.5rem] items-center justify-between border-b border-border/70 bg-background/85 px-4 backdrop-blur-xl sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden h-8 w-8"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              aria-label="Toggle sidebar"
+        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-background/95 px-4 backdrop-blur-sm sm:px-6">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted" />
+            <div className="h-4 w-px bg-border mx-1" />
+            <Link
+              href="/dashboard/career-coach"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-xs text-foreground transition-colors hover:bg-muted"
             >
-              {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-            </Button>
-            <Link href="/dashboard/career-coach" className="hidden sm:flex items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-muted">
-              <Sparkles className="h-3.5 w-3.5 text-[#A86F20]" />
+              <Sparkles className="h-3 w-3 text-primary" />
               <span className="font-medium">AI Career Coach</span>
             </Link>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <NotificationDropdown />
             <ThemeToggle />
             <DropdownMenu>
@@ -154,7 +326,7 @@ export function DashboardShell({ children }) {
                       {getInitials(session?.user?.name)}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="hidden sm:inline text-xs font-medium">
+                  <span className="hidden sm:inline text-xs font-medium max-w-[120px] truncate">
                     {session?.user?.name || 'User'}
                   </span>
                   <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
@@ -174,12 +346,17 @@ export function DashboardShell({ children }) {
                 {userRole === 'CANDIDATE' ? (
                   <>
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard/profile" className="text-xs">
+                      <Link href="/dashboard/career-workspace" className="text-xs cursor-pointer">
+                        <Briefcase className="mr-2 h-3.5 w-3.5" /> Career Workspace
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard/profile" className="text-xs cursor-pointer">
                         <User className="mr-2 h-3.5 w-3.5" /> My Profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard/resumes" className="text-xs">
+                      <Link href="/dashboard/resumes" className="text-xs cursor-pointer">
                         <FileText className="mr-2 h-3.5 w-3.5" /> My Resumes
                       </Link>
                     </DropdownMenuItem>
@@ -187,29 +364,25 @@ export function DashboardShell({ children }) {
                 ) : (
                   <>
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard/company" className="text-xs">
+                      <Link href="/dashboard/company" className="text-xs cursor-pointer">
                         <Building2 className="mr-2 h-3.5 w-3.5" /> Company Profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard/recruiter/jobs" className="text-xs">
+                      <Link href="/dashboard/recruiter/jobs" className="text-xs cursor-pointer">
                         <Briefcase className="mr-2 h-3.5 w-3.5" /> Manage Jobs
                       </Link>
                     </DropdownMenuItem>
                   </>
                 )}
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/settings" className="text-xs cursor-pointer">
+                    <Settings className="mr-2 h-3.5 w-3.5" /> Settings
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={async () => {
-                    try {
-                      localStorage.setItem('careerhub_theme', 'light');
-                      document.cookie =
-                        'careerhub_theme=light; path=/; max-age=31536000; SameSite=Lax';
-                    } catch {
-                      // ignore
-                    }
-                    await signOut({ callbackUrl: '/' });
-                  }}
+                  onClick={handleSignOut}
                   className="text-destructive focus:text-destructive text-xs cursor-pointer"
                 >
                   <LogOut className="mr-2 h-3.5 w-3.5" /> Sign Out
@@ -219,59 +392,11 @@ export function DashboardShell({ children }) {
           </div>
         </header>
 
-        {/* Mobile Navigation Drawer */}
-        <AnimatePresence>
-          {sidebarOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs md:hidden"
-                onClick={() => setSidebarOpen(false)}
-              />
-              <motion.aside
-                initial={{ x: -260 }}
-                animate={{ x: 0 }}
-                exit={{ x: -260 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                className="fixed inset-y-0 left-0 z-50 w-64 border-r border-border bg-[#E8EBEA] dark:bg-card md:hidden flex flex-col"
-              >
-                <div className="flex h-14 items-center justify-between px-5 border-b border-border">
-                  <Logo />
-                  <Badge variant="secondary" className="text-[10px] uppercase font-semibold">
-                    {userRole}
-                  </Badge>
-                </div>
-                <nav className="flex-1 space-y-0.5 px-3 py-3 overflow-y-auto">
-                  {links.map((link) => {
-                    const isActive = pathname === link.href;
-                    return (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        onClick={() => setSidebarOpen(false)}
-                        className={cn(
-                          'flex items-center gap-2.5 rounded-md px-3 py-2 text-xs font-medium transition-colors',
-                          isActive
-                            ? 'bg-primary text-primary-foreground font-semibold shadow-sm'
-                            : 'text-muted-foreground hover:bg-card/80 hover:text-foreground'
-                        )}
-                      >
-                        <link.icon className="h-4 w-4" />
-                        <span>{link.label}</span>
-                      </Link>
-                    );
-                  })}
-                </nav>
-              </motion.aside>
-            </>
-          )}
-        </AnimatePresence>
-
-        {/* Dynamic Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 xl:p-10">{children}</main>
-      </div>
-    </div>
+        {/* Dashboard Main View Container */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 max-w-7xl mx-auto w-full">
+          {children}
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

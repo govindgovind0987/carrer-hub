@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { CareerWorkspaceHeader } from '@/components/career-workspace/career-workspace-header';
 
 export const metadata = {
   title: 'Candidate Learning Dashboard | CareerHub',
@@ -49,7 +50,7 @@ export default async function LearningDashboardPage() {
     interviewReports,
     latestAnalysis,
     profile,
-    availableProblems,
+    totalPlatformProblemsCount,
   ] = await Promise.all([
     prisma.userProblemProgress.findMany({
       where: { userId },
@@ -99,13 +100,11 @@ export default async function LearningDashboardPage() {
         _count: { select: { skills: true, experiences: true, educations: true, projects: true } },
       },
     }),
-    prisma.problem.findMany({
-      select: { id: true, title: true, slug: true, category: true, difficulty: true, tags: true },
-    }),
+    prisma.problem.count(),
   ]);
 
   // Total available problems in platform
-  const totalPlatformProblems = availableProblems.length || 1;
+  const totalPlatformProblems = totalPlatformProblemsCount || 1;
 
   // Real solved & attempted calculations
   const solvedProgress = userProgress.filter((p) => p.status === 'SOLVED');
@@ -182,10 +181,24 @@ export default async function LearningDashboardPage() {
 
   const recommendedNextTopic = weakTopicObj || activeTopicObj || upcomingTopicObj || roadmapStatus[0];
 
-  // Recommended Problems for Next Topic
-  const recommendedProblems = availableProblems
-    .filter((p) => p.category === recommendedNextTopic.topic || p.tags.includes(recommendedNextTopic.topic))
-    .slice(0, 3);
+  // Recommended Problems for Next Topic (targeted query of 3 items only)
+  const recommendedProblems = await prisma.problem.findMany({
+    where: {
+      OR: [
+        { category: recommendedNextTopic.topic },
+        { tags: { has: recommendedNextTopic.topic } },
+      ],
+    },
+    take: 3,
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      category: true,
+      difficulty: true,
+      tags: true,
+    },
+  });
 
   // Calculate Interview Preparation Progress
   const completedInterviewSessions = interviewSessions.filter((s) => s.status === 'COMPLETED').length;
@@ -212,24 +225,17 @@ export default async function LearningDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-border bg-card p-6 shadow-2xs">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Candidate Learning Dashboard</h1>
-            <Badge variant="secondary" className="text-[10px]">Adaptive Roadmap</Badge>
-          </div>
-          <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl">
-            Your personalized learning roadmap driven by real problem submissions, weak topic detection, and mock interview performance.
-          </p>
-        </div>
-        <div className="flex items-center gap-2.5 shrink-0">
+      <CareerWorkspaceHeader
+        title="My Learning"
+        description="Your personalized learning roadmap driven by authentic problem submissions, weak topic detection, and mock interview performance."
+        action={
           <Button asChild size="sm">
             <Link href="/dashboard/assessment">
-              <Code2 className="mr-2 h-3.5 w-3.5" /> Coding Assessment
+              <Code2 className="mr-1.5 h-3.5 w-3.5" /> Coding Assessment
             </Link>
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {!hasActivity && (
         <Card className="border-primary/30 bg-primary/5 p-8 text-center">

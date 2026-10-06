@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import {
   Video,
   PlusCircle,
@@ -173,15 +172,29 @@ export default function MockInterviewDashboardPage() {
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      <Badge variant="default" className="bg-primary   text-primary-foreground font-mono px-3 py-1">
-                        Score: {sess.report?.overallScore || 85}%
-                      </Badge>
+                      {sess.report?.overallScore ? (
+                        <Badge variant="default" className="bg-primary text-primary-foreground font-mono px-3 py-1">
+                          Score: {sess.report.overallScore}%
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="border-amber-500/40 text-amber-500 bg-amber-500/10 font-mono text-[10px]">
+                          In Progress
+                        </Badge>
+                      )}
 
-                      <Button size="sm" variant="outline" asChild>
-                        <Link href={`/dashboard/mock-interview/report/${sess.id}`}>
-                          View Report
-                        </Link>
-                      </Button>
+                      {sess.status === 'COMPLETED' || sess.report ? (
+                        <Button size="sm" variant="outline" asChild>
+                          <Link href={`/dashboard/mock-interview/report/${sess.id}`}>
+                            View Report
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button size="sm" className="bg-primary text-primary-foreground" asChild>
+                          <Link href={`/dashboard/mock-interview/room/${sess.id}`}>
+                            Resume Interview
+                          </Link>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}

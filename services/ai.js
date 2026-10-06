@@ -2,7 +2,15 @@ import { Groq } from 'groq-sdk';
 import { AI_PROMPTS } from '../constants/prompts.js';
 import { calculateDeterministicResumeScore, getQualityLevel } from './resume-score-engine.js';
 
-const MODEL_NAME = 'llama-3.3-70b-versatile';
+const CANDIDATE_MODELS = [
+  'openai/gpt-oss-120b',
+  'qwen/qwen3.8-27b',
+  'openai/gpt-oss-20b',
+  'llama-3.3-70b-versatile',
+  'llama-3.1-8b-instant',
+];
+
+let activeWorkingModel = null;
 
 function getGroqClient() {
   const groqApiKey = process.env.GROQ_API_KEY;
@@ -19,10 +27,17 @@ function getGroqClient() {
  */
 export async function callGroqJson(prompt) {
   const groq = getGroqClient();
-  if (groq) {
+  if (!groq) return null;
+
+  // Try cached working model first, or iterate through candidate models
+  const modelsToTry = activeWorkingModel
+    ? [activeWorkingModel, ...CANDIDATE_MODELS.filter((m) => m !== activeWorkingModel)]
+    : CANDIDATE_MODELS;
+
+  for (const model of modelsToTry) {
     try {
       const response = await groq.chat.completions.create({
-        model: MODEL_NAME,
+        model,
         messages: [
           {
             role: 'system',
@@ -38,9 +53,16 @@ export async function callGroqJson(prompt) {
       });
 
       const content = response.choices[0]?.message?.content || '{}';
-      return JSON.parse(content);
+      const parsed = JSON.parse(content);
+      activeWorkingModel = model;
+      return parsed;
     } catch (error) {
-      console.warn('Groq API call error, using deterministic fallback:', error);
+      // If error is model not found or authorization, try next candidate model
+      if (error?.status === 404 || error?.code === 'model_not_found') {
+        console.warn(`Groq model ${model} not available, trying next model...`);
+        continue;
+      }
+      console.warn(`Groq API call error on ${model}:`, error.message || error);
     }
   }
 

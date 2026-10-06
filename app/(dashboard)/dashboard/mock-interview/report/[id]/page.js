@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   Trophy,
@@ -24,6 +24,7 @@ import {
   ChevronUp,
   ExternalLink,
   Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,71 +33,36 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { generateFinalInterviewReportAction } from '@/actions/interview';
 
-export default function InterviewReportPage({ params }) {
-  const resolvedParams = use(params);
-  const sessionId = resolvedParams.id;
+export default function InterviewReportPage({ params: propsParams }) {
   const router = useRouter();
+  const routerParams = useParams();
+  const resolvedParams = propsParams && typeof propsParams.then === 'function' ? use(propsParams) : propsParams;
+  const sessionId = routerParams?.id || routerParams?.sessionId || resolvedParams?.id || resolvedParams?.sessionId;
 
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [expandedQIndex, setExpandedQIndex] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
     async function loadReport() {
+      if (!sessionId) {
+        if (isMounted) {
+          setError('Session ID parameter is missing.');
+          setLoading(false);
+        }
+        return;
+      }
+
       setLoading(true);
+      setError(null);
       const res = await generateFinalInterviewReportAction(sessionId);
       if (res.success && res.report) {
         if (isMounted) setReport(res.report);
       } else {
-        // Fallback report
         if (isMounted) {
-          setReport({
-            overallScore: 86,
-            technicalScore: 90,
-            codingScore: 84,
-            communicationScore: 82,
-            confidenceScore: 88,
-            problemSolvingScore: 86,
-            behaviorScore: 80,
-            summary: 'Candidate demonstrated impressive domain knowledge with structured logical problem-solving.',
-            recommendation: 'RECOMMENDED FOR HIRE: Strong technical foundation and clear communication skills.',
-            strengths: [
-              'Clear architectural explanation of server/client boundaries',
-              'Solid understanding of performance trade-offs and caching',
-            ],
-            weaknesses: ['Could elaborate further on production error telemetry'],
-            mistakes: ['Initial response omitted explicit boundary checking'],
-            missingConcepts: ['High-throughput load testing and memory profiling'],
-            recommendedTopics: [
-              'Advanced React 19 Concurrent Features',
-              'System Design Scalability & Microservices',
-            ],
-            recommendedResources: [
-              { title: 'Enterprise Web Application Security', type: 'Guide', url: 'https://owasp.org' },
-              { title: 'Next.js App Router Architecture', type: 'Documentation', url: 'https://nextjs.org/docs' },
-            ],
-            learningPlan: [
-              'Week 1: Practice timed algorithm challenges',
-              'Week 2: Deep dive into distributed system fault tolerance',
-            ],
-            questionBreakdown: [
-              {
-                questionOrder: 1,
-                question: 'Explain the Event Loop, Call Stack, Microtask Queue, and Macrotask Queue in JavaScript.',
-                answer: 'The call stack executes code synchronously. Microtasks drain before macrotasks execute.',
-                score: 90,
-                feedback: 'Exceptional, clear response detailing execution phases.',
-              },
-              {
-                questionOrder: 2,
-                question: 'Build a custom React hook `useDebouncedValue` for live search input.',
-                answer: 'Implemented hook using useState, useEffect, and clearTimeout cleanup.',
-                score: 85,
-                feedback: 'Clean code logic, good memory leak prevention.',
-              },
-            ],
-          });
+          setError(res.error || 'Failed to generate or retrieve interview report.');
         }
       }
       if (isMounted) setLoading(false);
@@ -113,6 +79,28 @@ export default function InterviewReportPage({ params }) {
       <div className="flex flex-col h-[70vh] items-center justify-center space-y-4">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
         <p className="text-sm font-medium text-muted-foreground">Synthesizing AI Evaluation & Report Analytics...</p>
+      </div>
+    );
+  }
+
+  if (error || !report) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] max-w-lg mx-auto text-center space-y-4 p-6">
+        <div className="h-16 w-16 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mb-2">
+          <AlertCircle className="h-8 w-8" />
+        </div>
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">Interview Report Unavailable</h2>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          {error || 'The requested interview report could not be found or you do not have permission to view it.'}
+        </p>
+        <div className="flex items-center gap-3 pt-4">
+          <Button variant="outline" onClick={() => router.push('/dashboard/mock-interview')}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> All Interviews
+          </Button>
+          <Button onClick={() => router.push('/dashboard/mock-interview/create')} className="bg-primary text-primary-foreground">
+            <Sparkles className="mr-2 h-4 w-4" /> Start New Interview
+          </Button>
+        </div>
       </div>
     );
   }

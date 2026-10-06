@@ -534,11 +534,24 @@ export default function InterviewPrepPage() {
 
       {/* Generated Questions List */}
       {loading || isGenerating ? (
-        <div className="flex h-64 flex-col items-center justify-center gap-3 text-primary">
-          <Loader2 className="h-10 w-10 animate-spin" />
-          <span className="text-xs font-semibold text-muted-foreground">
-            Synthesizing Fresh Interview Questions with Groq LLM (Llama 3.3 70B)...
-          </span>
+        <div className="space-y-4">
+          <div className="flex items-center justify-center gap-2 py-3 px-4 rounded-md border border-primary/20 bg-primary/5 text-primary text-xs font-medium animate-pulse">
+            <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />
+            <span>Synthesizing Fresh Interview Questions with Groq LLM (Llama 3.3 70B)...</span>
+          </div>
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="animate-pulse border-border/50 bg-card/60">
+              <CardContent className="p-6 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="h-4 w-28 bg-muted rounded" />
+                  <div className="h-4 w-16 bg-muted rounded" />
+                </div>
+                <div className="h-5 w-3/4 bg-muted rounded" />
+                <div className="h-4 w-full bg-muted/60 rounded" />
+                <div className="h-4 w-5/6 bg-muted/60 rounded" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       ) : displayedQuestions.length === 0 ? (
         <Card className="border-dashed bg-card/40 backdrop-blur-xl">

@@ -2,29 +2,33 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import {
-  BookOpen,
   Code2,
   FileText,
   User,
-  TrendingUp,
-  CheckCircle2,
   ArrowRight,
   Bot,
   Target,
   Sparkles,
-  Zap,
   Video,
   Clock,
-  Award,
+  Briefcase,
+  HelpCircle,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 
 export const metadata = {
   title: 'Candidate Dashboard | CareerHub',
-  description: 'AI-powered career preparation, DSA progress tracking, interview prep, and skill development portal.',
+  description:
+    'AI-powered career preparation, DSA progress tracking, interview prep, and skill development portal.',
 };
 
 export const dynamic = 'force-dynamic';
@@ -36,12 +40,14 @@ export default async function CandidateDashboardPage() {
   if (!userId) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center p-6 text-center">
-        <p className="text-muted-foreground">Please sign in to access your dashboard.</p>
+        <p className="text-sm text-muted-foreground">
+          Please sign in to access your dashboard.
+        </p>
       </div>
     );
   }
 
-  // Fetch candidate authentic records
+  // Fetch authentic candidate data in parallel
   const [
     profile,
     resumesCount,
@@ -82,10 +88,10 @@ export default async function CandidateDashboardPage() {
         language: true,
         verdict: true,
         createdAt: true,
-        problem: { select: { title: true, category: true } },
+        problem: { select: { title: true, category: true, slug: true } },
       },
       orderBy: { createdAt: 'desc' },
-      take: 5,
+      take: 4,
     }),
     prisma.resumeAnalysis.findFirst({
       where: { userId },
@@ -112,262 +118,421 @@ export default async function CandidateDashboardPage() {
   profileScore = Math.min(100, profileScore);
 
   // Solved counts
-  const attemptedCount = progressByStatus.reduce((total, item) => total + item._count._all, 0);
+  const attemptedCount = progressByStatus.reduce(
+    (total, item) => total + item._count._all,
+    0
+  );
   const solvedProgressCount =
     progressByStatus.find((item) => item.status === 'SOLVED')?._count._all ?? 0;
   const solvedCount = codingStats?.solvedCount ?? solvedProgressCount;
   const totalPlatformProblems = availableProblems || 1;
-  const dsaProgressPercentage = Math.round((solvedCount / totalPlatformProblems) * 100);
+  const dsaProgressPercentage = Math.round(
+    (solvedCount / totalPlatformProblems) * 100
+  );
 
   // Readiness calculations
-  const resumeReadiness = latestAnalysis?.atsScore ?? (resumesCount > 0 ? 50 : 0);
+  const resumeReadiness =
+    latestAnalysis?.atsScore ?? (resumesCount > 0 ? 50 : 0);
   const dsaReadiness = Math.min(100, Math.round((solvedCount / 20) * 100));
   const avgMock =
     interviewReportStats._count._all > 0
       ? Math.round(interviewReportStats._avg.overallScore ?? 0)
       : mockSessionCount > 0
-      ? 40
-      : 0;
+        ? 40
+        : 0;
   const interviewReadiness = avgMock;
 
   const careerReadinessScore = Math.round(
-    profileScore * 0.2 + resumeReadiness * 0.25 + dsaReadiness * 0.25 + interviewReadiness * 0.3
+    profileScore * 0.2 +
+      resumeReadiness * 0.25 +
+      dsaReadiness * 0.25 +
+      interviewReadiness * 0.3
   );
 
-  const stats = [
+  // Preparation modules list
+  const prepModules = [
     {
-      title: 'Learning Progress',
-      value: `${dsaProgressPercentage}%`,
-      sub: `${solvedCount} topics mastered`,
-      icon: BookOpen,
-      tone: 'bg-[#FFF1DC] text-[#B66E24]',
-    },
-    {
-      title: 'DSA Solved',
-      value: `${solvedCount}`,
-      sub: `${attemptedCount} attempted`,
+      title: 'Coding Assessment Platform',
+      desc: '1,500+ algorithmic challenges with multi-language code evaluation.',
+      href: '/dashboard/assessment',
+      cta: 'Practice',
       icon: Code2,
-      tone: 'bg-[#E5EBEE] text-[#18364D]',
     },
     {
-      title: 'Interview Score',
-      value: `${interviewReadiness}%`,
-      sub: `${mockSessionCount} sessions taken`,
+      title: 'AI Mock Interview Simulator',
+      desc: 'Voice & technical interview simulations with STAR methodology scoring.',
+      href: '/dashboard/mock-interview',
+      cta: 'Start Session',
       icon: Video,
-      tone: 'bg-[#DFF1ED] text-[#3E8172]',
     },
     {
-      title: 'Career Readiness Index',
-      value: `${careerReadinessScore}%`,
-      sub: 'AI Index Score',
-      icon: Sparkles,
-      tone: 'bg-[#F8E4E7] text-[#B85E71]',
+      title: 'AI Resume Score & ATS Audit',
+      desc: 'Keyword gap audit, recruiter screening criteria, and instant feedback.',
+      href: '/dashboard/ai-analysis',
+      cta: 'Audit Resume',
+      icon: Bot,
+    },
+    {
+      title: 'AI Job Matcher',
+      desc: 'Match your verified skill profile with tailored engineering opportunities.',
+      href: '/dashboard/job-match',
+      cta: 'Match Jobs',
+      icon: Target,
+    },
+    {
+      title: 'HR & Technical Question Bank',
+      desc: 'Curated behavioral questions, system design essentials, and concepts.',
+      href: '/dashboard/interview-prep',
+      cta: 'Study Questions',
+      icon: HelpCircle,
     },
   ];
 
   return (
     <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="flex flex-col gap-4 rounded-lg border border-border bg-card p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+      {/* TOP: Welcome Header Section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-lg border border-border bg-card p-5 sm:p-6">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               Welcome back, {session?.user?.name || 'Candidate'}
             </h1>
-            <Badge variant="secondary" className="text-[10px]">Active</Badge>
+            <Badge variant="secondary" className="text-[10px] font-medium">
+              Candidate
+            </Badge>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl">
-            Track your Data Structures & Algorithms progress, AI resume ATS evaluations, mock interview readiness, and skill development.
+            {profile?.headline ||
+              'Your centralized workspace for technical interview preparation, algorithmic mastery, and career readiness.'}
           </p>
         </div>
-        <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+
+        <div className="flex items-center gap-2.5 shrink-0">
           <Button asChild size="sm">
-            <Link href="/dashboard/learning">
-              <BookOpen className="mr-2 h-3.5 w-3.5" /> My Learning
+            <Link href="/dashboard/assessment">
+              <Code2 className="mr-1.5 h-3.5 w-3.5" /> Practice Problems
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">
-            <Link href="/dashboard/career-coach">
-              <Sparkles className="mr-2 h-3.5 w-3.5 text-foreground" /> AI Career Coach
+            <Link href="/dashboard/career-workspace">
+              <Briefcase className="mr-1.5 h-3.5 w-3.5" /> Career Workspace
             </Link>
           </Button>
         </div>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title} className="hover:border-foreground/15">
-            <CardContent className="p-5 flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">{stat.title}</p>
-                <p className="text-2xl font-bold tracking-tight text-foreground">{stat.value}</p>
-                <p className="text-[11px] text-muted-foreground">{stat.sub}</p>
-              </div>
-              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md ${stat.tone}`}>
-                <stat.icon className="h-4.5 w-4.5" />
-              </div>
+      {/* NEXT: 4 Compact Career Metrics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Metric 1: Career Readiness */}
+        <Card className="p-4 flex flex-col justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">
+                Career Readiness
+              </span>
+              <Sparkles className="h-4 w-4 text-primary" />
+            </div>
+            <div className="text-2xl font-bold tracking-tight text-foreground">
+              {careerReadinessScore}%
+            </div>
+          </div>
+          <div className="pt-2.5 space-y-1.5">
+            <Progress value={careerReadinessScore} className="h-1.5" />
+            <p className="text-[11px] text-muted-foreground">
+              Composite readiness score
+            </p>
+          </div>
+        </Card>
+
+        {/* Metric 2: DSA Solved */}
+        <Card className="p-4 flex flex-col justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">
+                DSA Solved
+              </span>
+              <Code2 className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className="text-2xl font-bold tracking-tight text-foreground">
+              {solvedCount}
+            </div>
+          </div>
+          <div className="pt-2.5 space-y-1.5">
+            <Progress value={dsaProgressPercentage} className="h-1.5" />
+            <p className="text-[11px] text-muted-foreground">
+              {dsaProgressPercentage}% of platform • {attemptedCount} attempted
+            </p>
+          </div>
+        </Card>
+
+        {/* Metric 3: Resume Match */}
+        <Card className="p-4 flex flex-col justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">
+                Resume ATS Match
+              </span>
+              <Bot className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className="text-2xl font-bold tracking-tight text-foreground">
+              {resumeReadiness}/100
+            </div>
+          </div>
+          <div className="pt-2.5 space-y-1.5">
+            <Progress value={resumeReadiness} className="h-1.5" />
+            <p className="text-[11px] text-muted-foreground">
+              {resumesCount} resume{resumesCount !== 1 ? 's' : ''} on file
+            </p>
+          </div>
+        </Card>
+
+        {/* Metric 4: Interview Performance */}
+        <Card className="p-4 flex flex-col justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">
+                Mock Interview Score
+              </span>
+              <Video className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className="text-2xl font-bold tracking-tight text-foreground">
+              {interviewReadiness}%
+            </div>
+          </div>
+          <div className="pt-2.5 space-y-1.5">
+            <Progress value={interviewReadiness} className="h-1.5" />
+            <p className="text-[11px] text-muted-foreground">
+              {mockSessionCount} session{mockSessionCount !== 1 ? 's' : ''} recorded
+            </p>
+          </div>
+        </Card>
+      </div>
+
+      {/* MAIN: Preparation & Practice (Left) + AI Coach & Progress (Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column (7 cols): Preparation & Practice Modules + Recent Activity */}
+        <div className="lg:col-span-7 space-y-6">
+          {/* Preparation & Practice Modules Card */}
+          <Card>
+            <CardHeader className="pb-3 border-b border-border">
+              <CardTitle className="text-base font-semibold">
+                Preparation & Practice
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Core modules to build technical mastery and interview readiness
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0 divide-y divide-border">
+              {prepModules.map((module) => {
+                const IconComponent = module.icon;
+                return (
+                  <div
+                    key={module.title}
+                    className="p-4 flex items-center justify-between gap-4 hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="p-2 rounded-md bg-muted border border-border shrink-0 mt-0.5">
+                        <IconComponent className="h-4 w-4 text-foreground" />
+                      </div>
+                      <div className="space-y-0.5 min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">
+                          {module.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {module.desc}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="shrink-0 h-8 text-xs"
+                    >
+                      <Link href={module.href}>
+                        {module.cta} <ArrowRight className="ml-1 h-3 w-3" />
+                      </Link>
+                    </Button>
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
-        ))}
-      </div>
 
-      {/* Primary Feature Hub Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {/* AI Career Coach Card */}
-        <Card className="flex flex-col justify-between">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <Badge variant="secondary" className="text-[10px]">Groq AI Strategy</Badge>
-              <Sparkles className="h-4 w-4 text-foreground" />
-            </div>
-            <CardTitle className="text-base">AI Career Coach</CardTitle>
-            <CardDescription className="text-xs">
-              Receive AI skill audits, 30-day and 90-day learning roadmaps customized to your real performance metrics.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <Button asChild size="sm" className="w-full">
-              <Link href="/dashboard/career-coach">
-                <Zap className="mr-1.5 h-3.5 w-3.5" /> Open AI Career Coach
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Skill Progress Card */}
-        <Card className="flex flex-col justify-between">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <Badge variant="outline" className="text-[10px]">Topic Analytics</Badge>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <CardTitle className="text-base">Skill Progress Dashboard</CardTitle>
-            <CardDescription className="text-xs">
-              Track your topic mastery across all 20 DSA categories from Arrays to Graphs & Dynamic Programming.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <Button asChild size="sm" variant="outline" className="w-full">
-              <Link href="/dashboard/skill-progress">View Skill Progress</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Learning Roadmap Card */}
-        <Card className="flex flex-col justify-between sm:col-span-2 lg:col-span-1">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <Badge variant="outline" className="text-[10px]">Adaptive Roadmap</Badge>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <CardTitle className="text-base">Learning Roadmap</CardTitle>
-            <CardDescription className="text-xs">
-              Follow your structured learning sequence: Arrays → Hashing → Two Pointers → Sliding Window.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <Button asChild size="sm" variant="outline" className="w-full">
-              <Link href="/dashboard/learning">Explore Roadmap</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Profile Strength & ATS Summary */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
+          {/* Recent Practice Activity */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-border">
               <div>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-foreground" /> Profile Strength
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" /> Recent Practice Submissions
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Complete profile entries to ensure accurate AI skill recommendations.
+                  Your latest code evaluations and judge outcomes
                 </CardDescription>
               </div>
-              <Button asChild variant="outline" size="sm" className="h-7 text-xs">
-                <Link href="/dashboard/profile">Edit Profile</Link>
+              <Button asChild variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground hover:text-foreground">
+                <Link href="/dashboard/assessment">
+                  Problem Bank <ArrowRight className="ml-1 h-3 w-3" />
+                </Link>
               </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2.5">
-            <div className="flex justify-between text-xs font-medium">
-              <span className="text-muted-foreground">Overall Completeness</span>
-              <span className="text-foreground font-semibold">{profileScore}%</span>
-            </div>
-            <Progress value={profileScore} className="h-1.5" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Bot className="h-4 w-4 text-foreground" /> Resume & ATS Score
-                </CardTitle>
-                <CardDescription className="text-xs">
-                  Latest Groq AI resume audit evaluation.
-                </CardDescription>
-              </div>
-              <Button asChild variant="outline" size="sm" className="h-7 text-xs">
-                <Link href="/dashboard/ai-analysis">Run AI Audit</Link>
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2.5">
-            <div className="flex justify-between text-xs font-medium">
-              <span className="text-muted-foreground">ATS Match Score</span>
-              <span className="text-foreground font-semibold">{resumeReadiness}/100</span>
-            </div>
-            <Progress value={resumeReadiness} className="h-1.5" />
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Practice Submissions */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <div>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" /> Recent Practice Submissions
-            </CardTitle>
-            <CardDescription className="text-xs">Your latest problem solving activity</CardDescription>
-          </div>
-          <Button asChild variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground hover:text-foreground">
-            <Link href="/dashboard/learning">
-              View All <ArrowRight className="ml-1 h-3 w-3" />
-            </Link>
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {recentSubmissions.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground text-xs">
-              No coding submissions recorded yet. Start practicing to track progress!
-            </div>
-          ) : (
-            <div className="divide-y divide-border">
-              {recentSubmissions.map((sub) => (
-                <div key={sub.id} className="flex items-center justify-between py-2.5 text-xs">
-                  <div className="space-y-0.5">
-                    <p className="font-medium text-foreground">{sub.problem?.title || 'Coding Problem'}</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {sub.problem?.category} • {sub.language.toUpperCase()} • {new Date(sub.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <Badge
-                    variant={sub.verdict === 'ACCEPTED' ? 'success' : 'destructive'}
-                  >
-                    {sub.verdict}
-                  </Badge>
+            </CardHeader>
+            <CardContent className="p-0">
+              {recentSubmissions.length === 0 ? (
+                <div className="text-center py-8 px-4 text-muted-foreground text-xs space-y-2">
+                  <Code2 className="h-6 w-6 mx-auto text-muted-foreground/50" />
+                  <p>No coding submissions recorded yet. Start solving problems to track progress!</p>
+                  <Button asChild size="sm" variant="outline" className="h-7 text-xs">
+                    <Link href="/dashboard/assessment">Solve First Problem</Link>
+                  </Button>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              ) : (
+                <div className="divide-y divide-border">
+                  {recentSubmissions.map((sub) => (
+                    <div
+                      key={sub.id}
+                      className="p-3.5 flex items-center justify-between gap-3 text-xs hover:bg-muted/20 transition-colors"
+                    >
+                      <div className="space-y-0.5 min-w-0">
+                        {sub.problem?.slug ? (
+                          <Link
+                            href={`/dashboard/assessment/problems/${sub.problem.slug}`}
+                            className="font-medium text-foreground hover:underline truncate block"
+                          >
+                            {sub.problem.title}
+                          </Link>
+                        ) : (
+                          <p className="font-medium text-foreground truncate">
+                            {sub.problem?.title || 'Coding Problem'}
+                          </p>
+                        )}
+                        <p className="text-[11px] text-muted-foreground">
+                          {sub.problem?.category} • {sub.language.toUpperCase()} •{' '}
+                          {new Date(sub.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <Badge
+                        variant={sub.verdict === 'ACCEPTED' ? 'default' : 'secondary'}
+                        className="shrink-0 text-[10px]"
+                      >
+                        {sub.verdict}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column (5 cols): AI Career Coach Insight & Profile Progress */}
+        <div className="lg:col-span-5 space-y-6">
+          {/* Integrated AI Career Coach Insight */}
+          <Card>
+            <CardHeader className="pb-3 border-b border-border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <CardTitle className="text-base font-semibold">
+                    AI Career Coach Insight
+                  </CardTitle>
+                </div>
+                <Badge variant="secondary" className="text-[10px]">
+                  Personalized
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 space-y-3.5">
+              <div className="text-xs text-muted-foreground leading-relaxed">
+                {dsaProgressPercentage < 30 ? (
+                  <p>
+                    <strong className="text-foreground">Recommended Focus:</strong> Your DSA progress is currently at{' '}
+                    {dsaProgressPercentage}%. Target 5 additional problems in Arrays and Hashing to unlock deeper algorithm recommendations.
+                  </p>
+                ) : resumeReadiness < 70 ? (
+                  <p>
+                    <strong className="text-foreground">Recommended Focus:</strong> Your resume ATS score is at{' '}
+                    {resumeReadiness}/100. Enhance measurable impact metrics in your experience section to improve recruiter visibility.
+                  </p>
+                ) : (
+                  <p>
+                    <strong className="text-foreground">Strong Momentum!</strong> Your technical readiness is well balanced. Schedule an AI mock interview session to fine-tune your real-time responses.
+                  </p>
+                )}
+              </div>
+              <Button asChild size="sm" className="w-full">
+                <Link href="/dashboard/career-coach">
+                  Open AI Career Coach <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Clean Profile / Career Progress Section */}
+          <Card>
+            <CardHeader className="pb-3 border-b border-border">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <User className="h-4 w-4 text-foreground" /> Profile & Career Progress
+                </CardTitle>
+                <Button asChild variant="outline" size="sm" className="h-7 text-xs">
+                  <Link href="/dashboard/profile">Edit Profile</Link>
+                </Button>
+              </div>
+              <CardDescription className="text-xs">
+                Strengthen candidate visibility for recruiters
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs font-medium">
+                  <span className="text-muted-foreground">Profile Strength</span>
+                  <span className="text-foreground font-semibold">{profileScore}%</span>
+                </div>
+                <Progress value={profileScore} className="h-1.5" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5 pt-1 text-xs">
+                <div className="p-2.5 rounded-md bg-muted/40 border border-border">
+                  <span className="text-muted-foreground text-[11px] block">Skills Listed</span>
+                  <p className="font-semibold text-foreground text-sm mt-0.5">
+                    {profile?._count.skills || 0}
+                  </p>
+                </div>
+                <div className="p-2.5 rounded-md bg-muted/40 border border-border">
+                  <span className="text-muted-foreground text-[11px] block">Experience</span>
+                  <p className="font-semibold text-foreground text-sm mt-0.5">
+                    {profile?._count.experiences || 0} entries
+                  </p>
+                </div>
+                <div className="p-2.5 rounded-md bg-muted/40 border border-border">
+                  <span className="text-muted-foreground text-[11px] block">Projects</span>
+                  <p className="font-semibold text-foreground text-sm mt-0.5">
+                    {profile?._count.projects || 0} items
+                  </p>
+                </div>
+                <div className="p-2.5 rounded-md bg-muted/40 border border-border">
+                  <span className="text-muted-foreground text-[11px] block">Education</span>
+                  <p className="font-semibold text-foreground text-sm mt-0.5">
+                    {profile?._count.educations || 0} records
+                  </p>
+                </div>
+              </div>
+
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="w-full text-xs text-muted-foreground hover:text-foreground justify-between h-8"
+              >
+                <Link href="/dashboard/career-workspace">
+                  <span>View full Career Workspace</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -138,8 +138,22 @@ export default function AIAnalysisPage() {
 
   if (loading) {
     return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="space-y-6 animate-pulse">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-lg border border-border bg-card p-6 shadow-2xs">
+          <div className="space-y-2">
+            <div className="h-6 w-64 bg-muted rounded" />
+            <div className="h-4 w-96 bg-muted/60 rounded" />
+          </div>
+          <div className="h-9 w-48 bg-muted rounded" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="h-80 border-border/50 bg-card p-6">
+            <div className="h-full bg-muted/30 rounded" />
+          </Card>
+          <Card className="h-80 border-border/50 bg-card p-6 lg:col-span-2">
+            <div className="h-full bg-muted/30 rounded" />
+          </Card>
+        </div>
       </div>
     );
   }

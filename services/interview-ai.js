@@ -1,4 +1,4 @@
-import { callGroqJson } from './ai';
+import { callGroqJson } from './ai.js';
 
 /**
  * Supported technologies in CareerHub Mock Interview Platform
@@ -99,6 +99,7 @@ JSON Output Schema:
       commonMistakes: Array.isArray(q.commonMistakes) ? q.commonMistakes : ['Omitted production error handling', 'Did not address scale limits'],
       followUp: q.followUp || 'How would you measure and monitor performance metrics for this in production?',
       interviewTips: Array.isArray(q.interviewTips) ? q.interviewTips : ['Structure your answer using the STAR technique', 'Be clear on trade-offs'],
+      hints: Array.isArray(q.interviewTips) && q.interviewTips.length > 0 ? q.interviewTips : ['Structure your answer using the STAR technique', 'Be clear on trade-offs'],
       keyPoints: Array.isArray(q.keyPoints) ? q.keyPoints : ['Core Architecture', 'Performance', 'Edge Cases'],
       options: q.options || null,
       codeTemplate: q.codeTemplate || (q.questionType === 'CODE' ? `// Implementation template for ${role}\nfunction solution() {\n  // TODO: implement logic\n}\n` : null),
@@ -527,7 +528,8 @@ function getFallbackInterviewQuestions(technology, role, difficulty, count, type
       questionType: template.questionType,
       sampleAnswer: template.sampleAnswer,
       keyPoints: template.keyPoints,
-      hints: template.hints,
+      hints: template.hints || [],
+      interviewTips: template.hints || ['Structure your answer clearly with concrete examples.'],
       options: template.options || null,
       codeTemplate: template.codeTemplate || null,
     });
