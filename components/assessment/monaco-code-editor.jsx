@@ -77,28 +77,28 @@ export function MonacoCodeEditor({
 
   return (
     <div
-      className={`flex flex-col border border-border/60 rounded-md overflow-hidden bg-slate-950 shadow-sm transition-all duration-200 ${
-        isFullscreen ? 'fixed inset-0 z-50 rounded-none' : 'h-full min-h-[450px]'
+      className={`flex flex-col border border-border/60 rounded-md overflow-hidden bg-slate-950 shadow-sm transition-all duration-200 w-full min-w-0 ${
+        isFullscreen ? 'fixed inset-0 z-50 rounded-none' : 'h-full min-h-[280px]'
       }`}
     >
       {/* Editor Control Header */}
-      <div className="flex flex-wrap items-center justify-between px-4 py-2.5 bg-slate-900/90 border-b border-slate-800/80 gap-2">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between px-2.5 sm:px-4 py-2 bg-slate-900/90 border-b border-slate-800/80 gap-1.5 sm:gap-2 w-full min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Badge
             variant="outline"
-            className="bg-primary/10 text-primary border-primary/30 text-xs font-mono uppercase px-2.5 py-0.5"
+            className="bg-primary/10 text-primary border-primary/30 text-[11px] sm:text-xs font-mono uppercase px-2 py-0.5"
           >
             {language}
           </Badge>
-          <span className="text-[11px] text-slate-400 hidden sm:inline-block font-mono">
+          <span className="text-[11px] text-slate-400 hidden md:inline-block font-mono">
             Ctrl+Enter: Run | Ctrl+Shift+Enter: Submit
           </span>
         </div>
 
         {/* Toolbar Controls */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
           {/* Font Size Selector */}
-          <div className="flex items-center gap-1 bg-slate-800/60 rounded-lg px-2 py-1 text-slate-300">
+          <div className="flex items-center gap-1 bg-slate-800/60 rounded-md px-1.5 sm:px-2 py-1 text-slate-300">
             <Type className="h-3.5 w-3.5 text-slate-400" />
             <select
               value={fontSize}

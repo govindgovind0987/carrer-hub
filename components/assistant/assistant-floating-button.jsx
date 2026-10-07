@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { Sparkles, MessageSquare } from 'lucide-react';
+import { BotMessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCareerAssistant } from './assistant-context';
 
@@ -27,19 +27,15 @@ export function AssistantFloatingButton() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           aria-label="Open CareerHub AI Assistant"
-          title="CareerHub AI Assistant (Ctrl + /)"
-          className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-40 flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-3 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer border border-primary/20 group"
+          title="CareerHub AI Assistant"
+          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] right-[calc(1rem+env(safe-area-inset-right,0px))] sm:bottom-6 sm:right-6 lg:bottom-8 lg:right-8 z-40 flex items-center justify-center sm:gap-2 h-11 w-11 sm:h-auto sm:w-auto rounded-full bg-primary text-primary-foreground sm:px-4 sm:py-2.5 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer border border-primary/20 group"
         >
-          <div className="relative">
-            <Sparkles className="h-5 w-5 transition-transform group-hover:rotate-12" />
-            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-emerald-400" />
+          <div className="relative flex items-center justify-center">
+            <BotMessageSquare className="h-5 w-5 shrink-0" />
+            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-background sm:hidden" />
           </div>
-          <span className="text-xs font-semibold tracking-wide hidden sm:inline">
+          <span className="hidden sm:inline text-xs font-semibold tracking-wide">
             CareerHub AI
-          </span>
-          <span className="hidden md:inline text-[10px] bg-primary-foreground/20 px-1.5 py-0.5 rounded-sm font-mono opacity-80">
-            Ctrl+/
           </span>
         </motion.button>
       )}

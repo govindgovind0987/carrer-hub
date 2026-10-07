@@ -256,23 +256,25 @@ export default function ProfilePage() {
       />
 
       <Tabs defaultValue="personal" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-card p-1 border border-border">
-          <TabsTrigger value="personal" className="flex items-center gap-1.5 text-xs">
-            <User className="h-3.5 w-3.5" /> Personal
-          </TabsTrigger>
-          <TabsTrigger value="experience" className="flex items-center gap-1.5 text-xs">
-            <Briefcase className="h-3.5 w-3.5" /> Experience
-          </TabsTrigger>
-          <TabsTrigger value="education" className="flex items-center gap-1.5 text-xs">
-            <GraduationCap className="h-3.5 w-3.5" /> Education
-          </TabsTrigger>
-          <TabsTrigger value="skills" className="flex items-center gap-1.5 text-xs">
-            <Wrench className="h-3.5 w-3.5" /> Skills
-          </TabsTrigger>
-          <TabsTrigger value="projects" className="flex items-center gap-1.5 text-xs">
-            <FolderGit2 className="h-3.5 w-3.5" /> Projects
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto scrollbar-none -mx-1 px-1">
+          <TabsList className="flex w-max min-w-full justify-start sm:grid sm:grid-cols-5 bg-card p-1 border border-border">
+            <TabsTrigger value="personal" className="shrink-0 flex items-center gap-1.5 text-xs">
+              <User className="h-3.5 w-3.5" /> Personal
+            </TabsTrigger>
+            <TabsTrigger value="experience" className="shrink-0 flex items-center gap-1.5 text-xs">
+              <Briefcase className="h-3.5 w-3.5" /> Experience
+            </TabsTrigger>
+            <TabsTrigger value="education" className="shrink-0 flex items-center gap-1.5 text-xs">
+              <GraduationCap className="h-3.5 w-3.5" /> Education
+            </TabsTrigger>
+            <TabsTrigger value="skills" className="shrink-0 flex items-center gap-1.5 text-xs">
+              <Wrench className="h-3.5 w-3.5" /> Skills
+            </TabsTrigger>
+            <TabsTrigger value="projects" className="shrink-0 flex items-center gap-1.5 text-xs">
+              <FolderGit2 className="h-3.5 w-3.5" /> Projects
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Personal Info Tab */}
         <TabsContent value="personal" className="mt-6">
@@ -384,7 +386,7 @@ export default function ProfilePage() {
                     <Label>Job Title</Label>
                     <Input {...regExp('title')} placeholder="Software Engineer" />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Start Date</Label>
                       <Input type="date" {...regExp('startDate')} />
@@ -450,7 +452,7 @@ export default function ProfilePage() {
                     <Label>Field of Study</Label>
                     <Input {...regEdu('fieldOfStudy')} placeholder="Computer Science" />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Start Date</Label>
                       <Input type="date" {...regEdu('startDate')} />

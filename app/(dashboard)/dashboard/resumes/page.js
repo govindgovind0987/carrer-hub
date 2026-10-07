@@ -264,20 +264,20 @@ export default function ResumesPage() {
                   <span>{resume.fileSize ? `${Math.round(resume.fileSize / 1024)} KB` : 'PDF'}</span>
                 </div>
 
-                <div className="flex items-center gap-2 pt-2 border-t border-border">
-                  <Button asChild variant="outline" size="sm" className="flex-1 text-xs">
+                <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border">
+                  <Button asChild variant="outline" size="sm" className="flex-1 min-w-[110px] text-xs">
                     <a href={resume.fileUrl} target="_blank" rel="noreferrer">
                       <ExternalLink className="mr-1 h-3.5 w-3.5" /> Preview PDF
                     </a>
                   </Button>
 
                   {!resume.isDefault && (
-                    <Button variant="ghost" size="sm" onClick={() => handleMakeDefault(resume.id)} className="text-xs">
+                    <Button variant="ghost" size="sm" onClick={() => handleMakeDefault(resume.id)} className="text-xs shrink-0">
                       Set Default
                     </Button>
                   )}
 
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(resume.id)} className="text-destructive hover:bg-destructive/10">
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(resume.id)} className="text-destructive hover:bg-destructive/10 shrink-0">
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

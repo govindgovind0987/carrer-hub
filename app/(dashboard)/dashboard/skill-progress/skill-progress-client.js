@@ -155,40 +155,42 @@ export default function SkillProgressClient({
 
       {/* Category Tabs */}
       <Tabs defaultValue="dsa" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="flex flex-wrap h-auto bg-card p-1 border border-border rounded-lg gap-1">
-          <TabsTrigger value="dsa" className="flex items-center gap-1.5 text-xs py-1.5 px-3">
-            <Code2 className="h-3.5 w-3.5" /> DSA
-          </TabsTrigger>
-          <TabsTrigger value="programming" className="flex items-center gap-1.5 text-xs py-1.5 px-3">
-            <Terminal className="h-3.5 w-3.5" /> Programming
-          </TabsTrigger>
-          <TabsTrigger value="webdev" className="flex items-center gap-1.5 text-xs py-1.5 px-3">
-            <Globe className="h-3.5 w-3.5" /> Web Development
-          </TabsTrigger>
-          <TabsTrigger value="database" className="flex items-center gap-1.5 text-xs py-1.5 px-3">
-            <Database className="h-3.5 w-3.5" /> Database
-          </TabsTrigger>
-          <TabsTrigger value="cs" className="flex items-center gap-1.5 text-xs py-1.5 px-3">
-            <Cpu className="h-3.5 w-3.5" /> Computer Science
-          </TabsTrigger>
-          <TabsTrigger value="interview" className="flex items-center gap-1.5 text-xs py-1.5 px-3">
-            <HelpCircle className="h-3.5 w-3.5" /> Interview Prep
-          </TabsTrigger>
-          <TabsTrigger value="resume" className="flex items-center gap-1.5 text-xs py-1.5 px-3">
-            <FileCheck className="h-3.5 w-3.5" /> Resume / Career
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto scrollbar-none -mx-1 px-1">
+          <TabsList className="flex w-max min-w-full justify-start h-auto bg-card p-1 border border-border rounded-lg gap-1">
+            <TabsTrigger value="dsa" className="shrink-0 flex items-center gap-1.5 text-xs py-1.5 px-3">
+              <Code2 className="h-3.5 w-3.5" /> DSA
+            </TabsTrigger>
+            <TabsTrigger value="programming" className="shrink-0 flex items-center gap-1.5 text-xs py-1.5 px-3">
+              <Terminal className="h-3.5 w-3.5" /> Programming
+            </TabsTrigger>
+            <TabsTrigger value="webdev" className="shrink-0 flex items-center gap-1.5 text-xs py-1.5 px-3">
+              <Globe className="h-3.5 w-3.5" /> Web Development
+            </TabsTrigger>
+            <TabsTrigger value="database" className="shrink-0 flex items-center gap-1.5 text-xs py-1.5 px-3">
+              <Database className="h-3.5 w-3.5" /> Database
+            </TabsTrigger>
+            <TabsTrigger value="cs" className="shrink-0 flex items-center gap-1.5 text-xs py-1.5 px-3">
+              <Cpu className="h-3.5 w-3.5" /> Computer Science
+            </TabsTrigger>
+            <TabsTrigger value="interview" className="shrink-0 flex items-center gap-1.5 text-xs py-1.5 px-3">
+              <HelpCircle className="h-3.5 w-3.5" /> Interview Prep
+            </TabsTrigger>
+            <TabsTrigger value="resume" className="shrink-0 flex items-center gap-1.5 text-xs py-1.5 px-3">
+              <FileCheck className="h-3.5 w-3.5" /> Resume / Career
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* 1. DSA TAB CONTENT */}
         <TabsContent value="dsa" className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h2 className="text-lg font-bold text-foreground">Data Structures & Algorithms Breakdown</h2>
               <p className="text-xs text-muted-foreground">
                 Detailed stats across all 20 essential DSA topic categories.
               </p>
             </div>
-            <div className="text-right text-xs">
+            <div className="text-left sm:text-right text-xs">
               <span className="font-semibold text-foreground">{totalDsaSolved}</span>
               <span className="text-muted-foreground"> / {totalDsaAttempted} Topics Attempted</span>
             </div>
@@ -414,7 +416,7 @@ export default function SkillProgressClient({
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="p-4 rounded-md border border-cyan-500/30 bg-cyan-500/5">
                       <p className="text-xs text-muted-foreground">ATS Score</p>
                       <p className="text-2xl font-bold text-cyan-500">{latestAnalysis.atsScore}/100</p>

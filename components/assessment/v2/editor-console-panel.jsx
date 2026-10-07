@@ -94,20 +94,21 @@ export function EditorConsolePanel({
 
   return (
     <div
-      className={`flex flex-col gap-3 overflow-hidden ${
-        isFullscreen ? 'fixed inset-0 z-50 bg-background p-4' : 'h-full'
+      className={`flex flex-col gap-3 ${
+        isFullscreen ? 'fixed inset-0 z-50 bg-background p-4 overflow-y-auto' : 'h-auto lg:h-full w-full min-w-0'
       }`}
     >
-      {/* Editor Control Toolbar */}
-      <div className="flex items-center justify-between bg-card/60 backdrop-blur-xl border border-border/50 p-2.5 rounded-md flex-wrap gap-2">
-        <div className="flex items-center gap-2 flex-wrap">
+      {/* Editor Control Toolbar: Responsive multi-row layout on mobile, single bar on desktop */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card/60 backdrop-blur-xl border border-border/50 p-2 sm:p-2.5 rounded-md gap-2 w-full min-w-0">
+        {/* Row 1 on mobile: Selectors & Settings */}
+        <div className="flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 flex-wrap">
           {/* Language Selector */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-semibold text-muted-foreground">Language:</span>
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            <span className="text-[11px] sm:text-xs font-semibold text-muted-foreground">Lang:</span>
             <select
               value={language}
               onChange={(e) => onLanguageChange(e.target.value)}
-              className="bg-muted text-xs font-mono font-bold px-3 py-1 rounded-lg border border-border/60 focus:outline-none cursor-pointer"
+              className="bg-muted text-xs font-mono font-bold px-2 sm:px-3 py-1 rounded-md border border-border/60 focus:outline-none cursor-pointer h-8"
             >
               <option value="python">Python 3</option>
               <option value="java">Java 17</option>
@@ -116,12 +117,12 @@ export function EditorConsolePanel({
           </div>
 
           {/* Font Size Selector */}
-          <div className="flex items-center gap-1 border-l border-border/50 pl-2">
-            <span className="text-xs font-semibold text-muted-foreground">Font:</span>
+          <div className="flex items-center gap-1 border-l border-border/50 pl-1.5 sm:pl-2">
+            <span className="text-[11px] sm:text-xs font-semibold text-muted-foreground">Font:</span>
             <select
               value={fontSize}
               onChange={(e) => setFontSize(Number(e.target.value))}
-              className="bg-muted text-xs font-mono px-2 py-1 rounded-lg border border-border/60 cursor-pointer"
+              className="bg-muted text-xs font-mono px-1.5 sm:px-2 py-1 rounded-md border border-border/60 cursor-pointer h-8"
             >
               {[12, 13, 14, 15, 16, 18, 20].map((sz) => (
                 <option key={sz} value={sz}>
@@ -136,25 +137,38 @@ export function EditorConsolePanel({
             variant="ghost"
             size="sm"
             onClick={() => setEditorTheme(editorTheme === 'vs-dark' ? 'light' : 'vs-dark')}
-            className="text-xs text-muted-foreground py-1 px-2"
+            className="text-xs text-muted-foreground py-1 px-2 h-8"
           >
             {editorTheme === 'vs-dark' ? <Moon className="h-3.5 w-3.5 mr-1" /> : <Sun className="h-3.5 w-3.5 mr-1" />}
-            {editorTheme === 'vs-dark' ? 'Dark' : 'Light'}
+            <span>{editorTheme === 'vs-dark' ? 'Dark' : 'Light'}</span>
           </Button>
 
           {/* Auto-save Status */}
-          <span className="text-[11px] text-muted-foreground flex items-center gap-1 hidden sm:inline-flex font-mono">
-            <Save className="h-3 w-3 text-emerald-500" /> Auto Saved
+          <span className="text-[11px] text-muted-foreground items-center gap-1 hidden md:inline-flex font-mono">
+            <Save className="h-3 w-3 text-emerald-500" /> Saved
           </span>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={onResetCode} className="text-xs text-muted-foreground">
-            <RotateCcw className="h-3.5 w-3.5 mr-1" /> Reset
+        {/* Row 2 on mobile: Reset + Run Code + Submit Solution */}
+        <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onResetCode}
+            className="text-xs text-muted-foreground h-8 px-2 shrink-0"
+            title="Reset to starter template"
+          >
+            <RotateCcw className="h-3.5 w-3.5 sm:mr-1" />
+            <span className="hidden xs:inline sm:inline">Reset</span>
           </Button>
 
-          <Button variant="ghost" size="sm" onClick={toggleFullscreen} className="text-xs text-muted-foreground">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleFullscreen}
+            className="text-xs text-muted-foreground h-8 px-2 shrink-0"
+            title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+          >
             {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
           </Button>
 
@@ -163,9 +177,10 @@ export function EditorConsolePanel({
             disabled={isEvaluating || !code.trim()}
             variant="outline"
             size="sm"
-            className="text-xs border-primary/30 text-primary hover:bg-primary/10"
+            className="text-xs border-primary/30 text-primary hover:bg-primary/10 flex-1 sm:flex-initial h-8 px-2.5 sm:px-3 font-semibold shrink-0"
           >
-            <Play className="h-3.5 w-3.5 mr-1 fill-current" /> Run Code
+            <Play className="h-3.5 w-3.5 mr-1 fill-current shrink-0" />
+            <span>Run Code</span>
           </Button>
 
           <Button
@@ -175,15 +190,16 @@ export function EditorConsolePanel({
             }}
             disabled={isEvaluating || !code.trim()}
             size="sm"
-            className="text-xs bg-primary   text-primary-foreground font-semibold shadow-md"
+            className="text-xs bg-primary text-primary-foreground font-semibold shadow-md flex-1 sm:flex-initial h-8 px-2.5 sm:px-3 whitespace-nowrap shrink-0"
           >
-            <Send className="h-3.5 w-3.5 mr-1" /> Submit Solution
+            <Send className="h-3.5 w-3.5 mr-1 shrink-0" />
+            <span>Submit</span>
           </Button>
         </div>
       </div>
 
       {/* Monaco Code Editor Container */}
-      <div className="flex-1 min-h-[300px] rounded-md overflow-hidden border border-border/50">
+      <div className="h-[360px] sm:h-[420px] lg:flex-1 lg:min-h-[320px] rounded-md overflow-hidden border border-border/50 w-full min-w-0">
         <MonacoCodeEditor
           value={code}
           onChange={onCodeChange}
@@ -197,18 +213,18 @@ export function EditorConsolePanel({
       </div>
 
       {/* Bottom Console Panel (No Popups!) */}
-      <Card className="border-border/60 bg-card/90 backdrop-blur-xl h-64 flex flex-col overflow-hidden">
-        <div className="border-b border-border/40 bg-muted/20 px-3 py-1.5 flex items-center justify-between">
-          <Tabs defaultValue="input" value={activeConsoleTab} onValueChange={setActiveConsoleTab}>
-            <TabsList className="h-7 bg-muted/60 p-0.5">
-              <TabsTrigger value="input" className="text-[11px] py-0.5 px-2">
-                <Terminal className="h-3 w-3 mr-1" /> Custom Stdin Input
+      <Card className="border-border/60 bg-card/90 backdrop-blur-xl min-h-[220px] lg:h-64 flex flex-col overflow-hidden w-full min-w-0">
+        <div className="border-b border-border/40 bg-muted/20 px-2 sm:px-3 py-1.5 flex items-center justify-between overflow-x-auto scrollbar-none">
+          <Tabs defaultValue="input" value={activeConsoleTab} onValueChange={setActiveConsoleTab} className="w-full">
+            <TabsList className="h-7 bg-muted/60 p-0.5 flex w-max min-w-full sm:w-auto overflow-x-auto scrollbar-none">
+              <TabsTrigger value="input" className="text-[11px] py-0.5 px-2 shrink-0 whitespace-nowrap">
+                <Terminal className="h-3 w-3 mr-1" /> Custom Stdin
               </TabsTrigger>
-              <TabsTrigger value="output" className="text-[11px] py-0.5 px-2">
-                <CheckCircle2 className="h-3 w-3 mr-1" /> Run Output & Logs
+              <TabsTrigger value="output" className="text-[11px] py-0.5 px-2 shrink-0 whitespace-nowrap">
+                <CheckCircle2 className="h-3 w-3 mr-1" /> Run Output
               </TabsTrigger>
-              <TabsTrigger value="result" className="text-[11px] py-0.5 px-2">
-                <Send className="h-3 w-3 mr-1" /> Inline Submission Result
+              <TabsTrigger value="result" className="text-[11px] py-0.5 px-2 shrink-0 whitespace-nowrap">
+                <Send className="h-3 w-3 mr-1" /> Test Result
               </TabsTrigger>
             </TabsList>
           </Tabs>

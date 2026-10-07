@@ -140,6 +140,30 @@ body {
   outline-offset: 2px;
 }
 
+/* CareerHub AI Chatbot Input — Strict Focus Styling (Zero Yellow/Orange Outline or Ring) */
+.careerhub-chat-input-box,
+.careerhub-chat-input-box:focus,
+.careerhub-chat-input-box:focus-visible,
+.careerhub-chat-input-box:focus-within,
+.careerhub-chat-input-box textarea,
+.careerhub-chat-input-box textarea:focus,
+.careerhub-chat-input-box textarea:focus-visible {
+  outline: none !important;
+  outline-color: transparent !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-offset-color: transparent !important;
+}
+
+.careerhub-chat-input-box:focus-within {
+  border-color: #64748b !important; /* Neutral Slate-500 */
+  box-shadow: 0 0 0 2px rgba(100, 116, 139, 0.2) !important;
+}
+
+.dark .careerhub-chat-input-box:focus-within {
+  border-color: #94a3b8 !important; /* Neutral Slate-400 */
+  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.22) !important;
+}
+
 /* Selection color */
 ::selection {
   background: rgb(215 160 68 / 0.28);

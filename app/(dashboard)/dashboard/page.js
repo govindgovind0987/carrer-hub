@@ -6,7 +6,8 @@ import {
   FileText,
   User,
   ArrowRight,
-  Bot,
+  FileCheck2,
+  Compass,
   Target,
   Sparkles,
   Video,
@@ -170,7 +171,7 @@ export default async function CandidateDashboardPage() {
       desc: 'Keyword gap audit, recruiter screening criteria, and instant feedback.',
       href: '/dashboard/ai-analysis',
       cta: 'Audit Resume',
-      icon: Bot,
+      icon: FileCheck2,
     },
     {
       title: 'AI Job Matcher',
@@ -184,7 +185,7 @@ export default async function CandidateDashboardPage() {
       desc: 'Actionable 30/90-day roadmaps, skill gap analysis, and tailored career guidance.',
       href: '/dashboard/career-coach',
       cta: 'Get Advice',
-      icon: Sparkles,
+      icon: Compass,
     },
   ];
 
@@ -207,13 +208,13 @@ export default async function CandidateDashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
-          <Button asChild size="sm">
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap w-full sm:w-auto">
+          <Button asChild size="sm" className="flex-1 sm:flex-initial">
             <Link href="/dashboard/assessment">
               <Code2 className="mr-1.5 h-3.5 w-3.5" /> Practice Problems
             </Link>
           </Button>
-          <Button asChild variant="outline" size="sm">
+          <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-initial">
             <Link href="/dashboard/career-workspace">
               <Briefcase className="mr-1.5 h-3.5 w-3.5" /> My Workspace
             </Link>
@@ -222,7 +223,7 @@ export default async function CandidateDashboardPage() {
       </div>
 
       {/* NEXT: 4 Compact Career Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Metric 1: Career Readiness */}
         <Card className="p-4 flex flex-col justify-between">
           <div className="space-y-1">
@@ -272,7 +273,7 @@ export default async function CandidateDashboardPage() {
               <span className="text-xs font-medium text-muted-foreground">
                 Resume ATS Match
               </span>
-              <Bot className="h-4 w-4 text-muted-foreground" />
+              <FileCheck2 className="h-4 w-4 text-muted-foreground" />
             </div>
             <div className="text-2xl font-bold tracking-tight text-foreground">
               {resumeReadiness}/100
@@ -431,7 +432,7 @@ export default async function CandidateDashboardPage() {
             <CardHeader className="pb-3 border-b border-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
+                  <Compass className="h-4 w-4 text-primary" />
                   <CardTitle className="text-base font-semibold">
                     AI Career Coach Insight
                   </CardTitle>

@@ -106,9 +106,9 @@ export function CodingProblemFilters({
   }, [searchTerm, searchParams, updateParam]);
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full min-w-0">
       {/* Search Input */}
-      <div className="relative flex-1 min-w-[240px]">
+      <div className="relative w-full sm:w-auto sm:flex-1 min-w-0">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Search problems by title, tags, or company..."
@@ -119,7 +119,7 @@ export function CodingProblemFilters({
               updateParam('search', searchTerm.trim());
             }
           }}
-          className="pl-9 pr-8 bg-card/60 text-xs focus:ring-ring"
+          className="pl-9 pr-8 bg-card/60 text-xs focus:ring-ring w-full"
         />
         {searchTerm && (
           <button
@@ -136,12 +136,12 @@ export function CodingProblemFilters({
       </div>
 
       {/* DSA Topic Dropdown */}
-      <div className="flex items-center gap-2">
-        <Layers className="h-4 w-4 text-primary" />
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        <Layers className="h-4 w-4 text-primary shrink-0" />
         <select
           value={currentCategory || 'ALL'}
           onChange={(e) => updateParam('category', e.target.value)}
-          className="bg-card/80 border border-border/60 text-xs font-semibold rounded-lg px-3 py-2 focus:outline-none cursor-pointer focus:ring-1 focus:ring-ring"
+          className="bg-card/80 border border-border/60 text-xs font-semibold rounded-lg px-2 sm:px-3 py-2 focus:outline-none cursor-pointer focus:ring-1 focus:ring-ring"
         >
           {CATEGORIES.map((cat) => (
             <option key={cat.value} value={cat.value}>

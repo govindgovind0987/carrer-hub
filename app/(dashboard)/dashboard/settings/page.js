@@ -51,25 +51,27 @@ export default function SettingsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-12">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Platform Settings</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Platform Settings</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Manage your account credentials, privacy parameters, notifications, and security preferences.
           </p>
         </div>
-        <Badge variant="outline" className="text-xs uppercase font-bold border-primary/30 text-primary">
+        <Badge variant="outline" className="w-fit text-xs uppercase font-bold border-primary/30 text-primary">
           Role: {userRole}
         </Badge>
       </div>
 
       <Tabs defaultValue="account" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-muted/60 p-1">
-          <TabsTrigger value="account">Account</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="privacy">Privacy</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto scrollbar-none -mx-1 px-1">
+          <TabsList className="flex w-max min-w-full justify-start sm:grid sm:grid-cols-4 bg-muted/60 p-1">
+            <TabsTrigger value="account" className="shrink-0">Account</TabsTrigger>
+            <TabsTrigger value="security" className="shrink-0">Security</TabsTrigger>
+            <TabsTrigger value="notifications" className="shrink-0">Notifications</TabsTrigger>
+            <TabsTrigger value="privacy" className="shrink-0">Privacy</TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Tab 1: Account Settings */}
         <TabsContent value="account" className="space-y-6 pt-4">
@@ -150,22 +152,22 @@ export default function SettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-md border border-border/50 bg-muted/20">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-md border border-border/50 bg-muted/20">
                 <div>
                   <h4 className="font-semibold text-sm">Transactional Email Alerts</h4>
                   <p className="text-xs text-muted-foreground">Receive application updates, ATS score reports, and interview invitations.</p>
                 </div>
-                <Button variant={emailNotifications ? 'default' : 'outline'} size="sm" onClick={() => setEmailNotifications(!emailNotifications)}>
+                <Button variant={emailNotifications ? 'default' : 'outline'} size="sm" className="self-start sm:self-auto shrink-0" onClick={() => setEmailNotifications(!emailNotifications)}>
                   {emailNotifications ? 'Enabled' : 'Disabled'}
                 </Button>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-md border border-border/50 bg-muted/20">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-md border border-border/50 bg-muted/20">
                 <div>
                   <h4 className="font-semibold text-sm">AI Interview Reminders</h4>
                   <p className="text-xs text-muted-foreground">Receive upcoming mock interview countdown alerts 15 minutes before start.</p>
                 </div>
-                <Button variant={interviewReminders ? 'default' : 'outline'} size="sm" onClick={() => setInterviewReminders(!interviewReminders)}>
+                <Button variant={interviewReminders ? 'default' : 'outline'} size="sm" className="self-start sm:self-auto shrink-0" onClick={() => setInterviewReminders(!interviewReminders)}>
                   {interviewReminders ? 'Enabled' : 'Disabled'}
                 </Button>
               </div>
@@ -182,12 +184,12 @@ export default function SettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-md border border-border/50 bg-muted/20">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-md border border-border/50 bg-muted/20">
                 <div>
                   <h4 className="font-semibold text-sm">Public Candidate Directory Listing</h4>
                   <p className="text-xs text-muted-foreground">Allow verified recruiters to discover your profile and match score.</p>
                 </div>
-                <Button variant={isPublicProfile ? 'default' : 'outline'} size="sm" onClick={() => setIsPublicProfile(!isPublicProfile)}>
+                <Button variant={isPublicProfile ? 'default' : 'outline'} size="sm" className="self-start sm:self-auto shrink-0" onClick={() => setIsPublicProfile(!isPublicProfile)}>
                   {isPublicProfile ? 'Public' : 'Private'}
                 </Button>
               </div>

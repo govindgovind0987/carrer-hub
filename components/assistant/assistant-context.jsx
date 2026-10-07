@@ -80,17 +80,17 @@ export function AssistantProvider({ children }) {
   );
 
   const abortControllerRef = useRef(null);
+  const typingIntervalRef = useRef(null);
 
-  // Global toggle shortcut: Ctrl + / or Cmd + /
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === '/') {
-        e.preventDefault();
-        setIsOpen((prev) => !prev);
+    return () => {
+      if (typingIntervalRef.current) {
+        clearInterval(typingIntervalRef.current);
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const toggleAssistant = useCallback(() => {
@@ -98,6 +98,10 @@ export function AssistantProvider({ children }) {
   }, []);
 
   const clearChat = useCallback(() => {
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+    }
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -155,21 +159,54 @@ export function AssistantProvider({ children }) {
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
-        let accumulated = '';
+
+        let fullBuffer = '';
+        let renderedLength = 0;
+        let streamDone = false;
+
+        // Progressive rendering queue that reveals streamed tokens dynamically
+        const typingPromise = new Promise((resolve) => {
+          const intervalId = setInterval(() => {
+            if (renderedLength < fullBuffer.length) {
+              const remaining = fullBuffer.length - renderedLength;
+              // Adaptive typing pace: reveals 1-4 chars per 18ms frame for a natural typing feel,
+              // scaling up if a larger network chunk arrived so it never lags behind
+              const step = Math.max(1, Math.min(8, Math.ceil(remaining / 7)));
+              renderedLength = Math.min(fullBuffer.length, renderedLength + step);
+              const currentSlice = fullBuffer.slice(0, renderedLength);
+
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === assistantMsgId ? { ...msg, content: currentSlice } : msg
+                )
+              );
+            } else if (streamDone) {
+              clearInterval(intervalId);
+              typingIntervalRef.current = null;
+              resolve();
+            }
+          }, 18);
+
+          typingIntervalRef.current = intervalId;
+        });
 
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) {
+            streamDone = true;
+            break;
+          }
           const chunk = decoder.decode(value, { stream: true });
-          accumulated += chunk;
-
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMsgId ? { ...msg, content: accumulated } : msg
-            )
-          );
+          fullBuffer += chunk;
         }
+
+        // Wait until typing queue has rendered all buffered tokens smoothly
+        await typingPromise;
       } catch (err) {
+        if (typingIntervalRef.current) {
+          clearInterval(typingIntervalRef.current);
+          typingIntervalRef.current = null;
+        }
         if (err.name === 'AbortError') return;
         console.error('CareerHub Assistant Client Error:', err);
         setError('CareerHub AI is temporarily unavailable. Please try again.');

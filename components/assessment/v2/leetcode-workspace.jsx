@@ -114,11 +114,11 @@ export function LeetCodeWorkspace({ problem, userProgress, previousSubmissions =
   };
 
   return (
-    <div className="h-[calc(100vh-5rem)] p-2 sm:p-4 bg-background">
-      {/* 2-Panel Split Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-full overflow-hidden">
+    <div className="h-auto lg:h-[calc(100vh-4.5rem)] p-1 sm:p-2 lg:p-3 pb-16 lg:pb-2 bg-background w-full min-w-0">
+      {/* 2-Panel Split Grid: Single-column on mobile/tablet, 12-col split on desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-auto lg:h-full lg:overflow-hidden w-full min-w-0">
         {/* Left Panel: Problem Statement, Tabs, 10 Sample Test cases, 20+ Hidden Summary (5 cols) */}
-        <div className="lg:col-span-5 h-full overflow-hidden">
+        <div className="lg:col-span-5 h-auto lg:h-full lg:overflow-hidden min-w-0 w-full flex flex-col">
           <ProblemPanel
             problem={problem}
             userProgress={userProgress}
@@ -130,7 +130,7 @@ export function LeetCodeWorkspace({ problem, userProgress, previousSubmissions =
         </div>
 
         {/* Right Panel: Editor, Action Bar, Bottom Console (7 cols) */}
-        <div className="lg:col-span-7 h-full overflow-hidden">
+        <div className="lg:col-span-7 h-auto lg:h-full lg:overflow-hidden min-w-0 w-full flex flex-col">
           <EditorConsolePanel
             problem={problem}
             language={language}

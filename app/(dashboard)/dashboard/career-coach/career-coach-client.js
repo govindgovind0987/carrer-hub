@@ -110,7 +110,8 @@ export default function CareerCoachClient({ initialContext }) {
       {/* Header Banner */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-border bg-card p-6 shadow-2xs">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
+            <Compass className="h-6 w-6 text-primary shrink-0" />
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">AI Career Coach</h1>
             <Badge variant="secondary" className="text-[10px]">Groq Engine</Badge>
           </div>
@@ -118,13 +119,14 @@ export default function CareerCoachClient({ initialContext }) {
             Your private AI career strategy engine. Evaluates your profile, resume ATS score, DSA progress, and interview readiness to build actionable preparation roadmaps.
           </p>
         </div>
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0">
           <Button
             onClick={() => handleRunAiAction(allActionButtons[0])}
             disabled={loading}
             size="sm"
+            className="w-full sm:w-auto"
           >
-            {loading ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Bot className="mr-2 h-3.5 w-3.5" />}
+            {loading ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Compass className="mr-2 h-3.5 w-3.5" />}
             Analyze My Career Fit
           </Button>
         </div>
@@ -136,7 +138,7 @@ export default function CareerCoachClient({ initialContext }) {
           <CardContent className="p-5 flex flex-col justify-between h-full space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-muted-foreground">Overall Readiness Score</span>
-              <Sparkles className="h-4 w-4 text-foreground" />
+              <Compass className="h-4 w-4 text-primary" />
             </div>
             <div>
               <p className="text-3xl font-bold tracking-tight text-foreground">

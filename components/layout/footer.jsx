@@ -38,9 +38,9 @@ export function Footer() {
     <footer className="border-t border-border/70 bg-secondary/35" id="contact">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Main Footer */}
-        <div className="grid grid-cols-2 gap-8 py-12 md:grid-cols-5">
+        <div className="grid grid-cols-1 gap-8 py-12 sm:grid-cols-2 md:grid-cols-5">
           {/* Brand */}
-          <div className="col-span-2">
+          <div className="col-span-1 sm:col-span-2">
             <Logo />
             <p className="mt-4 max-w-xs text-sm text-muted-foreground leading-relaxed">
               AI-powered hiring platform that transforms how companies find
@@ -121,7 +121,7 @@ export function Footer() {
           <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} CareerHub. All rights reserved.
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             {FOOTER_LINKS.legal.map((link) => (
               <Link
                 key={link.label}

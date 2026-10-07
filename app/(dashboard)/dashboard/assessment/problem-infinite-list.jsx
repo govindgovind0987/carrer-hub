@@ -160,14 +160,14 @@ export function ProblemInfiniteList({
                   key={problem.id}
                   className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/30 transition-colors"
                 >
-                  <div className="space-y-1 flex-1">
-                    <div className="flex items-center gap-2">
+                  <div className="space-y-1.5 flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
                       {status === 'SOLVED' && (
                         <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
                       )}
                       <Link
                         href={`/dashboard/assessment/problems/${problem.slug}`}
-                        className="font-semibold text-sm text-foreground hover:underline"
+                        className="font-semibold text-sm text-foreground hover:underline break-words"
                       >
                         {problem.title}
                       </Link>
@@ -190,8 +190,8 @@ export function ProblemInfiniteList({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="text-right text-xs text-muted-foreground hidden md:block">
+                  <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-1 sm:pt-0">
+                    <div className="text-right text-xs text-muted-foreground hidden sm:block">
                       <p className="font-semibold text-foreground">
                         {problem.acceptanceRate}% Rate
                       </p>
@@ -204,6 +204,7 @@ export function ProblemInfiniteList({
                       asChild
                       size="sm"
                       variant={status === 'SOLVED' ? 'outline' : 'default'}
+                      className="w-full sm:w-auto"
                     >
                       <Link
                         href={`/dashboard/assessment/problems/${problem.slug}`}

@@ -174,10 +174,10 @@ export default function AIAnalysisPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap w-full sm:w-auto">
           {resumes.length > 0 && (
             <Select value={selectedResumeId} onValueChange={setSelectedResumeId}>
-              <SelectTrigger className="w-44 h-9 text-xs">
+              <SelectTrigger className="w-full sm:w-44 h-9 text-xs">
                 <SelectValue placeholder="Select Resume" />
               </SelectTrigger>
               <SelectContent>
@@ -194,6 +194,7 @@ export default function AIAnalysisPage() {
             onClick={handleRunAnalysis}
             disabled={analyzing || resumes.length === 0}
             size="sm"
+            className="w-full sm:w-auto"
           >
             {analyzing ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Zap className="mr-2 h-3.5 w-3.5" />} Run AI Audit
           </Button>
@@ -213,7 +214,7 @@ export default function AIAnalysisPage() {
       ) : (
         <div className="space-y-8">
           {/* Top Score Summary Cards */}
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <Card className="border-primary/20 bg-card relative overflow-hidden">
               <CardContent className="p-6 flex items-center justify-between">
                 <div>

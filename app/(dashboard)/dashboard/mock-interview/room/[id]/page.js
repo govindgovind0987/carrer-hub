@@ -699,28 +699,29 @@ export default function LiveInterviewRoomPage({ params: propsParams }) {
               )}
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-border/40">
-                <Button variant="outline" size="sm" onClick={handlePrevious} disabled={currentIndex === 0}>
+              <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 pt-4 border-t border-border/40 w-full min-w-0">
+                <Button variant="outline" size="sm" onClick={handlePrevious} disabled={currentIndex === 0} className="w-full sm:w-auto order-3 sm:order-1">
                   <ChevronLeft className="mr-1 h-4 w-4" /> Previous
                 </Button>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end order-1 sm:order-2">
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={handleSubmitCurrentAnswer}
                     disabled={isSubmitting}
+                    className="flex-1 sm:flex-initial"
                   >
                     <Sparkles className="mr-1.5 h-3.5 w-3.5 text-primary" /> Evaluate Answer
                   </Button>
 
                   {currentIndex < questions.length - 1 ? (
-                    <Button onClick={handleNext} className="bg-primary hover:bg-primary text-primary-foreground">
-                      Next Question <ChevronRight className="ml-1 h-4 w-4" />
+                    <Button onClick={handleNext} className="bg-primary hover:bg-primary text-primary-foreground flex-1 sm:flex-initial">
+                      Next <ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   ) : (
-                    <Button onClick={handleEndInterview} disabled={isSubmitting} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                      Submit & End Interview
+                    <Button onClick={handleEndInterview} disabled={isSubmitting} className="bg-emerald-600 hover:bg-emerald-700 text-white flex-1 sm:flex-initial">
+                      Submit & End
                     </Button>
                   )}
                 </div>

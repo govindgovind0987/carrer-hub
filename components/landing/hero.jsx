@@ -24,7 +24,7 @@ export function Hero() {
             <Sparkles className="h-3.5 w-3.5" /> Your career, clearly mapped
           </div>
 
-          <h1 className="mx-auto max-w-3xl text-4xl font-bold leading-[1.04] tracking-[-0.055em] text-foreground sm:text-6xl lg:mx-0 lg:text-[4.25rem]">
+          <h1 className="mx-auto max-w-3xl text-3xl font-bold leading-[1.08] tracking-[-0.04em] text-foreground sm:text-5xl sm:leading-[1.04] sm:tracking-[-0.055em] lg:mx-0 lg:text-[4.25rem]">
             Build a career you&apos;re <span className="text-[#A86F20] dark:text-primary">ready for.</span>
           </h1>
 
@@ -33,12 +33,14 @@ export function Hero() {
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
-            <Button size="lg" asChild className="min-w-44">
+            <Button size="lg" asChild className="w-full sm:w-auto min-w-0 sm:min-w-44">
               <Link href={isAuthenticated ? '/dashboard' : '/sign-up'}>
                 {isAuthenticated ? 'Open workspace' : 'Start building free'} <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" asChild className="min-w-36"><Link href="/#features">See how it works</Link></Button>
+            <Button size="lg" variant="outline" asChild className="w-full sm:w-auto min-w-0 sm:min-w-36">
+              <Link href="/#features">See how it works</Link>
+            </Button>
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground lg:justify-start">

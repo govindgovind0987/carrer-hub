@@ -56,8 +56,8 @@ export function SubmissionsTable({ submissions = [] }) {
   return (
     <div className="space-y-3 font-sans text-xs">
       <h4 className="font-bold text-sm text-foreground tracking-tight">Submission History</h4>
-      <div className="border border-border/50 rounded-md overflow-hidden bg-card/80">
-        <Table>
+      <div className="border border-border/50 rounded-md overflow-x-auto scrollbar-thin bg-card/80 w-full min-w-0">
+        <Table className="min-w-[500px]">
           <TableHeader className="bg-muted/40 text-[11px] uppercase">
             <TableRow>
               <TableHead>Verdict</TableHead>

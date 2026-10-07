@@ -80,12 +80,12 @@ export function ProblemPanel({
   const nextSlug = similarProblems.nextSlug;
 
   return (
-    <Card className="border-border/60 bg-card/80 backdrop-blur-xl overflow-hidden flex flex-col h-full">
+    <Card className="border-border/60 bg-card/80 backdrop-blur-xl overflow-hidden flex flex-col h-auto min-h-[480px] lg:h-full w-full min-w-0">
       {/* Problem Header Bar */}
-      <div className="p-4 border-b border-border/50 bg-muted/20 space-y-3">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <h1 className="text-lg font-bold tracking-tight text-foreground">{problem.title}</h1>
+      <div className="p-3 sm:p-4 border-b border-border/50 bg-muted/20 space-y-2.5 sm:space-y-3">
+        <div className="flex items-center justify-between gap-2.5 sm:gap-3 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap min-w-0">
+            <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground break-words">{problem.title}</h1>
             {getDifficultyBadge(problem.difficulty)}
             <Badge
               onClick={() => handleTopicClick(problem.category)}
@@ -100,7 +100,7 @@ export function ProblemPanel({
             variant={bookmarked ? 'default' : 'outline'}
             size="sm"
             onClick={handleToggleBookmark}
-            className="text-xs"
+            className="text-xs shrink-0 h-8"
           >
             <Bookmark className={`h-3.5 w-3.5 mr-1 ${bookmarked ? 'fill-current' : ''}`} />
             {bookmarked ? 'Bookmarked' : 'Bookmark'}
@@ -108,7 +108,7 @@ export function ProblemPanel({
         </div>
 
         {/* Stats Row */}
-        <div className="flex items-center gap-4 text-xs text-muted-foreground font-mono flex-wrap">
+        <div className="flex items-center gap-2.5 sm:gap-4 text-xs text-muted-foreground font-mono flex-wrap">
           <span className="flex items-center gap-1">
             <TrendingUp className="h-3.5 w-3.5 text-emerald-500" /> Acceptance: <strong className="text-foreground">{problem.acceptanceRate || 68.4}%</strong>
           </span>
@@ -121,10 +121,10 @@ export function ProblemPanel({
         </div>
 
         {/* Companies & Topics Badges Row */}
-        <div className="flex items-center gap-3 text-xs flex-wrap pt-1 border-t border-border/40">
+        <div className="flex items-center gap-2.5 sm:gap-3 text-xs flex-wrap pt-1 border-t border-border/40">
           {problem.companyTags && problem.companyTags.length > 0 && (
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[11px] font-sans text-muted-foreground flex items-center gap-1">
+              <span className="text-[11px] font-sans text-muted-foreground flex items-center gap-1 shrink-0">
                 <Building2 className="h-3 w-3 text-amber-500" /> Companies:
               </span>
               {problem.companyTags.map((comp, idx) => (
@@ -137,7 +137,7 @@ export function ProblemPanel({
 
           {problem.tags && problem.tags.length > 0 && (
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[11px] font-sans text-muted-foreground flex items-center gap-1">
+              <span className="text-[11px] font-sans text-muted-foreground flex items-center gap-1 shrink-0">
                 <Tag className="h-3 w-3 text-primary" /> Topics:
               </span>
               {problem.tags.map((t, idx) => (
@@ -154,29 +154,29 @@ export function ProblemPanel({
         </div>
       </div>
 
-      {/* Tabs Navigation Bar */}
-      <div className="border-b border-border/40 bg-muted/30 px-3 py-1.5">
+      {/* Tabs Navigation Bar: Horizontally scrollable container on mobile */}
+      <div className="border-b border-border/40 bg-muted/30 px-2 sm:px-3 py-1.5 overflow-x-auto scrollbar-none">
         <Tabs defaultValue="description" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex h-auto gap-1 bg-muted/60 p-1">
-            <TabsTrigger value="description" className="text-xs py-1 px-2.5">
+          <TabsList className="flex h-auto gap-1 bg-muted/60 p-1 w-max min-w-full justify-start overflow-x-auto scrollbar-none">
+            <TabsTrigger value="description" className="text-xs py-1.5 px-2.5 sm:px-3 shrink-0 whitespace-nowrap">
               <BookOpen className="h-3.5 w-3.5 mr-1" /> Description
             </TabsTrigger>
-            <TabsTrigger value="hints" className="text-xs py-1 px-2.5">
+            <TabsTrigger value="hints" className="text-xs py-1.5 px-2.5 sm:px-3 shrink-0 whitespace-nowrap">
               <Lightbulb className="h-3.5 w-3.5 mr-1" /> Hints
             </TabsTrigger>
-            <TabsTrigger value="editorial" className="text-xs py-1 px-2.5">
+            <TabsTrigger value="editorial" className="text-xs py-1.5 px-2.5 sm:px-3 shrink-0 whitespace-nowrap">
               <FileText className="h-3.5 w-3.5 mr-1" /> Editorial
             </TabsTrigger>
-            <TabsTrigger value="solutions" className="text-xs py-1 px-2.5">
+            <TabsTrigger value="solutions" className="text-xs py-1.5 px-2.5 sm:px-3 shrink-0 whitespace-nowrap">
               <Code2 className="h-3.5 w-3.5 mr-1" /> Solutions
             </TabsTrigger>
-            <TabsTrigger value="submissions" className="text-xs py-1 px-2.5">
+            <TabsTrigger value="submissions" className="text-xs py-1.5 px-2.5 sm:px-3 shrink-0 whitespace-nowrap">
               <History className="h-3.5 w-3.5 mr-1" /> Submissions
             </TabsTrigger>
-            <TabsTrigger value="discussion" className="text-xs py-1 px-2.5">
+            <TabsTrigger value="discussion" className="text-xs py-1.5 px-2.5 sm:px-3 shrink-0 whitespace-nowrap">
               <MessageSquare className="h-3.5 w-3.5 mr-1" /> Discussion
             </TabsTrigger>
-            <TabsTrigger value="ai-copilot" className="text-xs py-1 px-2.5 text-primary font-semibold">
+            <TabsTrigger value="ai-copilot" className="text-xs py-1.5 px-2.5 sm:px-3 shrink-0 whitespace-nowrap text-primary font-semibold">
               <Sparkles className="h-3.5 w-3.5 mr-1 text-primary fill-primary" /> AI Copilot
             </TabsTrigger>
           </TabsList>
@@ -184,7 +184,7 @@ export function ProblemPanel({
       </div>
 
       {/* Main Tab Content Body */}
-      <CardContent className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin">
+      <CardContent className="flex-1 overflow-y-auto max-h-[640px] lg:max-h-none p-3 sm:p-4 space-y-5 sm:space-y-6 scrollbar-thin">
         {/* Tab: AI Copilot */}
         {activeTab === 'ai-copilot' && (
           <AIAssistantDrawer

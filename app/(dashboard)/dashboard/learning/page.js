@@ -279,16 +279,16 @@ export default async function LearningDashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center gap-4 text-xs text-muted-foreground border-y border-border/50 py-3">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground border-y border-border/50 py-3">
               <div>
                 Progress: <span className="font-semibold text-foreground">{recommendedNextTopic.solvedCount} solved</span>
               </div>
-              <div>•</div>
+              <div className="hidden sm:inline">•</div>
               <div>
                 Attempted: <span className="font-semibold text-foreground">{recommendedNextTopic.attemptedCount} problems</span>
               </div>
-              <div>•</div>
-              <div>
+              <div className="hidden sm:inline">•</div>
+              <div className="break-words">
                 Sequence: <span className="font-semibold text-primary">Arrays → Hashing → Two Pointers → Sliding Window</span>
               </div>
             </div>
@@ -462,7 +462,7 @@ export default async function LearningDashboardPage() {
       {/* Learning Roadmap Table / Path */}
       <Card className="border-border/50">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
                 <Award className="h-5 w-5 text-primary" /> Learning Roadmap & Topic Sequence
@@ -471,7 +471,7 @@ export default async function LearningDashboardPage() {
                 Sequential topic recommendation automatically calculated based on your topic submissions and accuracy.
               </CardDescription>
             </div>
-            <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+            <Badge variant="outline" className="w-fit text-xs border-primary/30 text-primary break-words">
               Arrays → Hashing → Two Pointers → Sliding Window
             </Badge>
           </div>
@@ -540,16 +540,16 @@ export default async function LearningDashboardPage() {
           ) : (
             <div className="divide-y divide-border/40">
               {recentSubmissions.map((sub) => (
-                <div key={sub.id} className="py-3 flex items-center justify-between gap-4 text-xs">
-                  <div className="flex items-center gap-3">
+                <div key={sub.id} className="py-3 flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div
-                      className={`h-2.5 w-2.5 rounded-full ${
+                      className={`h-2.5 w-2.5 rounded-full shrink-0 ${
                         sub.verdict === 'ACCEPTED' ? 'bg-emerald-500' : 'bg-rose-500'
                       }`}
                     />
-                    <div>
-                      <p className="font-medium text-foreground">{sub.problem?.title || 'Coding Problem'}</p>
-                      <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-foreground truncate">{sub.problem?.title || 'Coding Problem'}</p>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground mt-0.5">
                         <span className="capitalize">{sub.problem?.category}</span>
                         <span>•</span>
                         <span className="uppercase">{sub.language}</span>
@@ -559,18 +559,18 @@ export default async function LearningDashboardPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <Badge
                       variant="outline"
-                      className={
+                      className={`text-[10px] px-2 py-0.5 ${
                         sub.verdict === 'ACCEPTED'
                           ? 'border-emerald-500/30 text-emerald-500 bg-emerald-500/5'
                           : 'border-rose-500/30 text-rose-500 bg-rose-500/5'
-                      }
+                      }`}
                     >
                       {sub.verdict}
                     </Badge>
-                    <Button asChild size="sm" variant="ghost" className="h-7 text-xs text-primary">
+                    <Button asChild size="sm" variant="ghost" className="h-7 px-2 text-xs text-primary hidden xs:inline-flex sm:inline-flex">
                       <Link href="/dashboard/assessment">Solve Again</Link>
                     </Button>
                   </div>

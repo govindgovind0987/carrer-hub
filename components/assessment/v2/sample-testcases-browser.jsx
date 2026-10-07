@@ -65,7 +65,7 @@ export function SampleTestcasesBrowser({ testCases = [] }) {
           <span className="text-slate-400 text-[11px] font-sans font-semibold uppercase tracking-wider flex items-center gap-1">
             <FileCode className="h-3.5 w-3.5 text-primary" /> Input:
           </span>
-          <pre className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-emerald-400 whitespace-pre-wrap">
+          <pre className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-emerald-400 whitespace-pre-wrap break-all overflow-x-auto font-mono text-xs">
             {currentSample.input}
           </pre>
         </div>
@@ -75,7 +75,7 @@ export function SampleTestcasesBrowser({ testCases = [] }) {
           <span className="text-slate-400 text-[11px] font-sans font-semibold uppercase tracking-wider flex items-center gap-1">
             <CheckCircle2 className="h-3.5 w-3.5 text-amber-400" /> Expected Output:
           </span>
-          <pre className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-amber-400 whitespace-pre-wrap">
+          <pre className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-amber-400 whitespace-pre-wrap break-all overflow-x-auto font-mono text-xs">
             {currentSample.expectedOutput}
           </pre>
         </div>

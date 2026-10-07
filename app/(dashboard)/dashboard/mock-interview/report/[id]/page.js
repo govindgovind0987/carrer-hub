@@ -117,26 +117,26 @@ export default function InterviewReportPage({ params: propsParams }) {
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-16">
       {/* Header Actions */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3 w-full min-w-0">
         <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard/mock-interview')}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Interviews Dashboard
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Interviews
         </Button>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => window.print()}>
-            <Download className="mr-2 h-4 w-4" /> Export Report PDF
+            <Download className="mr-2 h-4 w-4" /> Export PDF
           </Button>
         </div>
       </div>
 
       {/* Top Banner Card: Overall Score & Recommendation */}
       <Card className="border-border/50 bg-card shadow-sm overflow-hidden relative">
-        <CardContent className="p-8">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+        <CardContent className="p-6 sm:p-8">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-center">
             {/* Score Ring / Badge (4 cols) */}
             <div className="md:col-span-4 flex flex-col items-center justify-center text-center border-b md:border-b-0 md:border-r border-border/50 pb-6 md:pb-0 md:pr-6">
-              <div className="relative flex items-center justify-center w-36 h-36 rounded-full bg-primary p-1.5 shadow-sm">
+              <div className="relative flex items-center justify-center w-32 h-32 sm:w-36 sm:h-36 rounded-full bg-primary p-1.5 shadow-sm">
                 <div className="w-full h-full rounded-full bg-card flex flex-col items-center justify-center">
-                  <span className="text-4xl font-extrabold text-foreground">
+                  <span className="text-3xl sm:text-4xl font-extrabold text-foreground">
                     {report?.overallScore ?? 0}%
                   </span>
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mt-0.5">
@@ -162,11 +162,11 @@ export default function InterviewReportPage({ params: propsParams }) {
                     </Badge>
                   )}
                 </div>
-                <h2 className="text-2xl font-bold text-foreground">
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground">
                   {report?.recommendation || (report?.overallScore >= 70 ? 'RECOMMENDED FOR HIRE' : 'NEEDS PREPARATION')}
                 </h2>
               </div>
-              <p className="text-sm leading-relaxed text-muted-foreground bg-card/60 p-4 rounded-md border border-border/40">
+              <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground bg-card/60 p-4 rounded-md border border-border/40">
                 {report?.summary}
               </p>
             </div>
@@ -175,7 +175,7 @@ export default function InterviewReportPage({ params: propsParams }) {
       </Card>
 
       {/* 9-Parameter Score Metrics Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {scoreMetrics.map((m) => (
           <Card key={m.label} className="border-border/50 bg-card">
             <CardContent className="p-4 space-y-2">
@@ -191,11 +191,13 @@ export default function InterviewReportPage({ params: propsParams }) {
 
       {/* Tabs: Breakdown, Strengths/Weaknesses, Learning Plan */}
       <Tabs defaultValue="breakdown" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-muted/60 p-1">
-          <TabsTrigger value="breakdown">Question Breakdown</TabsTrigger>
-          <TabsTrigger value="insights">Strengths & Weaknesses</TabsTrigger>
-          <TabsTrigger value="plan">Tailored Learning Plan</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto scrollbar-none w-full">
+          <TabsList className="flex w-max min-w-full sm:w-full sm:grid sm:grid-cols-3 bg-muted/60 p-1">
+            <TabsTrigger value="breakdown" className="text-xs shrink-0 py-1.5 px-3">Question Breakdown</TabsTrigger>
+            <TabsTrigger value="insights" className="text-xs shrink-0 py-1.5 px-3">Strengths & Weaknesses</TabsTrigger>
+            <TabsTrigger value="plan" className="text-xs shrink-0 py-1.5 px-3">Tailored Learning Plan</TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Tab 1: Question Breakdown */}
         <TabsContent value="breakdown" className="space-y-4 pt-4">

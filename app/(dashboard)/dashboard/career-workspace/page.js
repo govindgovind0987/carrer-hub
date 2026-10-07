@@ -331,7 +331,7 @@ async function WorkspaceRecentActivity({ userId }) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-border">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-border">
         <div>
           <CardTitle className="text-base font-semibold flex items-center gap-2">
             <Clock className="h-4 w-4 text-muted-foreground" /> Recent Coding Submissions
@@ -340,7 +340,7 @@ async function WorkspaceRecentActivity({ userId }) {
             Latest activity tracked in your learning workspace
           </CardDescription>
         </div>
-        <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
+        <Button asChild variant="ghost" size="sm" className="h-7 text-xs self-start sm:self-auto">
           <Link href="/dashboard/assessment">
             Practice More <ArrowRight className="ml-1 h-3 w-3" />
           </Link>

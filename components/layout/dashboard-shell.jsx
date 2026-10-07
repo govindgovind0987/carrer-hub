@@ -15,8 +15,8 @@ import {
   Users,
   LogOut,
   ChevronDown,
-  Sparkles,
-  Bot,
+  Compass,
+  FileCheck2,
   Target,
   Code2,
   HelpCircle,
@@ -73,9 +73,9 @@ export function DashboardShell({ children }) {
     },
     { label: 'Coding Assessment', href: '/dashboard/assessment', icon: Code2 },
     { label: 'AI Mock Interview', href: '/dashboard/mock-interview', icon: Video },
-    { label: 'AI Resume Score', href: '/dashboard/ai-analysis', icon: Bot },
+    { label: 'AI Resume Score', href: '/dashboard/ai-analysis', icon: FileCheck2 },
     { label: 'AI Job Matcher', href: '/dashboard/job-match', icon: Target },
-    { label: 'AI Career Coach', href: '/dashboard/career-coach', icon: Sparkles },
+    { label: 'AI Career Coach', href: '/dashboard/career-coach', icon: Compass },
     { label: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];
 
@@ -302,32 +302,32 @@ export function DashboardShell({ children }) {
       {/* Main Content Layout with SidebarInset */}
       <SidebarInset className="min-w-0 flex-1">
         {/* Top Header Navigation */}
-        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-background/95 px-4 backdrop-blur-sm sm:px-6">
-          <div className="flex items-center gap-2">
-            <SidebarTrigger className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted" />
-            <div className="h-4 w-px bg-border mx-1" />
+        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-2 sm:gap-3 border-b border-border bg-background/95 px-3 sm:px-6 backdrop-blur-sm">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <SidebarTrigger className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md flex items-center justify-center touch-manipulation" />
+            <div className="h-4 w-px bg-border mx-0.5 sm:mx-1" />
             <Link
               href="/dashboard/career-coach"
               className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-xs text-foreground transition-colors hover:bg-muted"
             >
-              <Sparkles className="h-3 w-3 text-primary" />
+              <Compass className="h-3 w-3 text-primary" />
               <span className="font-medium">AI Career Coach</span>
             </Link>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <NotificationDropdown />
             <ThemeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 px-2 h-9 hover:bg-accent rounded-md">
+                <Button variant="ghost" className="flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-2 h-9 hover:bg-accent rounded-md touch-manipulation">
                   <Avatar className="h-7 w-7 border border-border">
                     {session?.user?.image && <AvatarImage src={session.user.image} />}
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                       {getInitials(session?.user?.name)}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="hidden sm:inline text-xs font-medium max-w-[120px] truncate">
+                  <span className="hidden md:inline text-xs font-medium max-w-[120px] truncate">
                     {session?.user?.name || 'User'}
                   </span>
                   <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
@@ -394,7 +394,7 @@ export function DashboardShell({ children }) {
         </header>
 
         {/* Dashboard Main View Container */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 max-w-7xl mx-auto w-full">
+        <main className={`flex-1 min-w-0 w-full ${pathname?.includes('/assessment/problems/') ? 'p-1 sm:p-2 lg:p-4 max-w-none' : 'p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto'}`}>
           {children}
         </main>
         <AssistantFloatingButton />
