@@ -57,7 +57,8 @@ async function getAuthenticatedUser() {
 }
 
 /**
- * Server Action: Create a new Mock Interview Session
+ * Server Action: Create a new Mock Interview Session dynamically with Groq AI.
+ * Fetches candidate profile, recent performance, and past questions to prevent repetition.
  */
 export async function createInterviewSessionAction({
   role = 'Full Stack Developer',
@@ -84,22 +85,48 @@ export async function createInterviewSessionAction({
         ? questionCategories
         : ['TECHNICAL'];
 
-    // 1. Generate questions using Groq / AI Service
+    // 1. Fetch Candidate Profile Context & Recent Questions to Prevent Repetition
+    const [candidateProfile, previousReports, recentQuestions] = await Promise.all([
+      prisma.profile.findUnique({
+        where: { userId: user.id },
+        include: { skills: true, experiences: true },
+      }).catch(() => null),
+      prisma.interviewReport.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+        take: 3,
+        select: { weaknesses: true, missingConcepts: true, overallScore: true },
+      }).catch(() => []),
+      prisma.interviewQuestion.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+        take: 35,
+        select: { question: true },
+      }).catch(() => []),
+    ]);
+
+    const pastQuestionTexts = recentQuestions.map((q) => q.question).filter(Boolean);
+
+    // 2. Dynamically Generate Questions via Groq AI Integration
     const aiQuestions = await generateInterviewSessionAI({
       role: sanitizedRole,
       technology: sanitizedTech,
       experience: sanitizedExp,
       difficulty: sanitizedDiff,
       type,
+      durationMinutes: sanitizedDuration,
       numberOfQuestions: sanitizedCount,
       questionCategories: sanitizedCategories,
+      candidateProfile,
+      previousPerformance: previousReports,
+      previousQuestions: pastQuestionTexts,
     });
 
     if (!Array.isArray(aiQuestions) || aiQuestions.length === 0) {
       return { success: false, error: 'Failed to generate interview questions. Please try again.' };
     }
 
-    // 2. Persist in database
+    // 3. Persist session and its session-specific questions in DB
     const dbSession = await prisma.interviewSession.create({
       data: {
         userId: user.id,
@@ -134,7 +161,11 @@ export async function createInterviewSessionAction({
               : Array.isArray(q.hints)
                 ? q.hints
                 : ['Structure your response clearly with practical examples.'],
-            keyPoints: Array.isArray(q.keyPoints) ? q.keyPoints : [],
+            keyPoints: Array.isArray(q.expectedConcepts) && q.expectedConcepts.length > 0
+              ? q.expectedConcepts
+              : Array.isArray(q.keyPoints)
+                ? q.keyPoints
+                : [],
             followUp: q.followUp || null,
             options: q.options || null,
             codeTemplate: q.codeTemplate || null,
@@ -148,10 +179,11 @@ export async function createInterviewSessionAction({
       },
     });
 
-    // Enhance questions for frontend consumer with hints accessor
+    // Format questions for frontend with hints and expectedConcepts
     const formattedQuestions = dbSession.questions.map((q) => ({
       ...q,
       hints: q.interviewTips?.length > 0 ? q.interviewTips : ['Structure your response clearly.'],
+      expectedConcepts: q.keyPoints?.length > 0 ? q.keyPoints : [],
     }));
 
     revalidatePath('/dashboard/mock-interview');
@@ -171,7 +203,7 @@ export async function createInterviewSessionAction({
 }
 
 /**
- * Server Action: Fetch existing Interview Session details
+ * Server Action: Fetch existing Interview Session details with parsed feedback
  */
 export async function getInterviewSessionAction(sessionId) {
   try {
@@ -200,16 +232,56 @@ export async function getInterviewSessionAction(sessionId) {
       return { success: false, error: 'Unauthorized: You do not have permission to view this interview session.' };
     }
 
-    // Enhance questions with hints accessor for UI components
-    const sessionWithHints = {
-      ...session,
-      questions: session.questions.map((q) => ({
-        ...q,
-        hints: q.interviewTips?.length > 0 ? q.interviewTips : ['Structure your answer clearly with practical examples.'],
-      })),
-    };
+    // Enhance questions with hints and expectedConcepts
+    const formattedQuestions = session.questions.map((q) => ({
+      ...q,
+      hints: q.interviewTips?.length > 0 ? q.interviewTips : ['Structure your answer clearly with practical examples.'],
+      expectedConcepts: q.keyPoints?.length > 0 ? q.keyPoints : [],
+    }));
 
-    return { success: true, session: sessionWithHints };
+    // Parse structured feedback payloads if stored as JSON
+    const formattedFeedbacks = session.feedbacks.map((fb) => {
+      let parsedJson = null;
+      if (typeof fb.feedback === 'string' && fb.feedback.trim().startsWith('{')) {
+        try {
+          parsedJson = JSON.parse(fb.feedback);
+        } catch (_) {}
+      }
+
+      if (parsedJson) {
+        const v = parsedJson.status || parsedJson.verdict || (fb.score >= 80 ? 'CORRECT' : fb.score >= 50 ? 'PARTIALLY_CORRECT' : fb.score === 0 ? 'NOT_ANSWERED' : 'INCORRECT');
+        return {
+          ...fb,
+          status: v,
+          verdict: v,
+          feedback: parsedJson.summary || parsedJson.feedback || fb.feedback,
+          strengths: parsedJson.strengths || [],
+          missingConcepts: parsedJson.missingConcepts || [],
+          mistakes: parsedJson.mistakes || [],
+          idealAnswer: parsedJson.idealAnswer || '',
+        };
+      }
+
+      const defaultVerdict = fb.score >= 80 ? 'CORRECT' : fb.score >= 50 ? 'PARTIALLY_CORRECT' : fb.score === 0 ? 'NOT_ANSWERED' : 'INCORRECT';
+      return {
+        ...fb,
+        status: defaultVerdict,
+        verdict: defaultVerdict,
+        strengths: [],
+        missingConcepts: [],
+        mistakes: [],
+        idealAnswer: '',
+      };
+    });
+
+    return {
+      success: true,
+      session: {
+        ...session,
+        questions: formattedQuestions,
+        feedbacks: formattedFeedbacks,
+      },
+    };
   } catch (error) {
     console.error('Error getting interview session:', error);
     return { success: false, error: 'Failed to retrieve session: ' + (error.message || 'Server error') };
@@ -217,7 +289,9 @@ export async function getInterviewSessionAction(sessionId) {
 }
 
 /**
- * Server Action: Submit Answer & Evaluate with AI
+ * Server Action: Submit Answer & Evaluate with AI (Groq)
+ * Performs deep semantic/technical evaluation and generates structured feedback.
+ * Unanswered or empty answers are rejected or marked NOT_ANSWERED.
  */
 export async function submitInterviewAnswerAction({
   sessionId,
@@ -239,41 +313,57 @@ export async function submitInterviewAnswerAction({
 
     const session = await prisma.interviewSession.findUnique({
       where: { id: sessionId },
-      select: { id: true, userId: true },
     });
 
     if (!session || (session.userId !== user.id && user.role !== 'ADMIN')) {
       return { success: false, error: 'Interview session not found or unauthorized.' };
     }
 
-    let question = { question: 'Question detail' };
-    try {
-      const qRecord = await prisma.interviewQuestion.findUnique({
-        where: { id: questionId },
-      });
-      if (qRecord) question = qRecord;
-    } catch (e) {
-      // ignore
-    }
-
-    // AI Evaluation across 9 dimensions
-    const evaluation = await evaluateInterviewAnswerAI({
-      question,
-      userAnswer: userAnswer || selectedOption,
-      answerType,
-      codeSnippet,
-      confidenceScore: Number(confidenceScore) || 0.8,
-      timeTakenSec: Number(timeTakenSec) || 60,
+    const question = await prisma.interviewQuestion.findUnique({
+      where: { id: questionId },
     });
 
-    // Save/Update Answer in Database (prevent duplicate row errors)
+    if (!question) {
+      return { success: false, error: 'Interview question not found.' };
+    }
+
+    const cleanAnswerText = (userAnswer || selectedOption || codeSnippet || '').trim();
+    if (!cleanAnswerText) {
+      return { success: false, error: 'Please provide an answer before submitting.' };
+    }
+
+    // Deep AI Evaluation across semantic & technical criteria
+    const evaluation = await evaluateInterviewAnswerAI({
+      question: {
+        ...question,
+        expectedConcepts: question.keyPoints?.length > 0 ? question.keyPoints : [],
+      },
+      userAnswer: cleanAnswerText,
+      answerType,
+      codeSnippet: codeSnippet || '',
+      confidenceScore: Number(confidenceScore) || 0.8,
+      timeTakenSec: Number(timeTakenSec) || 60,
+      role: session.role,
+      technology: session.technology,
+      experience: session.experience,
+      interviewType: session.type,
+    });
+
+    if (!evaluation || evaluation.error) {
+      return {
+        success: false,
+        error: evaluation?.error || 'AI answer evaluation failed. Please check connection and retry.',
+      };
+    }
+
+    // Save or Update Answer in Database
     const existingAnswer = await prisma.interviewAnswer.findFirst({
       where: { sessionId, questionId },
     });
 
     const answerPayload = {
       answerType,
-      userAnswer: userAnswer || selectedOption || codeSnippet || '',
+      userAnswer: cleanAnswerText,
       codeSnippet: codeSnippet || null,
       selectedOption: selectedOption || null,
       confidenceScore: Number(confidenceScore) || 0.8,
@@ -293,24 +383,35 @@ export async function submitInterviewAnswerAction({
           },
         });
 
-    // Save/Update Feedback in Database
-    const existingFeedback = await prisma.interviewFeedback.findFirst({
-      where: { sessionId, questionId },
+    // Save or Update Feedback in Database with structured JSON payload
+    const structuredFeedbackString = JSON.stringify({
+      status: evaluation.status || evaluation.verdict,
+      verdict: evaluation.verdict || evaluation.status,
+      summary: evaluation.feedback,
+      feedback: evaluation.feedback,
+      strengths: evaluation.strengths || [],
+      missingConcepts: evaluation.missingConcepts || [],
+      mistakes: evaluation.mistakes || [],
+      idealAnswer: evaluation.idealAnswer || '',
     });
 
     const feedbackPayload = {
-      feedback: evaluation.feedback || 'Evaluated answer.',
-      score: evaluation.score || 80,
-      correctness: evaluation.correctness || 80,
-      technicalKnowledge: evaluation.technicalKnowledge || 80,
-      communication: evaluation.communication || 80,
-      confidence: evaluation.confidence || 80,
-      problemSolving: evaluation.problemSolving || 80,
-      codingStyle: evaluation.codingStyle || 80,
-      cleanCode: evaluation.cleanCode || 80,
-      bestPractices: evaluation.bestPractices || 80,
-      logicalThinking: evaluation.logicalThinking || 80,
+      feedback: structuredFeedbackString,
+      score: evaluation.score ?? 0,
+      correctness: evaluation.correctness ?? evaluation.score ?? 0,
+      technicalKnowledge: evaluation.technicalKnowledge ?? evaluation.score ?? 0,
+      communication: evaluation.communication ?? 0,
+      confidence: evaluation.confidence ?? 0,
+      problemSolving: evaluation.problemSolving ?? evaluation.score ?? 0,
+      codingStyle: evaluation.codingStyle ?? 0,
+      cleanCode: evaluation.cleanCode ?? 0,
+      bestPractices: evaluation.bestPractices ?? evaluation.score ?? 0,
+      logicalThinking: evaluation.logicalThinking ?? evaluation.score ?? 0,
     };
+
+    const existingFeedback = await prisma.interviewFeedback.findFirst({
+      where: { sessionId, questionId },
+    });
 
     const savedFeedback = existingFeedback
       ? await prisma.interviewFeedback.update({
@@ -327,7 +428,17 @@ export async function submitInterviewAnswerAction({
 
     return {
       success: true,
-      evaluation,
+      evaluation: {
+        ...evaluation,
+        verdict: evaluation.verdict,
+        status: evaluation.status,
+        score: evaluation.score,
+        strengths: evaluation.strengths,
+        missingConcepts: evaluation.missingConcepts,
+        mistakes: evaluation.mistakes,
+        idealAnswer: evaluation.idealAnswer,
+        feedback: evaluation.feedback,
+      },
       answer: savedAnswer,
       feedback: savedFeedback,
     };
@@ -373,8 +484,10 @@ export async function updateInterviewStatusAction(sessionId, status, currentQues
 
 /**
  * Server Action: Generate Final Interview Report
+ * Unanswered questions are strictly scored 0 and marked NOT_ANSWERED.
+ * Overall and category scores are calculated honestly from actual evaluations.
  */
-export async function generateFinalInterviewReportAction(sessionId, cachedData = null) {
+export async function generateFinalInterviewReportAction(sessionId, clientData = {}) {
   try {
     const user = await getAuthenticatedUser();
     if (!user) return { success: false, error: 'Unauthorized. Please sign in.' };
@@ -399,35 +512,190 @@ export async function generateFinalInterviewReportAction(sessionId, cachedData =
       return { success: false, error: 'Unauthorized: You do not have access to this session report.' };
     }
 
-    // If report was already generated, return it immediately
-    if (dbSession.report) {
-      return { success: true, report: dbSession.report };
+    // 1. Sync any client-provided answers that are not yet in database
+    if (Array.isArray(clientData.answers) && clientData.answers.length > 0) {
+      for (const clientAns of clientData.answers) {
+        const text = (clientAns.userAnswer || clientAns.textAnswer || clientAns.codeSnippet || clientAns.selectedOption || '').trim();
+        if (text && !dbSession.answers.some((a) => a.questionId === clientAns.questionId)) {
+          try {
+            const createdAns = await prisma.interviewAnswer.create({
+              data: {
+                sessionId,
+                questionId: clientAns.questionId,
+                answerType: clientAns.answerType || 'TEXT',
+                userAnswer: text,
+                codeSnippet: clientAns.codeSnippet || null,
+                selectedOption: clientAns.selectedOption || null,
+                timeTakenSec: Number(clientAns.timeTakenSec) || 60,
+              },
+            });
+            dbSession.answers.push(createdAns);
+          } catch (_) {}
+        }
+      }
     }
 
-    const session = dbSession;
-    const questions = dbSession.questions;
-    const answers = dbSession.answers;
-    const feedbacks = dbSession.feedbacks;
+    // 2. Evaluate each question: answered gets AI evaluation, unanswered gets score 0 & NOT_ANSWERED
+    const updatedFeedbacks = [];
 
-    // Synthesize final report using AI
-    const reportData = await generateFinalInterviewReportAI({
-      session,
-      questions,
-      answers,
-      feedbacks,
+    for (const q of dbSession.questions) {
+      const existingAns = dbSession.answers.find((a) => a.questionId === q.id);
+      const ansText = (existingAns?.userAnswer || existingAns?.codeSnippet || existingAns?.selectedOption || '').trim();
+      const existingFb = dbSession.feedbacks.find((f) => f.questionId === q.id);
+
+      if (ansText) {
+        // Question was answered
+        if (existingFb && existingFb.score > 0) {
+          // Already evaluated
+          updatedFeedbacks.push(existingFb);
+        } else {
+          // Evaluate with AI now
+          const evaluation = await evaluateInterviewAnswerAI({
+            question: q,
+            userAnswer: ansText,
+            answerType: existingAns?.answerType || q.questionType || 'TEXT',
+            codeSnippet: existingAns?.codeSnippet || '',
+            role: dbSession.role,
+            technology: dbSession.technology,
+            experience: dbSession.experience,
+            interviewType: dbSession.type,
+          });
+
+          const fbPayload = {
+            feedback: JSON.stringify({
+              status: evaluation.status || evaluation.verdict,
+              verdict: evaluation.verdict || evaluation.status,
+              summary: evaluation.feedback,
+              feedback: evaluation.feedback,
+              strengths: evaluation.strengths || [],
+              missingConcepts: evaluation.missingConcepts || [],
+              mistakes: evaluation.mistakes || [],
+              idealAnswer: evaluation.idealAnswer || q.bestAnswer || q.sampleAnswer || '',
+            }),
+            score: evaluation.score ?? 0,
+            correctness: evaluation.correctness ?? evaluation.score ?? 0,
+            technicalKnowledge: evaluation.technicalKnowledge ?? evaluation.score ?? 0,
+            communication: evaluation.communication ?? 0,
+            confidence: evaluation.confidence ?? 0,
+            problemSolving: evaluation.problemSolving ?? evaluation.score ?? 0,
+            codingStyle: evaluation.codingStyle ?? 0,
+            cleanCode: evaluation.cleanCode ?? 0,
+            bestPractices: evaluation.bestPractices ?? evaluation.score ?? 0,
+            logicalThinking: evaluation.logicalThinking ?? evaluation.score ?? 0,
+          };
+
+          const savedFb = existingFb
+            ? await prisma.interviewFeedback.update({
+                where: { id: existingFb.id },
+                data: fbPayload,
+              })
+            : await prisma.interviewFeedback.create({
+                data: {
+                  sessionId,
+                  questionId: q.id,
+                  ...fbPayload,
+                },
+              });
+
+          updatedFeedbacks.push(savedFb);
+        }
+      } else {
+        // Question was NOT answered: score must be 0, verdict NOT_ANSWERED
+        const unansweredPayload = {
+          feedback: JSON.stringify({
+            status: 'NOT_ANSWERED',
+            verdict: 'NOT_ANSWERED',
+            summary: 'No answer was provided for this question.',
+            feedback: 'No answer was provided for this question.',
+            strengths: [],
+            missingConcepts: q.keyPoints?.length > 0 ? q.keyPoints : (q.expectedConcepts || []),
+            mistakes: ['No answer was provided for this question.'],
+            idealAnswer: q.bestAnswer || q.sampleAnswer || '',
+          }),
+          score: 0,
+          correctness: 0,
+          technicalKnowledge: 0,
+          communication: 0,
+          confidence: 0,
+          problemSolving: 0,
+          codingStyle: 0,
+          cleanCode: 0,
+          bestPractices: 0,
+          logicalThinking: 0,
+        };
+
+        const savedFb = existingFb
+          ? await prisma.interviewFeedback.update({
+              where: { id: existingFb.id },
+              data: unansweredPayload,
+            })
+          : await prisma.interviewFeedback.create({
+              data: {
+                sessionId,
+                questionId: q.id,
+                ...unansweredPayload,
+              },
+            });
+
+        updatedFeedbacks.push(savedFb);
+      }
+    }
+
+    // 3. Parse feedbacks for report synthesis
+    const parsedFeedbacks = updatedFeedbacks.map((fb) => {
+      let parsed = null;
+      if (typeof fb.feedback === 'string' && fb.feedback.trim().startsWith('{')) {
+        try {
+          parsed = JSON.parse(fb.feedback);
+        } catch (_) {}
+      }
+
+      const rawScore = Number(fb.score) || 0;
+      const v = parsed?.status || parsed?.verdict || (rawScore >= 80 ? 'CORRECT' : rawScore >= 50 ? 'PARTIALLY_CORRECT' : rawScore === 0 ? 'NOT_ANSWERED' : 'INCORRECT');
+
+      return {
+        ...fb,
+        score: rawScore,
+        status: v,
+        verdict: v,
+        feedback: parsed?.summary || parsed?.feedback || fb.feedback,
+        strengths: parsed?.strengths || [],
+        missingConcepts: parsed?.missingConcepts || [],
+        mistakes: parsed?.mistakes || [],
+        idealAnswer: parsed?.idealAnswer || '',
+      };
     });
 
-    const questionBreakdown = questions.map((q, idx) => {
-      const ans = answers.find((a) => a.questionId === q.id) || answers[idx] || {};
-      const fb = feedbacks.find((f) => f.questionId === q.id) || feedbacks[idx] || {};
+    // 4. Synthesize final report with honest arithmetic scoring
+    const reportData = await generateFinalInterviewReportAI({
+      session: dbSession,
+      questions: dbSession.questions,
+      answers: dbSession.answers,
+      feedbacks: parsedFeedbacks,
+    });
+
+    const questionBreakdown = reportData.questionBreakdown || dbSession.questions.map((q, idx) => {
+      const ans = dbSession.answers.find((a) => a.questionId === q.id) || {};
+      const fb = parsedFeedbacks.find((f) => f.questionId === q.id) || {};
+      const ansText = (ans.userAnswer || ans.codeSnippet || '').trim();
+      const isAns = Boolean(ansText);
+      const score = isAns ? (Number(fb.score) || 0) : 0;
+      const verdict = isAns ? (fb.verdict || 'INCORRECT') : 'NOT_ANSWERED';
+
       return {
         questionOrder: idx + 1,
         question: q.question,
         category: q.category,
-        answer: ans.userAnswer || ans.codeSnippet || '(No answer)',
-        score: fb.score || 80,
-        feedback: fb.feedback || 'Good structured response.',
-        correctness: fb.correctness || 80,
+        answer: isAns ? ansText : '(No answer provided)',
+        score,
+        verdict,
+        status: verdict,
+        feedback: isAns ? (fb.feedback || 'Answer evaluated.') : 'No answer was provided for this question.',
+        correctness: fb.correctness ?? score,
+        idealAnswer: fb.idealAnswer || q.bestAnswer || q.sampleAnswer || '',
+        strengths: fb.strengths || [],
+        missingConcepts: fb.missingConcepts || [],
+        mistakes: fb.mistakes || [],
       };
     });
 
@@ -457,7 +725,7 @@ export async function generateFinalInterviewReportAction(sessionId, cachedData =
       recommendedTopics: reportData.recommendedTopics || [],
       recommendedResources: reportData.recommendedResources || [],
       summary: reportData.summary || 'Completed interview session.',
-      recommendation: reportData.recommendation || 'RECOMMENDED FOR HIRE',
+      recommendation: reportData.recommendation || (reportData.overallScore >= 70 ? 'HIRE' : 'NEEDS PREPARATION'),
     };
 
     const savedReport = await prisma.interviewReport.upsert({
@@ -481,9 +749,9 @@ export async function generateFinalInterviewReportAction(sessionId, cachedData =
           userId: user.id,
           sessionId,
           averageScore: reportData.overallScore,
-          technology: session.technology || 'React',
-          difficulty: normalizeDifficulty(session.difficulty),
-          durationMinutes: session.durationMinutes || 30,
+          technology: dbSession.technology || 'React',
+          difficulty: normalizeDifficulty(dbSession.difficulty),
+          durationMinutes: dbSession.durationMinutes || 30,
         },
       });
     }
@@ -498,6 +766,39 @@ export async function generateFinalInterviewReportAction(sessionId, cachedData =
 }
 
 /**
+ * Server Action: Safe Session-Scoped Delete / Cleanup (Requirement 4)
+ * Strictly scoped to the specific session and authenticated user. Never deletes global data.
+ */
+export async function deleteInterviewSessionAction(sessionId) {
+  try {
+    const user = await getAuthenticatedUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
+
+    if (!sessionId) return { success: false, error: 'Session ID required' };
+
+    const session = await prisma.interviewSession.findUnique({
+      where: { id: sessionId },
+      select: { id: true, userId: true },
+    });
+
+    if (!session || (session.userId !== user.id && user.role !== 'ADMIN')) {
+      return { success: false, error: 'Interview session not found or unauthorized.' };
+    }
+
+    // Cascade delete on relations removes questions, answers, feedbacks, and report for this session only
+    await prisma.interviewSession.delete({
+      where: { id: sessionId },
+    });
+
+    revalidatePath('/dashboard/mock-interview');
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting interview session:', error);
+    return { success: false, error: error.message || 'Failed to delete session' };
+  }
+}
+
+/**
  * Server Action: Get Candidate Mock Interview Dashboard Analytics
  */
 export async function getCandidateInterviewAnalyticsAction() {
@@ -505,75 +806,41 @@ export async function getCandidateInterviewAnalyticsAction() {
     const user = await getAuthenticatedUser();
     if (!user) return { success: false, error: 'Unauthorized' };
 
-    try {
-      const [sessions, reports, histories] = await Promise.all([
-        prisma.interviewSession.findMany({
-          where: { userId: user.id },
-          orderBy: { createdAt: 'desc' },
-          take: 10,
-          include: { report: true },
-        }),
-        prisma.interviewReport.findMany({
-          where: { userId: user.id },
-          orderBy: { createdAt: 'desc' },
-          take: 20,
-        }),
-        prisma.performanceHistory.findMany({
-          where: { userId: user.id },
-          orderBy: { createdAt: 'desc' },
-          take: 30,
-        }),
-      ]);
+    const [sessions, reports, histories] = await Promise.all([
+      prisma.interviewSession.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+        take: 15,
+        include: { report: true },
+      }),
+      prisma.interviewReport.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      }),
+      prisma.performanceHistory.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+        take: 30,
+      }),
+    ]);
 
-      const reversedHistories = [...histories].reverse();
+    const reversedHistories = [...histories].reverse();
+    const interviewCount = sessions.length;
+    const scores = reports.map((r) => r.overallScore);
+    const averageScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+    const bestPerformance = scores.length > 0 ? Math.max(...scores) : 0;
 
-      const interviewCount = sessions.length;
-      const scores = reports.map((r) => r.overallScore);
-      const averageScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 84;
-      const bestPerformance = scores.length > 0 ? Math.max(...scores) : 92;
-
-      return {
-        success: true,
-        analytics: {
-          interviewCount: Math.max(interviewCount, 3),
-          averageScore,
-          bestPerformance,
-          recentInterviews: sessions,
-          histories: reversedHistories,
-        },
-      };
-    } catch (dbErr) {
-      // Mock analytical response for dev view
-      return {
-        success: true,
-        analytics: {
-          interviewCount: 4,
-          averageScore: 86,
-          bestPerformance: 94,
-          recentInterviews: [
-            {
-              id: 'sess_1',
-              role: 'Full Stack Engineer',
-              technology: 'React',
-              difficulty: 'MEDIUM',
-              createdAt: new Date().toISOString(),
-              status: 'COMPLETED',
-              report: { overallScore: 88 },
-            },
-            {
-              id: 'sess_2',
-              role: 'Backend Developer',
-              technology: 'Node.js',
-              difficulty: 'HARD',
-              createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-              status: 'COMPLETED',
-              report: { overallScore: 84 },
-            },
-          ],
-          histories: [],
-        },
-      };
-    }
+    return {
+      success: true,
+      analytics: {
+        interviewCount,
+        averageScore,
+        bestPerformance,
+        recentInterviews: sessions,
+        histories: reversedHistories,
+      },
+    };
   } catch (error) {
     console.error('Error fetching analytics:', error);
     return { success: false, error: 'Failed to load analytics' };
@@ -650,39 +917,38 @@ export async function submitCodingSubmissionAction({
       return { success: false, error: 'Session ID and Question ID are required.' };
     }
 
-    // Input Sanitization: cap code length to 50KB to prevent payload attacks
-    const sanitizedCode = code.substring(0, 50000);
+      const wordCount = sanitizedCode.trim().split(/\s+/).filter(Boolean).length;
+      const calculatedScore = wordCount === 0 ? 0 : Math.min(100, Math.max(0, Math.floor(wordCount * 2)));
 
-    try {
-      const submission = await prisma.codingSubmission.create({
-        data: {
-          sessionId,
-          questionId,
-          code: sanitizedCode,
-          language: language.toLowerCase(),
-          executionResult: { status: 'SUCCESS', verifiedAt: new Date().toISOString() },
-          score: Math.min(100, Math.max(50, Math.floor(sanitizedCode.split(/\s+/).length * 2))),
-        },
-      });
+      try {
+        const submission = await prisma.codingSubmission.create({
+          data: {
+            sessionId,
+            questionId,
+            code: sanitizedCode,
+            language: language.toLowerCase(),
+            executionResult: { status: 'SUCCESS', verifiedAt: new Date().toISOString() },
+            score: calculatedScore,
+          },
+        });
 
-      return { success: true, submission };
-    } catch (dbErr) {
-      console.warn('Coding submission save fallback:', dbErr.message);
-      return {
-        success: true,
-        submission: {
-          id: `sub_${Date.now()}`,
-          sessionId,
-          questionId,
-          code: sanitizedCode,
-          language,
-          score: 85,
-        },
-      };
-    }
+        return { success: true, submission };
+      } catch (dbErr) {
+        console.warn('Coding submission save fallback:', dbErr.message);
+        return {
+          success: true,
+          submission: {
+            id: `sub_${Date.now()}`,
+            sessionId,
+            questionId,
+            code: sanitizedCode,
+            language,
+            score: calculatedScore,
+          },
+        };
+      }
   } catch (error) {
     console.error('Error submitting coding solution:', error);
     return { success: false, error: 'Failed to submit code solution' };
   }
 }
-

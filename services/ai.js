@@ -4,8 +4,8 @@ import { calculateDeterministicResumeScore, getQualityLevel } from './resume-sco
 
 const CANDIDATE_MODELS = [
   'openai/gpt-oss-120b',
-  'qwen/qwen3.8-27b',
   'openai/gpt-oss-20b',
+  'qwen/qwen3.8-27b',
   'llama-3.3-70b-versatile',
   'llama-3.1-8b-instant',
 ];
@@ -49,6 +49,7 @@ export async function callGroqJson(prompt) {
           },
         ],
         temperature: 0.2,
+        max_tokens: 1800,
         response_format: { type: 'json_object' },
       });
 
@@ -57,12 +58,8 @@ export async function callGroqJson(prompt) {
       activeWorkingModel = model;
       return parsed;
     } catch (error) {
-      // If error is model not found or authorization, try next candidate model
-      if (error?.status === 404 || error?.code === 'model_not_found') {
-        console.warn(`Groq model ${model} not available, trying next model...`);
-        continue;
-      }
-      console.warn(`Groq API call error on ${model}:`, error.message || error);
+      console.warn(`Groq API call error on ${model}, trying next model:`, error.message || error);
+      continue;
     }
   }
 
@@ -663,7 +660,7 @@ Return ONLY JSON matching:
         weakInterviewAreas: userContext.interviewWeaknesses?.length > 0 ? userContext.interviewWeaknesses : ['Verbalizing algorithmic trade-offs during live coding'],
         preparationStrategy: [
           { step: 1, title: 'Complete AI Mock Interview', description: 'Simulate live technical interview with instant feedback.', targetRoute: '/dashboard/mock-interview' },
-          { step: 2, title: 'Practice Project STAR Stories', description: 'Prepare 2-minute structured responses for your listed projects.', targetRoute: '/dashboard/interview-prep' },
+          { step: 2, title: 'Practice Project STAR Stories', description: 'Prepare 2-minute structured responses for your listed projects.', targetRoute: '/dashboard/mock-interview/create' },
         ],
       };
       break;

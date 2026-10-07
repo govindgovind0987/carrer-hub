@@ -71,9 +71,14 @@ const SidebarProvider = React.forwardRef(
     });
 
     const open = openProp ?? _open;
+    const openRef = React.useRef(open);
+    React.useEffect(() => {
+      openRef.current = open;
+    }, [open]);
+
     const setOpen = React.useCallback(
       (value) => {
-        const openState = typeof value === 'function' ? value(open) : value;
+        const openState = typeof value === 'function' ? value(openRef.current) : value;
         if (setOpenProp) {
           setOpenProp(openState);
         } else {
@@ -85,14 +90,14 @@ const SidebarProvider = React.forwardRef(
           // ignore
         }
       },
-      [setOpenProp, open]
+      [setOpenProp]
     );
 
     const toggleSidebar = React.useCallback(() => {
       return isMobile
-        ? setOpenMobile((open) => !open)
-        : setOpen((open) => !open);
-    }, [isMobile, setOpen, setOpenMobile]);
+        ? setOpenMobile((prev) => !prev)
+        : setOpen((prev) => !prev);
+    }, [isMobile, setOpen]);
 
     React.useEffect(() => {
       const handleKeyDown = (event) => {

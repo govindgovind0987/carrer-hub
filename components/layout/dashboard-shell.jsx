@@ -61,11 +61,11 @@ export function DashboardShell({ children }) {
 
   const userRole = session?.user?.role || 'CANDIDATE';
 
-  // Candidate navigation links (Career Workspace is a normal navigation item)
+  // Candidate navigation links (My Workspace is a normal navigation item)
   const candidateLinks = [
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     {
-      label: 'Career Workspace',
+      label: 'My Workspace',
       href: '/dashboard/career-workspace',
       icon: Briefcase,
       isWorkspace: true,
@@ -74,7 +74,6 @@ export function DashboardShell({ children }) {
     { label: 'AI Mock Interview', href: '/dashboard/mock-interview', icon: Video },
     { label: 'AI Resume Score', href: '/dashboard/ai-analysis', icon: Bot },
     { label: 'AI Job Matcher', href: '/dashboard/job-match', icon: Target },
-    { label: 'HR & Tech Questions', href: '/dashboard/interview-prep', icon: HelpCircle },
     { label: 'AI Career Coach', href: '/dashboard/career-coach', icon: Sparkles },
     { label: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];
@@ -249,7 +248,7 @@ export function DashboardShell({ children }) {
                     <>
                       <DropdownMenuItem asChild>
                         <Link href="/dashboard/career-workspace" className="text-xs cursor-pointer">
-                          <Briefcase className="mr-2 h-3.5 w-3.5" /> Career Workspace
+                          <Briefcase className="mr-2 h-3.5 w-3.5" /> My Workspace
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
@@ -347,7 +346,7 @@ export function DashboardShell({ children }) {
                   <>
                     <DropdownMenuItem asChild>
                       <Link href="/dashboard/career-workspace" className="text-xs cursor-pointer">
-                        <Briefcase className="mr-2 h-3.5 w-3.5" /> Career Workspace
+                        <Briefcase className="mr-2 h-3.5 w-3.5" /> My Workspace
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>

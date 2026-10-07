@@ -355,7 +355,7 @@ export default function SkillProgressClient({
             </CardHeader>
             <CardContent>
               <div className="py-8 text-center text-sm text-muted-foreground">
-                Start practicing to build your progress. Practice technical questions in HR & Tech Questions module.
+                Start practicing to build your progress. Practice technical and behavioral questions in the AI Mock Interview module.
               </div>
             </CardContent>
           </Card>

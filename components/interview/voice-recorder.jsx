@@ -1,17 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Mic, MicOff, Play, Pause, Square, RefreshCw, Volume2, Sparkles, AlertCircle } from 'lucide-react';
+import { Mic, MicOff, Play, Pause, Square, RefreshCw, Volume2, Sparkles, AlertCircle, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 export function VoiceRecorder({ voice, onAnswerChange }) {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [applied, setApplied] = useState(false);
 
   const {
+    isSupported,
     hasPermission,
+    permissionError,
     isRecording,
     isListening,
     transcript,
@@ -24,27 +27,48 @@ export function VoiceRecorder({ voice, onAnswerChange }) {
     startRecording,
     stopRecording,
     resetVoiceState,
-    setTranscript,
+    clearTranscript,
   } = voice;
+
+  const lastSyncedTranscriptRef = useRef('');
+
+  // Sync transcript to answer box continuously when speech is transcribed
+  useEffect(() => {
+    if (transcript && transcript !== lastSyncedTranscriptRef.current) {
+      lastSyncedTranscriptRef.current = transcript;
+      onAnswerChange?.(transcript);
+    }
+  }, [transcript, onAnswerChange]);
 
   const handleToggleRecording = async () => {
     if (isRecording) {
       stopRecording();
-      if (transcript && onAnswerChange) {
-        onAnswerChange(transcript);
+      if (transcript && transcript !== lastSyncedTranscriptRef.current) {
+        lastSyncedTranscriptRef.current = transcript;
+        onAnswerChange?.(transcript);
       }
     } else {
       if (hasPermission === false || hasPermission === null) {
         const granted = await requestPermission();
         if (!granted) return;
       }
-      startRecording();
+      await startRecording();
     }
   };
 
   const handleClear = () => {
+    lastSyncedTranscriptRef.current = '';
+    clearTranscript();
     resetVoiceState();
     if (onAnswerChange) onAnswerChange('');
+  };
+
+  const handleApply = () => {
+    if (transcript && onAnswerChange) {
+      onAnswerChange(transcript);
+      setApplied(true);
+      setTimeout(() => setApplied(false), 2000);
+    }
   };
 
   const formatDuration = (sec) => {
@@ -62,7 +86,7 @@ export function VoiceRecorder({ voice, onAnswerChange }) {
             <Badge variant="outline" className="border-primary/30 text-primary bg-primary/10">
               <Mic className="mr-1.5 h-3.5 w-3.5" /> Speech & Voice Engine
             </Badge>
-            {confidence > 0 && (
+            {confidence > 0 && isRecording && (
               <Badge variant="secondary" className="text-xs">
                 Confidence: {Math.round(confidence * 100)}%
               </Badge>
@@ -72,7 +96,7 @@ export function VoiceRecorder({ voice, onAnswerChange }) {
           <div className="text-sm font-mono text-muted-foreground">
             {isRecording ? (
               <span className="text-red-500 font-semibold animate-pulse flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-red-500" /> REC {formatDuration(recordingDuration)}
+                <span className="h-2 w-2 rounded-full bg-red-500 animate-ping" /> REC {formatDuration(recordingDuration)}
               </span>
             ) : (
               <span>Duration: {formatDuration(recordingDuration)}</span>
@@ -80,49 +104,72 @@ export function VoiceRecorder({ voice, onAnswerChange }) {
           </div>
         </div>
 
+        {/* Browser Support Warning */}
+        {!isSupported && (
+          <div className="p-3 rounded-md bg-amber-500/10 border border-amber-500/20 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span>Voice speech recognition is not supported in this browser. Please use Chrome, Edge, or type your answer manually.</span>
+          </div>
+        )}
+
+        {/* Mic Permission Warning */}
+        {hasPermission === false && (
+          <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-xs text-destructive flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span>{permissionError || 'Microphone access is blocked in browser settings. Please enable microphone permission to record.'}</span>
+          </div>
+        )}
+
         {/* VAD Animated Waveform */}
         <div className="h-20 bg-muted/40 rounded-md border border-border/40 flex items-center justify-center gap-1.5 px-4 overflow-hidden relative">
           {isRecording ? (
-            Array.from({ length: 24 }).map((_, i) => {
-              // Dynamic height based on audio level and index pattern
+            Array.from({ length: 28 }).map((_, i) => {
               const heightMultiplier = ((i % 5) + 1) / 5;
               const pseudoRandomOffset = (i * 17) % 8;
-              const barHeight = Math.max(12, Math.min(64, audioLevel * 0.6 * heightMultiplier + pseudoRandomOffset));
+              const barHeight = Math.max(10, Math.min(68, audioLevel * 0.65 * heightMultiplier + pseudoRandomOffset));
               return (
                 <motion.div
                   key={i}
                   animate={{ height: barHeight }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                  className="w-1.5 rounded-full bg-primary  "
+                  transition={{ type: 'spring', stiffness: 350, damping: 22 }}
+                  className="w-1.5 rounded-full bg-primary"
                 />
               );
             })
           ) : (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Volume2 className="h-4 w-4" />
-              <span>Press &apos;Start Voice Recording&apos; to capture spoken response</span>
+              <span>Click &apos;Start Voice Answer&apos; to speak naturally into your microphone</span>
             </div>
           )}
         </div>
 
         {/* Live Transcription Display */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
-            <span>Live Speech Transcript</span>
+          <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              Live Speech Transcript {isRecording && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />}
+            </span>
             {transcript && (
-              <button onClick={handleClear} className="text-xs text-primary hover:underline flex items-center gap-1">
+              <button
+                type="button"
+                onClick={handleClear}
+                className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors"
+              >
                 <RefreshCw className="h-3 w-3" /> Clear Transcript
               </button>
             )}
-          </label>
+          </div>
           <div className="min-h-24 max-h-48 overflow-y-auto p-4 rounded-md bg-muted/20 border border-border/50 text-sm leading-relaxed text-foreground">
             {transcript || interimTranscript ? (
-              <p>
+              <p className="whitespace-pre-wrap">
                 {transcript}
                 {interimTranscript && <span className="text-muted-foreground italic"> {interimTranscript}</span>}
               </p>
             ) : (
-              <p className="text-muted-foreground italic">Your spoken transcript will appear here automatically in real time...</p>
+              <p className="text-muted-foreground italic">
+                {isRecording ? 'Listening... start speaking your answer now.' : 'Your spoken words will transcribe here in real-time.'}
+              </p>
             )}
           </div>
         </div>
@@ -151,7 +198,7 @@ export function VoiceRecorder({ voice, onAnswerChange }) {
               >
                 {isPlayingAudio ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
               </Button>
-              <span className="text-xs font-medium text-primary">Voice Recording Playback</span>
+              <span className="text-xs font-medium text-primary">Recording Playback ({formatDuration(recordingDuration)})</span>
             </div>
             <Badge variant="outline" className="text-[10px]">
               Ready for submission
@@ -159,20 +206,14 @@ export function VoiceRecorder({ voice, onAnswerChange }) {
           </div>
         )}
 
-        {/* Mic Permission Warning */}
-        {hasPermission === false && (
-          <div className="p-3 rounded-md bg-amber-500/10 border border-amber-500/20 text-xs text-amber-600 flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 shrink-0" />
-            <span>Microphone access is blocked in browser settings. Please enable microphone permission to use voice features.</span>
-          </div>
-        )}
-
         {/* Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border/40">
           <Button
+            type="button"
             onClick={handleToggleRecording}
             variant={isRecording ? 'destructive' : 'default'}
-            className={isRecording ? 'animate-pulse' : 'bg-primary   text-primary-foreground'}
+            className={isRecording ? 'animate-pulse' : 'bg-primary text-primary-foreground'}
+            disabled={!isSupported}
           >
             {isRecording ? (
               <>
@@ -187,13 +228,21 @@ export function VoiceRecorder({ voice, onAnswerChange }) {
 
           {transcript && (
             <Button
+              type="button"
               variant="outline"
               size="sm"
-              onClick={() => {
-                if (onAnswerChange) onAnswerChange(transcript);
-              }}
+              onClick={handleApply}
+              className="text-xs"
             >
-              <Sparkles className="mr-2 h-4 w-4 text-primary" /> Apply Transcript to Answer
+              {applied ? (
+                <>
+                  <Check className="mr-1.5 h-3.5 w-3.5 text-emerald-500" /> Synced to Answer Box
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-1.5 h-3.5 w-3.5 text-primary" /> Sync Transcript to Answer Box
+                </>
+              )}
             </Button>
           )}
         </div>

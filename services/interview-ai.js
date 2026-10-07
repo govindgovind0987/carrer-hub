@@ -30,7 +30,8 @@ export const SUPPORTED_TECHNOLOGIES = [
 ];
 
 /**
- * Generate complete Mock & Prep Interview Questions Session with AI
+ * Generate complete Mock Interview Questions Session dynamically with Groq AI.
+ * Incorporates candidate profile, previous performance, and avoids repeating past questions.
  */
 export async function generateInterviewSessionAI({
   role = 'Full Stack Engineer',
@@ -40,74 +41,605 @@ export async function generateInterviewSessionAI({
   experience = 'MID_LEVEL',
   difficulty = 'MEDIUM',
   type = 'Technical Interview',
+  durationMinutes = 30,
   numberOfQuestions = 5,
   questionCategories = ['TECHNICAL'],
+  candidateProfile = null,
+  previousPerformance = null,
+  previousQuestions = [],
 }) {
   const selectedTechOrCat = category || technology || 'Technical';
+  const count = Math.min(10, Math.max(1, Number(numberOfQuestions) || 5));
+
+  // Build candidate context string if profile exists
+  let candidateContext = '';
+  if (candidateProfile) {
+    const skills = Array.isArray(candidateProfile.skills)
+      ? candidateProfile.skills.map((s) => s.name).join(', ')
+      : '';
+    const headline = candidateProfile.headline || '';
+    const expYears = candidateProfile.experience ? `${candidateProfile.experience} years` : '';
+    candidateContext = `
+Candidate Profile Context:
+- Headline: ${headline || 'Not specified'}
+- Stated Skills: ${skills || 'General'}
+- Experience: ${expYears || experience}
+`;
+  }
+
+  // Build past performance / weak areas context if available
+  let performanceContext = '';
+  if (previousPerformance && Array.isArray(previousPerformance) && previousPerformance.length > 0) {
+    const weaknesses = previousPerformance.flatMap((p) => p.weaknesses || []).filter(Boolean);
+    const missing = previousPerformance.flatMap((p) => p.missingConcepts || []).filter(Boolean);
+    if (weaknesses.length > 0 || missing.length > 0) {
+      performanceContext = `
+Candidate Recent Growth Gaps (test these if relevant):
+- Prior Weak Areas: ${weaknesses.slice(0, 5).join('; ') || 'None'}
+- Missing Concepts: ${missing.slice(0, 5).join('; ') || 'None'}
+`;
+    }
+  }
+
+  // Anti-duplication negative constraint
+  let antiDuplicateConstraint = '';
+  if (Array.isArray(previousQuestions) && previousQuestions.length > 0) {
+    const samplePast = previousQuestions.slice(0, 25).map((q) => `"${q}"`).join(', ');
+    antiDuplicateConstraint = `
+CRITICAL DIVERSITY REQUIREMENT:
+The candidate was previously asked these questions: [${samplePast}].
+Do NOT repeat or closely rephrase any of the above questions. Generate completely FRESH, novel questions probing different aspects.
+`;
+  }
+
   const prompt = `
-You are an elite Staff Software Engineer and Executive Technical Recruiter at a top tech company.
-Generate an interview question bank with EXACTLY ${numberOfQuestions} unique, highly relevant questions for:
-- Job Role: ${role}
-- Category / Topic: ${selectedTechOrCat}
+You are an elite Senior Staff Engineer and Lead Hiring Manager at a top-tier tech company.
+Generate an interview question set with EXACTLY ${count} unique, realistic questions tailored for:
+- Target Job Role: ${role}
+- Primary Tech Stack: ${selectedTechOrCat}
+- Interview Type: ${type}
 - Target Experience Level: ${experience}
 - Difficulty Level: ${difficulty}
+- Session Duration: ${durationMinutes} minutes
+- Question Count: ${count}
 - Company Style: ${companyStyle}
+${candidateContext}
+${performanceContext}
+${antiDuplicateConstraint}
 
-Strict Requirements:
-1. Return valid JSON ONLY with key "questions".
-2. Array length must be EXACTLY ${numberOfQuestions}.
-3. Every question must be distinct, fresh, and probe real candidate competency.
-4. Provide comprehensive, structured details for EVERY question.
+INTERVIEW STRUCTURE & QUESTION DISTRIBUTION GUIDELINES:
+Determine a realistic mixture of questions appropriate for the "${type}" and "${role}":
+1. If "Technical Interview":
+   - Focus on ${selectedTechOrCat} core internals, asynchronous programming, system patterns, production debugging, performance, and architecture.
+   - Include 1 behavioral or situational question assessing collaboration and trade-off decisions.
+2. If "HR Interview" or "Behavioral Interview":
+   - Focus on culture fit, career trajectory, team collaboration, conflict resolution, handling failure, navigating ambiguity, and ownership (STAR format).
+   - Assess communication, maturity, and emotional intelligence.
+3. If "System Design Interview":
+   - Focus on high-level architecture, scalability, database selection (SQL vs NoSQL), caching, microservices, load balancing, fault tolerance, and trade-offs.
+4. If "Coding Interview":
+   - Include hands-on algorithmic and coding problems (with a starter code template) and time/space complexity analysis.
+5. If "Mixed Interview" or General:
+   - Provide a realistic full-loop interview: ${selectedTechOrCat} technical deep-dive + system architecture + 1 coding/logic problem + 1 behavioral STAR question.
 
-JSON Output Schema:
+QUESTION TYPE SPECIFICATION:
+Distribute the "questionType" field realistically across:
+- "TEXT" (detailed verbal/conceptual explanation)
+- "CODE" (hands-on coding problem requiring implementation, must include "codeTemplate")
+- "VOICE" (high-level architectural or design explanation suitable for voice)
+- "PARAGRAPH" (situational or behavioral STAR scenario)
+- "MULTIPLE_CHOICE" (precise technical multiple choice with 4 "options")
+
+SCHEMA REQUIREMENTS:
+Return valid JSON ONLY with key "questions".
+Array length must be EXACTLY ${count}.
+Do NOT output markdown backticks or extra text outside JSON.
+
+JSON Schema:
 {
   "questions": [
     {
       "question": "Question text...",
-      "category": "${selectedTechOrCat}",
-      "difficulty": "${difficulty}",
-      "questionType": "TEXT",
-      "sampleAnswer": "Expected answer overview...",
-      "explanation": "Detailed step-by-step technical explanation...",
-      "bestAnswer": "Ideal enterprise model answer following best practices...",
-      "alternativeAnswer": "Alternative approach, trade-off, or perspective...",
-      "commonMistakes": ["Pitfall 1", "Pitfall 2"],
-      "followUp": "Likely follow-up question...",
-      "interviewTips": ["Tip 1 on how to deliver answer", "Tip 2"],
-      "keyPoints": ["Key point 1", "Key point 2"]
+      "category": "TECHNICAL | HR | BEHAVIORAL | DSA | JAVASCRIPT | REACT | NODEJS | SQL",
+      "categoryName": "Specific sub-topic name (e.g. React Concurrent Mode, Conflict Resolution, Database Sharding)",
+      "difficulty": "EASY | MEDIUM | HARD",
+      "questionType": "TEXT | CODE | VOICE | PARAGRAPH | MULTIPLE_CHOICE",
+      "expectedConcepts": ["Core concept 1", "Core concept 2", "Core concept 3"],
+      "sampleAnswer": "Comprehensive summary of expected answer...",
+      "explanation": "Deep technical explanation of the underlying concepts and why they matter in production...",
+      "bestAnswer": "Ideal enterprise model answer demonstrating mastery and best practices...",
+      "alternativeAnswer": "Alternative approach, trade-off, or different architectural perspective...",
+      "commonMistakes": ["Common candidate mistake 1", "Common candidate mistake 2"],
+      "followUp": "Thought-provoking follow-up question the interviewer would ask...",
+      "interviewTips": ["Actionable advice on how to structure response (e.g. STAR framework)", "Trade-offs to mention"],
+      "keyPoints": ["Key point 1", "Key point 2"],
+      "options": ["Option A", "Option B", "Option C", "Option D"] (null if not MULTIPLE_CHOICE),
+      "codeTemplate": "// starter code (null if not CODE)"
     }
   ]
 }
 `;
 
-  const result = await callGroqJson(prompt);
+  try {
+    const result = await callGroqJson(prompt);
 
-  if (result && Array.isArray(result.questions) && result.questions.length > 0) {
-    return result.questions.map((q, idx) => ({
-      order: idx + 1,
-      question: q.question,
-      category: q.category || selectedTechOrCat,
-      categoryName: q.category || selectedTechOrCat,
-      difficulty: q.difficulty || difficulty,
-      role,
-      companyStyle,
-      questionType: q.questionType || (idx % 4 === 2 ? 'CODE' : 'TEXT'),
-      sampleAnswer: q.sampleAnswer || 'Provide a clear, structured response detailing architecture and practical trade-offs.',
-      explanation: q.explanation || q.sampleAnswer || 'Detailed technical breakdown of underlying concepts.',
-      bestAnswer: q.bestAnswer || q.sampleAnswer || 'Model enterprise answer following production standards.',
-      alternativeAnswer: q.alternativeAnswer || 'Alternative architectural pattern or trade-off approach.',
-      commonMistakes: Array.isArray(q.commonMistakes) ? q.commonMistakes : ['Omitted production error handling', 'Did not address scale limits'],
-      followUp: q.followUp || 'How would you measure and monitor performance metrics for this in production?',
-      interviewTips: Array.isArray(q.interviewTips) ? q.interviewTips : ['Structure your answer using the STAR technique', 'Be clear on trade-offs'],
-      hints: Array.isArray(q.interviewTips) && q.interviewTips.length > 0 ? q.interviewTips : ['Structure your answer using the STAR technique', 'Be clear on trade-offs'],
-      keyPoints: Array.isArray(q.keyPoints) ? q.keyPoints : ['Core Architecture', 'Performance', 'Edge Cases'],
-      options: q.options || null,
-      codeTemplate: q.codeTemplate || (q.questionType === 'CODE' ? `// Implementation template for ${role}\nfunction solution() {\n  // TODO: implement logic\n}\n` : null),
-    }));
+    if (result && Array.isArray(result.questions) && result.questions.length > 0) {
+      let mapped = result.questions.map((q, idx) => {
+        const qType = (q.questionType || (idx % 3 === 2 ? 'CODE' : 'TEXT')).toUpperCase();
+        const expectedConcepts = Array.isArray(q.expectedConcepts) && q.expectedConcepts.length > 0
+          ? q.expectedConcepts
+          : Array.isArray(q.keyPoints) && q.keyPoints.length > 0
+            ? q.keyPoints
+            : [selectedTechOrCat, 'Architecture', 'Trade-offs'];
+
+        return {
+          order: idx + 1,
+          question: q.question || `Explain core design patterns in ${selectedTechOrCat} for a ${role}.`,
+          category: normalizeCategoryString(q.category || selectedTechOrCat),
+          categoryName: q.categoryName || q.category || selectedTechOrCat,
+          difficulty: normalizeDifficultyString(q.difficulty || difficulty),
+          role,
+          companyStyle,
+          questionType: qType,
+          expectedConcepts,
+          sampleAnswer: q.sampleAnswer || q.bestAnswer || 'Provide a structured response detailing architectural choices and production trade-offs.',
+          explanation: q.explanation || q.sampleAnswer || 'Technical breakdown of underlying engineering principles.',
+          bestAnswer: q.bestAnswer || q.sampleAnswer || 'Model answer demonstrating production standard practices.',
+          alternativeAnswer: q.alternativeAnswer || 'Alternative architectural pattern or trade-off consideration.',
+          commonMistakes: Array.isArray(q.commonMistakes) && q.commonMistakes.length > 0
+            ? q.commonMistakes
+            : ['Did not address scale limitations', 'Overlooked error recovery boundaries'],
+          followUp: q.followUp || `How would you monitor and optimize this for high traffic in ${selectedTechOrCat}?`,
+          interviewTips: Array.isArray(q.interviewTips) && q.interviewTips.length > 0
+            ? q.interviewTips
+            : ['Structure your response clearly with practical real-world examples.', 'Address trade-offs directly.'],
+          hints: Array.isArray(q.interviewTips) && q.interviewTips.length > 0
+            ? q.interviewTips
+            : ['Highlight practical real-world trade-offs.'],
+          keyPoints: expectedConcepts,
+          options: Array.isArray(q.options) && q.options.length > 0 ? q.options : null,
+          codeTemplate: q.codeTemplate || (qType === 'CODE' ? `// Implementation for ${role} in ${selectedTechOrCat}\nfunction solution() {\n  // TODO: implement logic\n}\n` : null),
+        };
+      });
+
+      return mapped.slice(0, count);
+    }
+    return null;
+  } catch (err) {
+    console.error('Groq AI Question Generation Error:', err);
+    return null;
+  }
+}
+
+function normalizeCategoryString(cat) {
+  if (!cat) return 'TECHNICAL';
+  const clean = String(cat).toUpperCase().replace(/[^A-Z]/g, '');
+  const valid = ['JAVASCRIPT', 'REACT', 'NEXTJS', 'NODEJS', 'MONGODB', 'SQL', 'DSA', 'HR', 'BEHAVIORAL', 'TECHNICAL'];
+  if (valid.includes(clean)) return clean;
+  if (clean.includes('REACT')) return 'REACT';
+  if (clean.includes('NEXT')) return 'NEXTJS';
+  if (clean.includes('NODE')) return 'NODEJS';
+  if (clean.includes('MONGO')) return 'MONGODB';
+  if (clean.includes('SQL')) return 'SQL';
+  if (clean.includes('DSA') || clean.includes('ALGO')) return 'DSA';
+  if (clean.includes('HR')) return 'HR';
+  if (clean.includes('BEHAVIOR')) return 'BEHAVIORAL';
+  if (clean.includes('JS') || clean.includes('JAVASCRIPT')) return 'JAVASCRIPT';
+  return 'TECHNICAL';
+}
+
+function normalizeDifficultyString(diff) {
+  if (!diff) return 'MEDIUM';
+  const clean = String(diff).toUpperCase();
+  if (clean === 'EASY' || clean === 'MEDIUM' || clean === 'HARD') return clean;
+  if (clean.includes('EASY')) return 'EASY';
+  if (clean.includes('HARD')) return 'HARD';
+  return 'MEDIUM';
+}
+
+/**
+ * Evaluate candidate's interview answer using Groq AI.
+ * Performs deep semantic, architectural, and communicative evaluation (NOT keyword matching).
+ * Provides strict structured status: CORRECT | PARTIALLY_CORRECT | INCORRECT | NOT_ANSWERED.
+ */
+export async function evaluateInterviewAnswerAI({
+  question,
+  userAnswer = '',
+  answerType = 'TEXT',
+  codeSnippet = '',
+  confidenceScore = 0.8,
+  timeTakenSec = 60,
+  role = 'Software Engineer',
+  technology = 'General',
+  experience = 'MID_LEVEL',
+  interviewType = 'Technical Interview',
+}) {
+  const answerText = (userAnswer || codeSnippet || '').trim();
+  const qText = question?.question || 'Question';
+  const qCategory = question?.category || 'TECHNICAL';
+  const expectedConcepts = Array.isArray(question?.expectedConcepts) && question.expectedConcepts.length > 0
+    ? question.expectedConcepts.join(', ')
+    : Array.isArray(question?.keyPoints) && question.keyPoints.length > 0
+      ? question.keyPoints.join(', ')
+      : 'Technical accuracy, clear reasoning, and production trade-offs';
+  const modelAnswer = question?.bestAnswer || question?.sampleAnswer || '';
+
+  // 1. Handle completely blank / unanswered questions immediately
+  // NEVER send empty answers to AI or mark them as partially correct
+  if (!answerText) {
+    return {
+      status: 'NOT_ANSWERED',
+      verdict: 'NOT_ANSWERED',
+      score: 0,
+      confidence: 0,
+      correctness: 0,
+      technicalKnowledge: 0,
+      communication: 0,
+      problemSolving: 0,
+      codingStyle: 0,
+      cleanCode: 0,
+      bestPractices: 0,
+      logicalThinking: 0,
+      strengths: [],
+      missingConcepts: Array.isArray(question?.expectedConcepts) && question.expectedConcepts.length > 0
+        ? question.expectedConcepts
+        : Array.isArray(question?.keyPoints) && question.keyPoints.length > 0
+          ? question.keyPoints
+          : ['Response was not provided'],
+      mistakes: ['No answer was provided for this question.'],
+      idealAnswer: modelAnswer || 'A structured enterprise response clearly addressing the core question requirements.',
+      feedback: 'No answer was provided for this question.',
+    };
   }
 
-  // Fallback Question Generator
-  return getFallbackInterviewQuestions(selectedTechOrCat, role, difficulty, numberOfQuestions, type);
+  const isHR = qCategory === 'HR' || qCategory === 'BEHAVIORAL' || interviewType.toLowerCase().includes('hr') || interviewType.toLowerCase().includes('behavior');
+  const isCoding = qCategory === 'DSA' || answerType === 'CODE' || interviewType.toLowerCase().includes('coding');
+
+  const prompt = `
+You are an expert technical interviewer and executive talent evaluator conducting an AI mock interview.
+Evaluate the candidate's response to the following interview question with high rigor.
+
+EVALUATION CONTEXT:
+- Candidate Role: ${role}
+- Tech Stack: ${technology}
+- Target Experience Level: ${experience}
+- Interview Type: ${interviewType}
+- Question Category: ${qCategory}
+- Question Type: ${answerType}
+- Original Question: "${qText}"
+- Expected Key Concepts: ${expectedConcepts}
+- Ideal Benchmark Model Answer: "${modelAnswer}"
+- Candidate Answer Submitted:
+"""
+${answerText}
+"""
+${codeSnippet ? `Candidate Code Submitted:\n"""\n${codeSnippet}\n"""\n` : ''}
+- Time Spent: ${timeTakenSec} seconds
+- Speech Confidence: ${confidenceScore}
+
+EVALUATION GUIDELINES:
+1. SEMANTIC & SUBSTANTIVE UNDERSTANDING (DO NOT USE KEYWORD MATCHING):
+   - Do NOT evaluate answers using simple keyword matching. Understand the actual meaning and depth of the candidate's explanation.
+2. TECHNICAL QUESTIONS:
+   - Evaluate correctness, technical accuracy, completeness, reasoning, relevant concepts, practical understanding, and mistakes.
+3. CODING QUESTIONS:
+   - Evaluate algorithmic approach, correctness, time and space complexity, edge cases, and implementation reasoning.
+4. HR & BEHAVIORAL QUESTIONS:
+   - Evaluate relevance, clarity, structure (e.g. STAR method), communication, specific actions, outcomes, and emotional intelligence.
+   - Do NOT mark a good HR answer "incorrect" just because it lacks technical keywords.
+5. STRICT STRUCTURED STATUS & SCORING:
+   - "CORRECT": The answer is accurate, comprehensive, and demonstrates solid mastery (Score 80-100).
+   - "PARTIALLY_CORRECT": The answer touches on good points but has meaningful gaps, missed important considerations, or minor inaccuracies (Score 50-79).
+   - "INCORRECT": The answer is fundamentally flawed, off-topic, or demonstrates significant misconceptions (Score 1-49).
+   - Clamp score strictly between 0 and 100. Never output arbitrary or default numbers.
+
+SCHEMA REQUIREMENTS:
+Return valid raw JSON strictly matching:
+{
+  "status": "CORRECT | PARTIALLY_CORRECT | INCORRECT",
+  "score": 85,
+  "confidence": 85,
+  "correctness": 85,
+  "technicalKnowledge": 90,
+  "communication": 80,
+  "problemSolving": 85,
+  "codingStyle": 80,
+  "cleanCode": 85,
+  "bestPractices": 85,
+  "logicalThinking": 90,
+  "strengths": ["Specific strength demonstrated in the candidate's answer"],
+  "missingConcepts": ["Important concepts or considerations the candidate omitted"],
+  "mistakes": ["Specific technical or logical errors made, or empty if none"],
+  "feedback": "2-3 paragraphs of constructive, clear coaching feedback analyzing the answer...",
+  "idealAnswer": "Clear, comprehensive benchmark model answer demonstrating best practices..."
+}
+`;
+
+  try {
+    const result = await callGroqJson(prompt);
+
+    if (result && typeof result.score === 'number' && !isNaN(result.score)) {
+      const clampedScore = Math.min(100, Math.max(0, Math.round(Number(result.score))));
+
+      let finalStatus = String(result.status || result.verdict || '').toUpperCase();
+      if (!['CORRECT', 'PARTIALLY_CORRECT', 'INCORRECT'].includes(finalStatus)) {
+        finalStatus = clampedScore >= 80 ? 'CORRECT' : clampedScore >= 50 ? 'PARTIALLY_CORRECT' : 'INCORRECT';
+      }
+
+      return {
+        status: finalStatus,
+        verdict: finalStatus,
+        score: clampedScore,
+        confidence: Math.min(100, Math.max(0, Math.round(Number(result.confidence) || (clampedScore > 0 ? 80 : 0)))),
+        correctness: Math.min(100, Math.max(0, Math.round(Number(result.correctness) || clampedScore))),
+        technicalKnowledge: Math.min(100, Math.max(0, Math.round(Number(result.technicalKnowledge) || clampedScore))),
+        communication: Math.min(100, Math.max(0, Math.round(Number(result.communication) || (clampedScore > 0 ? clampedScore : 0)))),
+        problemSolving: Math.min(100, Math.max(0, Math.round(Number(result.problemSolving) || clampedScore))),
+        codingStyle: Math.min(100, Math.max(0, Math.round(Number(result.codingStyle) || (isCoding ? clampedScore : 80)))),
+        cleanCode: Math.min(100, Math.max(0, Math.round(Number(result.cleanCode) || (isCoding ? clampedScore : 80)))),
+        bestPractices: Math.min(100, Math.max(0, Math.round(Number(result.bestPractices) || clampedScore))),
+        logicalThinking: Math.min(100, Math.max(0, Math.round(Number(result.logicalThinking) || clampedScore))),
+        strengths: Array.isArray(result.strengths) ? result.strengths : [],
+        missingConcepts: Array.isArray(result.missingConcepts) ? result.missingConcepts : [],
+        mistakes: Array.isArray(result.mistakes) ? result.mistakes : [],
+        idealAnswer: result.idealAnswer || modelAnswer || 'A structured enterprise response clearly addressing the core question requirements.',
+        feedback: result.feedback || 'Answer evaluated.',
+      };
+    }
+  } catch (err) {
+    console.error('Groq Answer Evaluation Error:', err);
+  }
+
+  // Never fabricate fallback scores. If AI evaluation failed, return clear error for retry
+  return {
+    error: 'AI answer evaluation failed. Please check your connection and retry.',
+  };
+}
+
+/**
+ * Generate final comprehensive Interview Report with Groq AI.
+ * Calculates true mathematical scores from actual question evaluations.
+ * Unanswered questions are scored 0 and marked NOT_ANSWERED.
+ */
+export async function generateFinalInterviewReportAI({
+  session,
+  questions = [],
+  answers = [],
+  feedbacks = [],
+}) {
+  const totalQuestions = questions.length;
+
+  const qData = questions.map((q, i) => {
+    const ans = answers.find((a) => a.questionId === q.id) || answers[i] || {};
+    const fb = feedbacks.find((f) => f.questionId === q.id) || feedbacks[i] || {};
+
+    const rawAnswer = (ans.userAnswer || ans.textAnswer || ans.codeSnippet || fb.answer || fb.userAnswer || fb.candidateAnswer || '').trim();
+    const isAnswered = Boolean(
+      rawAnswer ||
+      (fb.status && fb.status !== 'NOT_ANSWERED') ||
+      (fb.verdict && fb.verdict !== 'NOT_ANSWERED') ||
+      (typeof fb.score === 'number' && fb.score > 0)
+    );
+
+    // If candidate provided no answer, score must be 0 and verdict NOT_ANSWERED
+    const score = isAnswered && typeof fb.score === 'number' && !isNaN(fb.score)
+      ? Math.min(100, Math.max(0, Math.round(fb.score)))
+      : 0;
+
+    let verdict = 'NOT_ANSWERED';
+    if (isAnswered) {
+      const explicitVerdict = fb.status || fb.verdict;
+      if (explicitVerdict && explicitVerdict !== 'NOT_ANSWERED') {
+        verdict = explicitVerdict;
+      } else {
+        verdict = score >= 80 ? 'CORRECT' : score >= 50 ? 'PARTIALLY_CORRECT' : score === 0 ? 'NOT_ANSWERED' : 'INCORRECT';
+      }
+    }
+
+    return {
+      order: i + 1,
+      questionId: q.id,
+      question: q.question,
+      category: q.category || 'TECHNICAL',
+      questionType: q.questionType || 'TEXT',
+      answer: isAnswered ? rawAnswer : '(No answer provided)',
+      score,
+      verdict,
+      status: verdict,
+      feedback: isAnswered ? (fb.summary || fb.feedback || 'Answer evaluated.') : 'No answer was provided for this question.',
+      correctness: isAnswered ? (fb.correctness ?? score) : 0,
+      technicalKnowledge: isAnswered ? (fb.technicalKnowledge ?? score) : 0,
+      problemSolving: isAnswered ? (fb.problemSolving ?? score) : 0,
+      communication: isAnswered ? (fb.communication ?? (score > 0 ? score : 0)) : 0,
+      confidence: isAnswered ? (fb.confidence ?? (score > 0 ? 80 : 0)) : 0,
+      strengths: isAnswered ? (fb.strengths || []) : [],
+      missingConcepts: isAnswered ? (fb.missingConcepts || []) : (q.keyPoints || q.expectedConcepts || []),
+      mistakes: isAnswered ? (fb.mistakes || []) : ['No answer was provided for this question.'],
+      idealAnswer: fb.idealAnswer || q.bestAnswer || q.sampleAnswer || '',
+    };
+  });
+
+  const answeredQuestions = qData.filter((d) => d.verdict !== 'NOT_ANSWERED');
+  const hasAnswers = answeredQuestions.length > 0;
+
+  // Ground-truth arithmetic averages based purely on question results
+  const overallScore = totalQuestions > 0
+    ? Math.round(qData.reduce((acc, curr) => acc + curr.score, 0) / totalQuestions)
+    : 0;
+
+  const techQuestions = qData.filter((d) => !['HR', 'BEHAVIORAL'].includes(d.category) && d.questionType !== 'CODE');
+  const technicalScore = techQuestions.length > 0
+    ? Math.round(techQuestions.reduce((acc, curr) => acc + curr.score, 0) / techQuestions.length)
+    : 0;
+
+  const codingQuestions = qData.filter((d) => d.questionType === 'CODE' || d.category === 'DSA');
+  const codingScore = codingQuestions.length > 0
+    ? Math.round(codingQuestions.reduce((acc, curr) => acc + curr.score, 0) / codingQuestions.length)
+    : 0;
+
+  const behavioralQuestions = qData.filter((d) => ['HR', 'BEHAVIORAL'].includes(d.category));
+  const behaviorScore = behavioralQuestions.length > 0
+    ? Math.round(behavioralQuestions.reduce((acc, curr) => acc + curr.score, 0) / behavioralQuestions.length)
+    : 0;
+
+  const problemSolvingScore = totalQuestions > 0
+    ? Math.round(qData.reduce((acc, curr) => acc + curr.problemSolving, 0) / totalQuestions)
+    : 0;
+
+  const communicationScore = totalQuestions > 0
+    ? Math.round(qData.reduce((acc, curr) => acc + curr.communication, 0) / totalQuestions)
+    : 0;
+
+  const confidenceScore = totalQuestions > 0
+    ? Math.round(qData.reduce((acc, curr) => acc + curr.confidence, 0) / totalQuestions)
+    : 0;
+
+  // If candidate answered NOTHING, return 0% clean report immediately without calling AI
+  if (!hasAnswers) {
+    return {
+      overallScore: 0,
+      technicalScore: 0,
+      codingScore: 0,
+      communicationScore: 0,
+      confidenceScore: 0,
+      problemSolvingScore: 0,
+      behaviorScore: 0,
+      interviewReadiness: 'Incomplete - No Answers Submitted',
+      summary: `The candidate concluded the interview without submitting answers to any questions. As a result, candidate competencies could not be evaluated (0% overall score). All questions have been marked as Not Answered with a score of 0/100. To receive an accurate assessment and actionable feedback, please retake the interview and submit your answers.`,
+      recommendation: 'NOT RECOMMENDED',
+      strengths: [],
+      weaknesses: ['No answers were submitted during this interview session.'],
+      mistakes: ['All interview questions were left unanswered.'],
+      missingConcepts: questions.flatMap((q) => q.keyPoints || q.expectedConcepts || []).slice(0, 10),
+      recommendedTopics: [session.technology || 'General Programming', 'Structured Communication (STAR)', 'Interview Preparation Basics'],
+      recommendedResources: [
+        { title: `${session.technology || 'Engineering'} Official Documentation`, type: 'Documentation', url: 'https://developer.mozilla.org/' },
+        { title: 'System Design Primer', type: 'Guide', url: 'https://github.com/donnemartin/system-design-primer' },
+      ],
+      learningPlan: [
+        `Phase 1: Review core concepts and fundamentals of ${session.technology || 'the target role'}`,
+        'Phase 2: Practice answering technical and situational questions out loud',
+        'Phase 3: Retake this AI Mock Interview and submit responses to all questions',
+      ],
+      questionBreakdown: qData,
+    };
+  }
+
+  // Synthesize qualitative narrative with Groq AI using real question data
+  const prompt = `
+You are the Executive Talent Assessor and Chief Interview Bar-Raiser.
+Synthesize a comprehensive, honest final AI Mock Interview Report for candidate:
+- Candidate Role: ${session.role}
+- Tech Stack: ${session.technology}
+- Experience Level: ${session.experience}
+- Difficulty: ${session.difficulty}
+- Interview Type: ${session.type || 'Technical'}
+- Questions Evaluated: ${questions.length}
+- Questions Answered: ${answeredQuestions.length}
+- Ground Truth Overall Score: ${overallScore}%
+
+DETAILED QUESTION-BY-QUESTION RESULTS:
+${qData.map((d) => `Q${d.order}: ${d.question}\nCategory: ${d.category}\nCandidate Answer: ${d.answer}\nScore: ${d.score}/100\nVerdict: ${d.verdict}\nFeedback: ${d.feedback}`).join('\n\n')}
+
+REPORT SYNTHESIS REQUIREMENTS:
+1. Provide an honest Hiring Recommendation strictly reflecting the overall score (${overallScore}%):
+   - >= 85%: "STRONG HIRE"
+   - >= 70%: "HIRE"
+   - >= 55%: "LEANING HIRE"
+   - >= 35%: "NEEDS PREPARATION"
+   - < 35%: "NOT RECOMMENDED"
+2. Synthesize candidate's genuine strengths demonstrated in their actual answers.
+3. Identify genuine technical knowledge gaps and weaknesses.
+4. Provide Interview Readiness assessment.
+5. Provide a personalized 3-phase improvement roadmap.
+6. Recommend authoritative learning resources.
+
+SCHEMA REQUIREMENTS:
+Return valid raw JSON ONLY matching:
+{
+  "interviewReadiness": "...",
+  "summary": "2-3 paragraphs executive summary of performance and capabilities...",
+  "recommendation": "STRONG HIRE | HIRE | LEANING HIRE | NEEDS PREPARATION | NOT RECOMMENDED",
+  "strengths": ["Top strength with evidence from answers"],
+  "weaknesses": ["Key weakness observed"],
+  "mistakes": ["Specific misconception identified"],
+  "missingConcepts": ["Missing topic"],
+  "recommendedTopics": ["Topic 1", "Topic 2"],
+  "recommendedResources": [
+    { "title": "Resource Name", "type": "Documentation | Book | Tutorial", "url": "https://..." }
+  ],
+  "learningPlan": [
+    "Phase 1: ...",
+    "Phase 2: ...",
+    "Phase 3: ..."
+  ]
+}
+`;
+
+  try {
+    const result = await callGroqJson(prompt);
+
+    if (result) {
+      return {
+        overallScore,
+        technicalScore,
+        codingScore,
+        communicationScore,
+        confidenceScore,
+        problemSolvingScore,
+        behaviorScore,
+        interviewReadiness: result.interviewReadiness || (overallScore >= 75 ? 'Interview Ready' : 'Developing - Needs Preparation'),
+        summary: result.summary || `Candidate achieved an overall score of ${overallScore}% across ${questions.length} questions for ${session.role} (${session.technology}).`,
+        recommendation: result.recommendation || (overallScore >= 80 ? 'STRONG HIRE' : overallScore >= 65 ? 'HIRE' : overallScore >= 50 ? 'LEANING HIRE' : 'NEEDS PREPARATION'),
+        strengths: Array.isArray(result.strengths) && result.strengths.length > 0 ? result.strengths : answeredQuestions.flatMap((q) => q.strengths).slice(0, 5),
+        weaknesses: Array.isArray(result.weaknesses) && result.weaknesses.length > 0 ? result.weaknesses : ['Needs targeted practice on unanswered or low-scoring concepts.'],
+        mistakes: Array.isArray(result.mistakes) ? result.mistakes : [],
+        missingConcepts: Array.isArray(result.missingConcepts) && result.missingConcepts.length > 0 ? result.missingConcepts : qData.flatMap((q) => q.missingConcepts).slice(0, 6),
+        recommendedTopics: Array.isArray(result.recommendedTopics) && result.recommendedTopics.length > 0 ? result.recommendedTopics : [session.technology, 'Distributed Architecture', 'STAR Method'],
+        recommendedResources: Array.isArray(result.recommendedResources) && result.recommendedResources.length > 0 ? result.recommendedResources : [
+          { title: `${session.technology} Documentation`, type: 'Documentation', url: 'https://developer.mozilla.org/' },
+          { title: 'System Design Primer', type: 'Guide', url: 'https://github.com/donnemartin/system-design-primer' },
+        ],
+        learningPlan: Array.isArray(result.learningPlan) && result.learningPlan.length > 0 ? result.learningPlan : [
+          `Phase 1: Deep dive into ${session.technology} internals and core patterns`,
+          'Phase 2: Practice timed coding and behavioral questions',
+          'Phase 3: Run full-length mock interviews',
+        ],
+        questionBreakdown: qData,
+      };
+    }
+  } catch (err) {
+    console.error('Groq Final Report Synthesis Error:', err);
+  }
+
+  // Deterministic calculation if Groq synthesis is unavailable
+  return {
+    overallScore,
+    technicalScore,
+    codingScore,
+    communicationScore,
+    confidenceScore,
+    problemSolvingScore,
+    behaviorScore,
+    interviewReadiness: overallScore >= 75 ? 'Interview Ready' : 'Developing - Needs Preparation',
+    summary: `Candidate completed ${answeredQuestions.length} of ${questions.length} questions for the ${session.role} role with ${session.technology}. Evaluated overall score: ${overallScore}%.`,
+    recommendation: overallScore >= 80 ? 'STRONG HIRE' : overallScore >= 65 ? 'HIRE' : overallScore >= 50 ? 'LEANING HIRE' : overallScore >= 35 ? 'NEEDS PREPARATION' : 'NOT RECOMMENDED',
+    strengths: answeredQuestions.flatMap((q) => q.strengths).slice(0, 5),
+    weaknesses: ['Review areas where questions were left unanswered or received partial marks.'],
+    mistakes: answeredQuestions.flatMap((q) => q.mistakes).slice(0, 5),
+    missingConcepts: qData.flatMap((q) => q.missingConcepts).slice(0, 6),
+    recommendedTopics: [session.technology, 'System Architecture', 'STAR Framework'],
+    recommendedResources: [
+      { title: `${session.technology} Documentation`, type: 'Documentation', url: 'https://developer.mozilla.org/' },
+      { title: 'System Design Primer', type: 'Guide', url: 'https://github.com/donnemartin/system-design-primer' },
+    ],
+    learningPlan: [
+      `Phase 1: Deep dive into ${session.technology} fundamentals`,
+      'Phase 2: Practice timed behavioral responses with the STAR method',
+      'Phase 3: Retake full-length mock interviews',
+    ],
+    questionBreakdown: qData,
+  };
 }
 
 /**
@@ -115,7 +647,7 @@ JSON Output Schema:
  */
 export async function generateSimilarQuestionsAI({ questionText, category, difficulty, role }) {
   const prompt = `
-Generate 3 similar interview questions based on the following:
+Generate 3 similar, high-yield interview questions for:
 Base Question: "${questionText}"
 Category: ${category}
 Difficulty: ${difficulty}
@@ -125,7 +657,7 @@ Return JSON format:
 {
   "questions": [
     {
-      "question": "Similar question 1...",
+      "question": "Similar question text...",
       "sampleAnswer": "Sample answer...",
       "explanation": "Detailed explanation...",
       "bestAnswer": "Model answer...",
@@ -141,14 +673,14 @@ Return JSON format:
   if (result && Array.isArray(result.questions)) return result.questions;
   return [
     {
-      question: `How does ${category} handle edge case failures in high-concurrency environments?`,
-      sampleAnswer: `By implementing retry mechanisms with exponential backoff and circuit breaker patterns.`,
-      explanation: `Circuit breakers prevent cascading failures when downstream services stall.`,
-      bestAnswer: `Combine resilient connection pools, aggressive timeouts, and graceful degraded fallbacks.`,
-      alternativeAnswer: `Event-driven queue decoupling via Kafka or SQS.`,
-      commonMistakes: [`Retrying synchronously without jitter`],
-      followUp: `What metrics alert you to trip a circuit breaker?`,
-      interviewTips: [`Mention quantitative SLAs and MTTR targets`],
+      question: `In ${category}, how do you ensure high availability and graceful error degradation under heavy load?`,
+      sampleAnswer: 'By implementing circuit breaker patterns, timeout budgets, and fallback degradation paths.',
+      explanation: 'Circuit breakers prevent cascading resource exhaustion when external systems stall.',
+      bestAnswer: 'Combine connection pools, strict latency bounds, and asynchronous queue decoupling.',
+      alternativeAnswer: 'Event-driven queue decoupling via Kafka or SQS.',
+      commonMistakes: ['Retrying synchronously without jitter'],
+      followUp: 'How do you measure and alert on circuit breaker trip events?',
+      interviewTips: ['Discuss quantitative SLAs and MTTR targets'],
     },
   ];
 }
@@ -168,7 +700,7 @@ Return JSON:
 }
 `;
   const result = await callGroqJson(prompt);
-  return result?.explanation || `Detailed Explanation:\n${answerText}\n\nKey Concepts: Demonstrates core understanding of systems engineering and state management.`;
+  return result?.explanation || `Detailed Technical Breakdown:\n${answerText}\n\nKey Concepts: Demonstrates foundational mastery of software architecture and systems design.`;
 }
 
 /**
@@ -186,7 +718,7 @@ Return JSON:
 }
 `;
   const result = await callGroqJson(prompt);
-  return result?.simplified || `Simplified Explanation:\nThink of this concept like an organized library checkout system. Instead of searching every shelf, an index lets you jump straight to the right book immediately.`;
+  return result?.simplified || `Simplified Explanation:\nThink of this like an organized library checkout system. Rather than scanning every single shelf, an index allows you to jump straight to the exact location instantly.`;
 }
 
 /**
@@ -194,7 +726,7 @@ Return JSON:
  */
 export async function modifyQuestionDifficultyAI({ questionText, currentDifficulty, targetDifficulty, role }) {
   const prompt = `
-Regenerate and modify the following interview question from ${currentDifficulty} to ${targetDifficulty} difficulty level for a ${role}:
+Regenerate and adapt the following interview question from ${currentDifficulty} to ${targetDifficulty} difficulty level for a ${role}:
 Original Question: "${questionText}"
 
 Return JSON:
@@ -213,327 +745,16 @@ Return JSON:
   const result = await callGroqJson(prompt);
   if (result && result.question) return result;
   return {
-    question: targetDifficulty === 'Harder' || targetDifficulty === 'EXPERT'
-      ? `Under extreme scale (100k RPS), how would you re-architect "${questionText}" to guarantee zero data loss and sub-5ms latency?`
-      : `What is the fundamental concept behind "${questionText}" in simple terms?`,
+    question: targetDifficulty === 'Hard' || targetDifficulty === 'EXPERT'
+      ? `Under extreme concurrent traffic (100k RPS), how would you re-architect "${questionText}" to guarantee zero data loss and sub-10ms response latency?`
+      : `What is the core concept behind "${questionText}" in straightforward terms?`,
     difficulty: targetDifficulty,
-    sampleAnswer: `Detailed ${targetDifficulty} level response analyzing memory structures and trade-offs.`,
-    explanation: `Explanation tailored for ${targetDifficulty} candidate evaluation.`,
-    bestAnswer: `Enterprise standard solution addressing concurrency and resilience.`,
-    alternativeAnswer: `Decoupled asynchronous processing model.`,
-    commonMistakes: [`Underestimating payload scaling limits`],
-    followUp: `How do you measure latency at the 99.9th percentile?`,
-    interviewTips: [`Highlight production observability and metrics`],
+    sampleAnswer: `Tailored ${targetDifficulty} response addressing execution and architectural trade-offs.`,
+    explanation: `Explanation focused on ${targetDifficulty} candidate evaluation.`,
+    bestAnswer: `Standard enterprise solution addressing scalability and reliability.`,
+    alternativeAnswer: `Asynchronous decoupled execution model.`,
+    commonMistakes: ['Underestimating payload scaling boundaries'],
+    followUp: 'How do you measure latency at the p99 percentile?',
+    interviewTips: ['Highlight production telemetry and observability'],
   };
-}
-
-/**
- * Evaluate candidate's answer with AI across 9 parameters
- */
-export async function evaluateInterviewAnswerAI({
-  question,
-  userAnswer,
-  answerType = 'TEXT',
-  codeSnippet = '',
-  confidenceScore = 0.8,
-  timeTakenSec = 120,
-}) {
-  const prompt = `
-Evaluate candidate interview answer for the following question:
-Question: "${question.question}"
-Question Type: ${answerType}
-Candidate Response: "${userAnswer || codeSnippet || '(No answer provided)'}"
-Code Submitted: "${codeSnippet || 'N/A'}"
-Time Spent: ${timeTakenSec} seconds
-Voice Confidence Score: ${confidenceScore}
-
-Evaluate across 9 dimensions on a scale of 0 to 100:
-1. correctness (Accuracy of information or code)
-2. technicalKnowledge (Depth of technology understanding)
-3. communication (Clarity, structure, tone)
-4. confidence (Tone certainty and voice confidence)
-5. problemSolving (Analytical approach)
-6. codingStyle (Readability, naming conventions if code)
-7. cleanCode (Modularity, DRY principles if code)
-8. bestPractices (Industry standards applied)
-9. logicalThinking (Step-by-step reasoning)
-
-Return JSON with format:
-{
-  "score": 85,
-  "correctness": 85,
-  "technicalKnowledge": 90,
-  "communication": 80,
-  "confidence": 85,
-  "problemSolving": 85,
-  "codingStyle": 80,
-  "cleanCode": 85,
-  "bestPractices": 85,
-  "logicalThinking": 90,
-  "feedback": "Constructive 2-3 paragraph analysis of candidate's answer...",
-  "strengths": ["Clear explanation of state synchronization", "Good edge case handling"],
-  "mistakes": ["Omitted exception handling in async calls"],
-  "missingConcepts": ["Debouncing high-frequency triggers"],
-  "followUp": "How would you optimize this if payload size scales 100x?"
-}
-`;
-
-  const result = await callGroqJson(prompt);
-
-  if (result && typeof result.score === 'number') {
-    return result;
-  }
-
-  // Fallback evaluation
-  const wordCount = (userAnswer || codeSnippet || '').split(/\s+/).length;
-  const baseScore = Math.min(95, Math.max(50, Math.floor(wordCount * 1.5) + (codeSnippet ? 20 : 15)));
-
-  return {
-    score: baseScore,
-    correctness: baseScore,
-    technicalKnowledge: Math.min(95, baseScore + 5),
-    communication: Math.min(90, baseScore - 2),
-    confidence: Math.round((confidenceScore || 0.8) * 100),
-    problemSolving: baseScore,
-    codingStyle: codeSnippet ? 85 : 80,
-    cleanCode: codeSnippet ? 85 : 80,
-    bestPractices: Math.min(92, baseScore + 2),
-    logicalThinking: baseScore,
-    feedback: `The candidate provided a structured ${answerType.toLowerCase()} answer touching on core principles. The explanation demonstrates solid familiarity with practical concepts, though adding explicit quantitative metrics or error recovery boundaries would strengthen the answer.`,
-    strengths: ['Addressed the main question requirements directly', 'Clear domain terminology used correctly'],
-    mistakes: ['Did not mention production edge cases or error fallback recovery'],
-    missingConcepts: ['Automated unit regression strategy'],
-    followUp: 'How would you measure and monitor performance metrics for this in production?',
-  };
-}
-
-/**
- * Generate final comprehensive Interview Report with AI
- */
-export async function generateFinalInterviewReportAI({
-  session,
-  questions = [],
-  answers = [],
-  feedbacks = [],
-}) {
-  const prompt = `
-Synthesize a final enterprise candidate mock interview report:
-Role: ${session.role}
-Technology: ${session.technology}
-Experience Level: ${session.experience}
-Difficulty: ${session.difficulty}
-Questions Count: ${questions.length}
-
-Answers and Evaluation Data:
-${feedbacks.map((f, i) => `Q${i+1}: ${questions[i]?.question || 'Question'}\nScore: ${f.score}/100\nFeedback: ${f.feedback}`).join('\n\n')}
-
-Return JSON with format:
-{
-  "overallScore": 84,
-  "technicalScore": 88,
-  "codingScore": 82,
-  "communicationScore": 80,
-  "confidenceScore": 85,
-  "problemSolvingScore": 86,
-  "behaviorScore": 80,
-  "summary": "High-level summary of candidate interview performance...",
-  "recommendation": "STRONG HIRE / HIRE / CONDITIONAL HIRE / REJECT recommendation with rationale...",
-  "strengths": ["Strong architectural grasp", "Solid coding standards"],
-  "weaknesses": ["Voice clarity under pressure", "Deep dive memory management"],
-  "mistakes": ["Missed corner case in asynchronous state mutation"],
-  "missingConcepts": ["Distributed Caching Strategies"],
-  "recommendedTopics": ["Next.js Server Actions & Caching", "PostgreSQL Indexing"],
-  "recommendedResources": [
-    { "title": "Advanced Next.js Routing & Data Fetching", "type": "Documentation", "url": "https://nextjs.org/docs" },
-    { "title": "System Design Primer", "type": "Course", "url": "https://github.com/donnemartin/system-design-primer" }
-  ],
-  "learningPlan": [
-    "Week 1: Focus on concurrency state management",
-    "Week 2: Practice real-time voice response pacing"
-  ]
-}
-`;
-
-  const result = await callGroqJson(prompt);
-
-  if (result && typeof result.overallScore === 'number') {
-    return result;
-  }
-
-  // Calculate weighted fallback from feedbacks if available
-  const avgScore = feedbacks.length > 0
-    ? Math.round(feedbacks.reduce((acc, curr) => acc + (curr.score || 75), 0) / feedbacks.length)
-    : 82;
-
-  return {
-    overallScore: avgScore,
-    technicalScore: Math.min(96, avgScore + 3),
-    codingScore: Math.min(92, avgScore),
-    communicationScore: Math.min(90, avgScore - 2),
-    confidenceScore: Math.min(94, avgScore + 1),
-    problemSolvingScore: Math.min(95, avgScore + 2),
-    behaviorScore: Math.min(88, avgScore - 1),
-    summary: `Candidate demonstrated strong technical competency for the ${session.role} position with notable domain proficiency in ${session.technology}. Answers reflected practical hands-on experience and logical problem solving.`,
-    recommendation: avgScore >= 80 ? 'RECOMMENDED FOR HIRE: Strong technical foundation and clear communication skills.' : 'CONDITIONAL HIRE: Good foundational knowledge, recommended to practice system trade-offs.',
-    strengths: [
-      `Solid conceptual understanding of ${session.technology} architecture`,
-      'Structured approach to breaking down technical requirements',
-      'Good awareness of clean code principles',
-    ],
-    weaknesses: [
-      'Could elaborate further on production error telemetry',
-      'Pacing during complex coding problems could be optimized',
-    ],
-    mistakes: ['Initial response omitted explicit boundary checking'],
-    missingConcepts: ['High-throughput load testing and memory profiling'],
-    recommendedTopics: [
-      `${session.technology} Performance Optimization`,
-      'Enterprise System Architecture & Scalability',
-      'Automated Testing & CI/CD Pipelines',
-    ],
-    recommendedResources: [
-      { title: `${session.technology} Official Guides & Documentation`, type: 'Documentation', url: 'https://developer.mozilla.org/' },
-      { title: 'Enterprise Clean Architecture Patterns', type: 'Article', url: 'https://refactoring.guru/design-patterns' },
-    ],
-    learningPlan: [
-      'Phase 1: Deep dive into advanced state synchronization and memory leak prevention',
-      'Phase 2: Perform timed mock coding challenges using Monaco Editor',
-      'Phase 3: Refine voice answer clarity using STAR methodology (Situation, Task, Action, Result)',
-    ],
-  };
-}
-
-/**
- * Fallback questions helper generator for all 23 supported tech
- */
-function getFallbackInterviewQuestions(technology, role, difficulty, count, type) {
-  const bank = {
-    JavaScript: [
-      {
-        question: 'Explain the Event Loop, Call Stack, Microtask Queue, and Macrotask Queue in JavaScript.',
-        questionType: 'TEXT',
-        category: 'TECHNICAL',
-        sampleAnswer: 'The Call Stack executes synchronous code. Asynchronous callbacks are queued into either the Microtask Queue (Promises, process.nextTick) or Macrotask Queue (setTimeout, setInterval, I/O). Microtasks drain completely before the next macrotask is processed.',
-        keyPoints: ['Call Stack', 'Microtasks vs Macrotasks', 'Non-blocking I/O'],
-        hints: ['Consider what happens when a resolved Promise and a setTimeout(0) are both waiting.'],
-      },
-      {
-        question: 'Implement a custom debounce function in JavaScript that handles leading and trailing edge execution.',
-        questionType: 'CODE',
-        category: 'TECHNICAL',
-        codeTemplate: 'function debounce(fn, delay, immediate = false) {\n  // TODO: implement debounce with timer\n}',
-        sampleAnswer: 'Debouncing delays invoking a function until after a specified interval has elapsed since the last time it was invoked.',
-        keyPoints: ['Closure state', 'Timer management', 'Arguments & Context binding'],
-        hints: ['Use clearTimeout and maintain timer ID in a closure.'],
-      },
-      {
-        question: 'What are Closures, Scope Chains, and how do they impact memory management?',
-        questionType: 'VOICE',
-        category: 'TECHNICAL',
-        sampleAnswer: 'A closure is a function bundled with references to its surrounding lexical environment. Unused closure references can prevent garbage collection if not unassigned.',
-        keyPoints: ['Lexical Scope', 'Garbage Collection', 'Memory Leaks'],
-        hints: ['Discuss inner functions accessing outer variables.'],
-      },
-      {
-        question: 'Compare var, let, and const in terms of scoping, hoisting, and Temporal Dead Zone (TDZ).',
-        questionType: 'MULTIPLE_CHOICE',
-        category: 'TECHNICAL',
-        options: [
-          'var is block-scoped, let and const are function-scoped',
-          'var is hoisted with undefined, let and const enter Temporal Dead Zone',
-          'const allows re-assignment while let does not',
-          'let is hoisted with initial value null',
-        ],
-        sampleAnswer: 'Option B is correct. var is function-scoped and hoisted initialized with undefined. let and const are block-scoped and hoisted into a TDZ until initialized.',
-        keyPoints: ['Block Scope', 'TDZ', 'Hoisting'],
-        hints: ['Think about access prior to declaration.'],
-      },
-      {
-        question: 'Describe a situation where prototypal inheritance caused a subtle bug in your project and how you solved it.',
-        questionType: 'PARAGRAPH',
-        category: 'BEHAVIORAL',
-        sampleAnswer: 'Shared object references on prototype properties led to unintentional state mutation across instances. Solved by initializing instance variables inside constructor or using Object.create(null).',
-        keyPoints: ['Prototype Chain', 'Shared Mutation', 'Object.assign'],
-        hints: ['Focus on prototype vs instance property assignment.'],
-      },
-    ],
-    React: [
-      {
-        question: 'How does React 19 / Concurrent React handle Fiber tree reconciliation and batching?',
-        questionType: 'TEXT',
-        category: 'REACT',
-        sampleAnswer: 'React Fiber splits rendering work into incremental chunks. Priority levels allow high-priority user input to interrupt background rendering, enabling smooth UI responsiveness.',
-        keyPoints: ['Virtual DOM', 'Fiber Nodes', 'Automatic Batching', 'Priority Lanes'],
-        hints: ['Think about render phase vs commit phase.'],
-      },
-      {
-        question: 'Build a custom React hook `useDebouncedValue(value, delay)` for live search input.',
-        questionType: 'CODE',
-        category: 'REACT',
-        codeTemplate: 'import { useState, useEffect } from "react";\n\nexport function useDebouncedValue(value, delay) {\n  // TODO: implement state and timer cleanup\n}',
-        sampleAnswer: 'The hook maintains internal debounced state updated inside a useEffect cleanup function.',
-        keyPoints: ['useEffect cleanup', 'Timer cancellation', 'Custom Hook encapsulation'],
-        hints: ['Return a cleanup function from useEffect to clear timer on re-render.'],
-      },
-      {
-        question: 'Explain the rules and best practices for useCallback vs useMemo to prevent performance regressions.',
-        questionType: 'VOICE',
-        category: 'REACT',
-        sampleAnswer: 'useMemo caches computed values, while useCallback caches function definitions. Overusing them without expensive calculations or memoized child components adds overhead.',
-        keyPoints: ['Referential Equality', 'React.memo', 'Memory Overhead'],
-        hints: ['When does component re-render matter?'],
-      },
-    ],
-    'Next.js': [
-      {
-        question: 'Explain Next.js App Router Data Fetching: Server Components, Server Actions, and Revalidation.',
-        questionType: 'TEXT',
-        category: 'NEXTJS',
-        sampleAnswer: 'Server Components fetch data directly on the server without client bundle overhead. Server Actions provide secure server RPC calls. revalidatePath and revalidateTag purge cached data caches.',
-        keyPoints: ['RSC vs Client Components', 'Data Cache', 'Server Actions', 'revalidatePath'],
-        hints: ['Consider how data flows between server and client boundaries.'],
-      },
-      {
-        question: 'Implement a Server Action with input validation using Zod and session authorization in Next.js.',
-        questionType: 'CODE',
-        category: 'NEXTJS',
-        codeTemplate: '"use server";\n\nexport async function submitData(formData) {\n  // TODO: authenticate session and validate schema\n}',
-        sampleAnswer: 'Extract data, validate with schema.parse(), verify user session with auth(), then perform DB operation.',
-        keyPoints: ['"use server" directive', 'Validation', 'Authentication Check'],
-        hints: ['Always check user authorization before mutating data.'],
-      },
-    ],
-    'System Design': [
-      {
-        question: 'Design a high-throughput real-time Notifications & Chat platform scaling to 10 Million DAU.',
-        questionType: 'TEXT',
-        category: 'TECHNICAL',
-        sampleAnswer: 'Use WebSocket connections managed by a Gateway cluster, backed by Redis Pub/Sub for message routing, Kafka for durable event streaming, and Cassandra/PostgreSQL for message storage.',
-        keyPoints: ['WebSockets', 'Redis Pub/Sub', 'Kafka Event Streaming', 'DB Sharding'],
-        hints: ['Address connection pooling, stateful servers, and message delivery guarantees.'],
-      },
-    ],
-  };
-
-  const selectedList = bank[technology] || bank['JavaScript'];
-  const questions = [];
-
-  for (let i = 0; i < count; i++) {
-    const template = selectedList[i % selectedList.length];
-    questions.push({
-      order: i + 1,
-      question: `${template.question} (${role} level)`,
-      category: template.category || 'TECHNICAL',
-      difficulty: difficulty,
-      questionType: template.questionType,
-      sampleAnswer: template.sampleAnswer,
-      keyPoints: template.keyPoints,
-      hints: template.hints || [],
-      interviewTips: template.hints || ['Structure your answer clearly with concrete examples.'],
-      options: template.options || null,
-      codeTemplate: template.codeTemplate || null,
-    });
-  }
-
-  return questions;
 }

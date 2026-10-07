@@ -23,6 +23,9 @@ import {
   Loader2,
   AlertCircle,
   HelpCircle,
+  Target,
+  Lightbulb,
+  Check,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -164,24 +167,30 @@ export default function LiveInterviewRoomPage({ params: propsParams }) {
     voice.stopSpeaking();
     voice.resetVoiceState();
 
+    const formattedAnswers = Object.entries(answers).map(([qId, val]) => ({
+      questionId: qId,
+      answerType: val?.answerType || 'TEXT',
+      userAnswer: (val?.textAnswer || val?.selectedOption || val?.codeSnippet || '').trim(),
+      codeSnippet: val?.codeSnippet || null,
+      selectedOption: val?.selectedOption || null,
+      timeTakenSec: questionSeconds,
+    }));
+
     const res = await generateFinalInterviewReportAction(sessionId, {
-      session,
-      questions,
-      answers: Object.entries(answers).map(([qId, val]) => ({ questionId: qId, ...val })),
-      feedbacks: Object.entries(feedbacks).map(([qId, val]) => ({ questionId: qId, ...val })),
+      answers: formattedAnswers,
     });
 
-    if (res.success) {
+    if (res.success && res.report) {
       toast.success('Interview session completed successfully!', { id: 'end-interview' });
       router.push(`/dashboard/mock-interview/report/${sessionId}`);
     } else {
       toast.error(res.error || 'Error completing interview session', { id: 'end-interview' });
       setIsSubmitting(false);
     }
-  }, [sessionId, session, questions, answers, feedbacks, router, voice]);
+  }, [sessionId, answers, questionSeconds, router, voice]);
 
   // Update current answer state helper
-  const handleAnswerUpdate = (field, value) => {
+  const handleAnswerUpdate = useCallback((field, value) => {
     const qId = currentQuestion?.id || `q_${currentIndex}`;
     setAnswers((prev) => {
       const existing = prev[qId] || {};
@@ -189,12 +198,14 @@ export default function LiveInterviewRoomPage({ params: propsParams }) {
 
       // Auto-save to localStorage
       setAutoSaveStatus('Saving...');
-      localStorage.setItem(`answer_${sessionId}_${qId}`, JSON.stringify(updated));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`answer_${sessionId}_${qId}`, JSON.stringify(updated));
+      }
       setTimeout(() => setAutoSaveStatus('Saved'), 800);
 
       return { ...prev, [qId]: updated };
     });
-  };
+  }, [currentQuestion?.id, currentIndex, sessionId]);
 
   const currentAnswerObj = answers[currentQuestion?.id || `q_${currentIndex}`] || {};
 
@@ -229,11 +240,20 @@ export default function LiveInterviewRoomPage({ params: propsParams }) {
   const handleSubmitCurrentAnswer = async () => {
     if (!currentQuestion) return;
 
-    setIsSubmitting(true);
-    toast.loading('Evaluating answer with AI...', { id: 'eval-ans' });
-
     const qId = currentQuestion.id || `q_${currentIndex}`;
     const ansData = answers[qId] || {};
+    const cleanAnswerText = (ansData.textAnswer || voice.transcript || ansData.selectedOption || ansData.codeSnippet || '').trim();
+
+    if (!cleanAnswerText) {
+      toast.error('Please provide an answer before submitting.');
+      return;
+    }
+
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    toast.loading('Analyzing your answer...', { id: 'eval-ans' });
+    voice.stopSpeaking();
 
     // Upload voice recording if present
     if (voice.audioUrl || ansData.textAnswer) {
@@ -272,21 +292,26 @@ export default function LiveInterviewRoomPage({ params: propsParams }) {
       setFeedbacks((prev) => ({ ...prev, [qId]: res.evaluation }));
       toast.success(`AI Evaluation Complete! Score: ${res.evaluation.score}/100`, { id: 'eval-ans' });
     } else {
-      toast.error('Failed to submit answer for evaluation', { id: 'eval-ans' });
+      toast.error(res.error || 'Failed to submit answer for evaluation', { id: 'eval-ans' });
     }
 
     setIsSubmitting(false);
   };
 
+  const handleEndInterviewRef = useRef(handleEndInterview);
+  useEffect(() => {
+    handleEndInterviewRef.current = handleEndInterview;
+  }, [handleEndInterview]);
+
   // Main Interview Countdown Timer
   useEffect(() => {
-    if (loading || isPaused || totalSecondsLeft <= 0 || !session) return;
+    if (loading || isPaused || !session) return;
 
     const timer = setInterval(() => {
       setTotalSecondsLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          handleEndInterview();
+          handleEndInterviewRef.current?.();
           return 0;
         }
         return prev - 1;
@@ -295,14 +320,16 @@ export default function LiveInterviewRoomPage({ params: propsParams }) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [loading, isPaused, totalSecondsLeft, session, handleEndInterview]);
+  }, [loading, isPaused, session]);
+
+  const { speakText } = voice;
 
   // Speak Question Aloud when navigating to a new question
   useEffect(() => {
     if (readQuestionAloud && currentQuestion?.question && !isPaused && !loading) {
-      voice.speakText(currentQuestion.question);
+      speakText(currentQuestion.question);
     }
-  }, [currentIndex, currentQuestion?.question, readQuestionAloud, isPaused, loading, voice]);
+  }, [currentIndex, currentQuestion?.question, readQuestionAloud, isPaused, loading, speakText]);
 
   const formatTime = (secs) => {
     const mins = Math.floor(secs / 60);
@@ -434,20 +461,141 @@ export default function LiveInterviewRoomPage({ params: propsParams }) {
             </CardContent>
           </Card>
 
-          {/* AI Immediate Feedback Box */}
+          {/* Analyzing Loading Indicator */}
+          {isSubmitting && (
+            <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>
+              <Card className="border-primary/30 bg-primary/5">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary shrink-0" />
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-bold text-foreground">Analyzing your answer...</p>
+                    <p className="text-[11px] text-muted-foreground">Evaluating semantic correctness and technical depth with Groq AI...</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* AI Immediate Structured Feedback Box (Requirement 7) */}
           {currentFeedback && (
             <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}>
-              <Card className="border-emerald-500/30 bg-emerald-500/5">
-                <CardContent className="p-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-emerald-600 flex items-center gap-1.5">
-                      <Sparkles className="h-4 w-4" /> AI Answer Evaluation
-                    </span>
-                    <Badge variant="default" className="bg-emerald-600 text-white font-mono">
+              <Card
+                className={`overflow-hidden border ${
+                  currentFeedback.verdict === 'CORRECT'
+                    ? 'border-emerald-500/40 bg-emerald-500/5'
+                    : currentFeedback.verdict === 'PARTIALLY_CORRECT'
+                    ? 'border-amber-500/40 bg-amber-500/5'
+                    : currentFeedback.verdict === 'NOT_ANSWERED'
+                    ? 'border-border/60 bg-muted/20'
+                    : 'border-rose-500/40 bg-rose-500/5'
+                }`}
+              >
+                {/* Header with Verdict and Score */}
+                <CardHeader className="p-4 pb-3 border-b border-border/40">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Answer:
+                      </span>
+                      <Badge
+                        className={`text-xs font-bold px-2.5 py-0.5 ${
+                          currentFeedback.verdict === 'CORRECT'
+                            ? 'bg-emerald-600 text-white'
+                            : currentFeedback.verdict === 'PARTIALLY_CORRECT'
+                            ? 'bg-amber-600 text-white'
+                            : currentFeedback.verdict === 'NOT_ANSWERED'
+                            ? 'bg-muted text-muted-foreground border border-border'
+                            : 'bg-rose-600 text-white'
+                        }`}
+                      >
+                        {currentFeedback.verdict === 'CORRECT'
+                          ? 'Correct'
+                          : currentFeedback.verdict === 'PARTIALLY_CORRECT'
+                          ? 'Partially Correct'
+                          : currentFeedback.verdict === 'NOT_ANSWERED'
+                          ? 'Not Answered'
+                          : 'Incorrect'}
+                      </Badge>
+                    </div>
+
+                    <Badge variant="outline" className="font-mono text-xs font-bold px-2.5 py-0.5 border-foreground/20">
                       Score: {currentFeedback.score}/100
                     </Badge>
                   </div>
-                  <p className="text-xs leading-relaxed text-muted-foreground">{currentFeedback.feedback}</p>
+                </CardHeader>
+
+                <CardContent className="p-4 space-y-4">
+                  {/* What you did well */}
+                  {Array.isArray(currentFeedback.strengths) && currentFeedback.strengths.length > 0 && (
+                    <div className="space-y-1.5">
+                      <h5 className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                        <Check className="h-3.5 w-3.5" /> What you did well:
+                      </h5>
+                      <ul className="space-y-1 pl-4">
+                        {currentFeedback.strengths.map((str, sIdx) => (
+                          <li key={sIdx} className="text-xs text-foreground/80 list-disc">
+                            {str}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* What you missed */}
+                  {Array.isArray(currentFeedback.missingConcepts) && currentFeedback.missingConcepts.length > 0 && (
+                    <div className="space-y-1.5">
+                      <h5 className="text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                        <Target className="h-3.5 w-3.5" /> What you missed:
+                      </h5>
+                      <ul className="space-y-1 pl-4">
+                        {currentFeedback.missingConcepts.map((mc, mIdx) => (
+                          <li key={mIdx} className="text-xs text-foreground/80 list-disc">
+                            {mc}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Technical correction */}
+                  {Array.isArray(currentFeedback.mistakes) && currentFeedback.mistakes.length > 0 && (
+                    <div className="space-y-1.5">
+                      <h5 className="text-xs font-bold text-rose-700 dark:text-rose-400 flex items-center gap-1.5">
+                        <AlertCircle className="h-3.5 w-3.5" /> Technical correction:
+                      </h5>
+                      <ul className="space-y-1 pl-4">
+                        {currentFeedback.mistakes.map((mis, misIdx) => (
+                          <li key={misIdx} className="text-xs text-foreground/80 list-disc">
+                            {mis}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Better answer */}
+                  {currentFeedback.idealAnswer && (
+                    <div className="space-y-1.5 pt-1">
+                      <h5 className="text-xs font-bold text-primary flex items-center gap-1.5">
+                        <Lightbulb className="h-3.5 w-3.5" /> Better answer:
+                      </h5>
+                      <p className="text-xs leading-relaxed text-foreground/90 bg-card p-3 rounded-md border border-border/50">
+                        {currentFeedback.idealAnswer}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Overall Coaching Feedback */}
+                  {currentFeedback.feedback && (
+                    <div className="space-y-1 pt-1 border-t border-border/30">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">
+                        Detailed Feedback:
+                      </span>
+                      <p className="text-xs leading-relaxed text-muted-foreground">
+                        {currentFeedback.feedback}
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>

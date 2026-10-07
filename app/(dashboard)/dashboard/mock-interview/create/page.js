@@ -19,6 +19,8 @@ import {
   Cpu,
   BrainCircuit,
   Wand2,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,14 +31,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { createInterviewSessionAction } from '@/actions/interview';
 import { SUPPORTED_TECHNOLOGIES } from '@/services/interview-ai';
 
+const COMMON_ROLES = [
+  'Full Stack Developer',
+  'Frontend Developer',
+  'Backend Developer',
+  'Software Engineer',
+  'SDE-2',
+  'DevOps Engineer',
+  'System Architect',
+  'AI / ML Engineer',
+  'Mobile App Developer',
+];
+
 const INTERVIEW_TYPES = [
-  { id: 'Technical Interview', label: 'Technical Interview', desc: 'Focuses on deep technical knowledge, frameworks, and architecture.' },
-  { id: 'Coding Interview', label: 'Coding Interview', desc: 'Live hands-on algorithmic and data structure problems with Monaco Editor.' },
-  { id: 'System Design Interview', label: 'System Design Interview', desc: 'High-level architecture, scalability, trade-offs, and microservices.' },
-  { id: 'Behavioral Interview', label: 'Behavioral Interview', desc: 'STAR method situational, leadership, and collaboration questions.' },
-  { id: 'HR Interview', label: 'HR Interview', desc: 'Culture fit, career trajectory, expectations, and interpersonal skills.' },
-  { id: 'Mixed Interview', label: 'Mixed Interview', desc: 'Comprehensive combination of Technical, Behavioral, and Coding questions.' },
-  { id: 'Custom Interview', label: 'Custom Interview', desc: 'Tailor custom technical domains and question categories.' },
+  { id: 'Technical Interview', label: 'Technical Interview', desc: 'Deep technical architecture, framework mechanics, debugging, and edge cases.' },
+  { id: 'HR & Behavioral Interview', label: 'HR & Behavioral Interview', desc: 'STAR methodology questions assessing culture fit, leadership, and collaboration.' },
+  { id: 'System Design Interview', label: 'System Design Interview', desc: 'High-level architecture, scalability, trade-offs, microservices, and databases.' },
+  { id: 'Coding & DSA Interview', label: 'Coding & DSA Interview', desc: 'Hands-on algorithmic problem solving with Monaco live code editor.' },
+  { id: 'Mixed Full-Loop Interview', label: 'Mixed Full-Loop Interview', desc: 'Complete realistic loop: Technical deep-dive + Architecture + Coding + Behavioral.' },
+  { id: 'Situational & Leadership', label: 'Situational & Leadership', desc: 'Real-world scenarios, deadline pressure, conflict resolution, and ownership.' },
 ];
 
 export default function CreateInterviewPage() {
@@ -45,8 +58,9 @@ export default function CreateInterviewPage() {
   // Wizard Form state
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
 
-  const [role, setRole] = useState('Full Stack Software Engineer');
+  const [role, setRole] = useState('Full Stack Developer');
   const [technology, setTechnology] = useState('React');
   const [interviewType, setInterviewType] = useState('Technical Interview');
   const [experience, setExperience] = useState('MID_LEVEL');
@@ -63,7 +77,8 @@ export default function CreateInterviewPage() {
 
   const handleGenerate = async () => {
     setLoading(true);
-    toast.loading('Generating tailored AI Interview Session & questions...', { id: 'gen-interview' });
+    setErrorMsg(null);
+    toast.loading('Preparing your personalized interview...', { id: 'gen-interview' });
 
     try {
       const res = await createInterviewSessionAction({
@@ -77,22 +92,48 @@ export default function CreateInterviewPage() {
         questionCategories: selectedCategories,
       });
 
-      if (res.success) {
-        toast.success('Interview session generated successfully!', { id: 'gen-interview' });
-        // Store fallback session state in localStorage if DB is operating in dev fallback mode
+      if (res.success && res.sessionId) {
+        toast.success('Your personalized interview is ready! Starting now...', { id: 'gen-interview' });
         if (res.session) {
           localStorage.setItem(`mock_session_${res.sessionId}`, JSON.stringify(res.session));
         }
         router.push(`/dashboard/mock-interview/room/${res.sessionId}`);
       } else {
-        toast.error(res.error || 'Failed to generate interview', { id: 'gen-interview' });
+        const err = res.error || 'Failed to generate interview questions';
+        setErrorMsg(err);
+        toast.error(err, { id: 'gen-interview' });
         setLoading(false);
       }
     } catch (err) {
-      toast.error('An unexpected error occurred', { id: 'gen-interview' });
+      const message = err.message || 'An unexpected error occurred';
+      setErrorMsg(message);
+      toast.error(message, { id: 'gen-interview' });
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-xl mx-auto min-h-[60vh] flex flex-col items-center justify-center text-center p-6 space-y-6">
+        <div className="relative flex items-center justify-center">
+          <div className="h-20 w-20 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+          <BrainCircuit className="h-8 w-8 text-primary absolute" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">
+            Preparing your personalized interview...
+          </h2>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+            Synthesizing fresh, AI-generated questions tailored for <span className="font-semibold text-foreground">{role}</span> with <span className="font-semibold text-foreground">{technology}</span> ({interviewType}).
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono bg-muted/40 px-3 py-1.5 rounded-full border border-border/50">
+          <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
+          <span>Server-side Groq Engine • Zero pre-defined question banks</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-12">
@@ -111,9 +152,27 @@ export default function CreateInterviewPage() {
         </div>
 
         <Badge variant="outline" className="hidden sm:flex items-center gap-1.5 px-3 py-1 border-primary/30 text-primary bg-primary/5">
-          <Sparkles className="h-4 w-4" /> Groq Llama 3.3 Engine
+          <Sparkles className="h-4 w-4" /> Groq AI Engine
         </Badge>
       </div>
+
+      {/* Error Retry Banner */}
+      {errorMsg && (
+        <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive flex items-center justify-between gap-4 text-xs font-semibold">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+          <Button
+            size="sm"
+            onClick={handleGenerate}
+            variant="outline"
+            className="border-destructive/40 text-destructive hover:bg-destructive/20 text-xs shrink-0"
+          >
+            <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Retry
+          </Button>
+        </div>
+      )}
 
       {/* Step Indicators */}
       <div className="flex items-center justify-between border-b border-border/50 pb-4">
@@ -153,7 +212,7 @@ export default function CreateInterviewPage() {
               <CardTitle className="text-lg font-bold flex items-center gap-2">
                 <Briefcase className="h-5 w-5 text-primary" /> Target Position & Role
               </CardTitle>
-              <CardDescription>Enter the position title you want to practice interviewing for.</CardDescription>
+              <CardDescription>Enter your target position title or select a common role preset.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -166,6 +225,23 @@ export default function CreateInterviewPage() {
                   className="h-11 bg-background"
                 />
               </div>
+
+              {/* Role Presets */}
+              <div className="space-y-1.5 pt-2">
+                <span className="text-xs text-muted-foreground">Quick Presets:</span>
+                <div className="flex flex-wrap gap-2">
+                  {COMMON_ROLES.map((r) => (
+                    <Badge
+                      key={r}
+                      variant={role === r ? 'default' : 'outline'}
+                      onClick={() => setRole(r)}
+                      className="cursor-pointer text-xs transition-colors hover:border-primary"
+                    >
+                      {r}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -174,7 +250,7 @@ export default function CreateInterviewPage() {
               <CardTitle className="text-lg font-bold flex items-center gap-2">
                 <Layers className="h-5 w-5 text-primary" /> Select Interview Type
               </CardTitle>
-              <CardDescription>Choose the primary format and objective of this mock interview.</CardDescription>
+              <CardDescription>Choose the primary format and objective of this mock interview session.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -218,7 +294,7 @@ export default function CreateInterviewPage() {
               <CardTitle className="text-lg font-bold flex items-center gap-2">
                 <Code2 className="h-5 w-5 text-primary" /> Select Primary Technology
               </CardTitle>
-              <CardDescription>Choose from the 23 supported enterprise frameworks, languages, and core subjects.</CardDescription>
+              <CardDescription>Choose from the supported enterprise frameworks, languages, and core subjects.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2.5">
@@ -231,7 +307,7 @@ export default function CreateInterviewPage() {
                       variant={isSel ? 'default' : 'outline'}
                       className={`cursor-pointer px-3.5 py-2 text-xs transition-all ${
                         isSel
-                          ? 'bg-primary   text-primary-foreground font-semibold shadow-md'
+                          ? 'bg-primary text-primary-foreground font-semibold shadow-md'
                           : 'hover:border-primary hover:bg-primary/5'
                       }`}
                     >
@@ -367,7 +443,7 @@ export default function CreateInterviewPage() {
           <Card className="border-primary/30 bg-primary/5">
             <CardContent className="p-6 space-y-3">
               <h4 className="font-semibold text-sm text-primary flex items-center gap-2">
-                <Wand2 className="h-4 w-4" /> Ready to Generate AI Interview Session
+                <Wand2 className="h-4 w-4" /> Ready to Generate Dynamic AI Interview
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                 <div>
@@ -391,23 +467,14 @@ export default function CreateInterviewPage() {
           </Card>
 
           <div className="flex justify-between pt-4">
-            <Button variant="outline" onClick={() => setStep(2)} disabled={loading}>
+            <Button variant="outline" onClick={() => setStep(2)}>
               Back
             </Button>
             <Button
               onClick={handleGenerate}
-              disabled={loading}
-              className="bg-primary    text-primary-foreground font-semibold shadow-sm px-8"
+              className="bg-primary text-primary-foreground font-semibold shadow-sm px-8"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating Session...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-4 w-4" /> Start Interview Session
-                </>
-              )}
+              <Sparkles className="mr-2 h-4 w-4" /> Start Interview Session
             </Button>
           </div>
         </motion.div>

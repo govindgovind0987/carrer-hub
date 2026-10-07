@@ -17,7 +17,6 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [prevPathname, setPrevPathname] = useState(usePathname());
   const pathname = usePathname();
 
   const { data: session, status } = useSession();
@@ -34,8 +33,9 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Adjust state during render when pathname changes
-  if (pathname !== prevPathname) {
+  // Close mobile navigation on route change
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
     setPrevPathname(pathname);
     setIsMobileOpen(false);
   }

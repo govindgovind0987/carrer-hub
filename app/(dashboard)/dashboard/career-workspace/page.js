@@ -19,7 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CareerWorkspaceHeader } from '@/components/career-workspace/career-workspace-header';
 
 export const metadata = {
-  title: 'Career Workspace | CareerHub',
+  title: 'My Workspace | CareerHub',
   description:
     'Centralized career management: your resumes, learning roadmaps, skill analytics, and professional profile.',
 };
@@ -34,7 +34,7 @@ export default async function CareerWorkspacePage() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center p-6 text-center">
         <p className="text-sm text-muted-foreground">
-          Please sign in to access your Career Workspace.
+          Please sign in to access My Workspace.
         </p>
       </div>
     );
@@ -44,7 +44,7 @@ export default async function CareerWorkspacePage() {
     <div className="space-y-6">
       {/* Top Header renders immediately without waiting for database queries */}
       <CareerWorkspaceHeader
-        title="Career Workspace"
+        title="My Workspace"
         description="Manage your professional resumes, learning sequence, technical skill growth, and public profile."
       />
 

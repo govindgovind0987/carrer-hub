@@ -180,11 +180,11 @@ export default async function CandidateDashboardPage() {
       icon: Target,
     },
     {
-      title: 'HR & Technical Question Bank',
-      desc: 'Curated behavioral questions, system design essentials, and concepts.',
-      href: '/dashboard/interview-prep',
-      cta: 'Study Questions',
-      icon: HelpCircle,
+      title: 'AI Career Coach',
+      desc: 'Actionable 30/90-day roadmaps, skill gap analysis, and tailored career guidance.',
+      href: '/dashboard/career-coach',
+      cta: 'Get Advice',
+      icon: Sparkles,
     },
   ];
 
@@ -215,7 +215,7 @@ export default async function CandidateDashboardPage() {
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/dashboard/career-workspace">
-              <Briefcase className="mr-1.5 h-3.5 w-3.5" /> Career Workspace
+              <Briefcase className="mr-1.5 h-3.5 w-3.5" /> My Workspace
             </Link>
           </Button>
         </div>
@@ -525,7 +525,7 @@ export default async function CandidateDashboardPage() {
                 className="w-full text-xs text-muted-foreground hover:text-foreground justify-between h-8"
               >
                 <Link href="/dashboard/career-workspace">
-                  <span>View full Career Workspace</span>
+                  <span>View My Workspace</span>
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>

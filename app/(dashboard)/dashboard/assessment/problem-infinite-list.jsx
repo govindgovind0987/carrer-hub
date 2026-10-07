@@ -40,6 +40,11 @@ export function ProblemInfiniteList({
   const seenIdsRef = useRef(new Set(initialProblems.map((p) => p.id)));
 
 
+  const filtersRef = useRef(filters);
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
+
   const loadMore = useCallback(async () => {
     if (isFetchingRef.current || !hasMore) return;
     isFetchingRef.current = true;
@@ -49,17 +54,18 @@ export function ProblemInfiniteList({
     try {
       const nextPage = page + 1;
       const params = new URLSearchParams();
-      if (filters.category && filters.category !== 'ALL')
-        params.set('category', filters.category);
-      if (filters.difficulty && filters.difficulty !== 'ALL')
-        params.set('difficulty', filters.difficulty);
-      if (filters.company && filters.company !== 'ALL')
-        params.set('company', filters.company);
-      if (filters.search && filters.search.trim())
-        params.set('search', filters.search.trim());
-      if (filters.status && filters.status !== 'ALL')
-        params.set('status', filters.status);
-      if (filters.bookmarked) params.set('bookmarked', 'true');
+      const currentFilters = filtersRef.current || {};
+      if (currentFilters.category && currentFilters.category !== 'ALL')
+        params.set('category', currentFilters.category);
+      if (currentFilters.difficulty && currentFilters.difficulty !== 'ALL')
+        params.set('difficulty', currentFilters.difficulty);
+      if (currentFilters.company && currentFilters.company !== 'ALL')
+        params.set('company', currentFilters.company);
+      if (currentFilters.search && currentFilters.search.trim())
+        params.set('search', currentFilters.search.trim());
+      if (currentFilters.status && currentFilters.status !== 'ALL')
+        params.set('status', currentFilters.status);
+      if (currentFilters.bookmarked) params.set('bookmarked', 'true');
 
       params.set('page', String(nextPage));
       params.set('limit', '20');
@@ -100,7 +106,7 @@ export function ProblemInfiniteList({
       setIsLoadingMore(false);
       isFetchingRef.current = false;
     }
-  }, [hasMore, page, cursor, filters]);
+  }, [hasMore, page, cursor]);
 
   useEffect(() => {
     if (!hasMore || isLoadingMore) return;

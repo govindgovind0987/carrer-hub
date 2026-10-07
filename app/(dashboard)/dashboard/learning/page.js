@@ -253,7 +253,7 @@ export default async function LearningDashboardPage() {
               </Link>
             </Button>
             <Button asChild size="sm" variant="outline">
-              <Link href="/dashboard/interview-prep">Practice Questions</Link>
+              <Link href="/dashboard/mock-interview">Practice Mock Interview</Link>
             </Button>
           </div>
         </Card>

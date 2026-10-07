@@ -93,6 +93,7 @@ export async function getJobBySlug(slug) {
       },
     });
 
+
     if (job) {
       // Analytics should not delay the job detail response.
       after(() =>
@@ -101,7 +102,7 @@ export async function getJobBySlug(slug) {
             where: { id: job.id },
             data: { viewsCount: { increment: 1 } },
           })
-          .catch(() => {})
+          .catch(() => { })
       );
     }
 

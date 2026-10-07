@@ -14,7 +14,7 @@ const workspaceNavItems = [
 ];
 
 export function CareerWorkspaceHeader({
-  title = 'Career Workspace',
+  title = 'My Workspace',
   description = 'Manage your professional resumes, learning sequence, technical skill growth, and public profile.',
   showTitle = true,
   action,
@@ -42,7 +42,7 @@ export function CareerWorkspaceHeader({
 
       {/* Clean header tabs navigation */}
       <nav
-        aria-label="Career Workspace Navigation"
+        aria-label="My Workspace Navigation"
         className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none"
       >
         {workspaceNavItems.map((item) => {

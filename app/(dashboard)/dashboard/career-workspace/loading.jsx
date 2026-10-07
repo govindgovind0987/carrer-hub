@@ -5,9 +5,9 @@ import { CareerWorkspaceHeader } from '@/components/career-workspace/career-work
 export default function CareerWorkspaceLoading() {
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-200">
-      {/* Real Career Workspace Header renders immediately */}
+      {/* Real My Workspace Header renders immediately */}
       <CareerWorkspaceHeader
-        title="Career Workspace"
+        title="My Workspace"
         description="Manage your professional resumes, learning sequence, technical skill growth, and public profile."
       />
 

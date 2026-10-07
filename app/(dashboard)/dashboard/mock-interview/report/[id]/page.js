@@ -106,12 +106,12 @@ export default function InterviewReportPage({ params: propsParams }) {
   }
 
   const scoreMetrics = [
-    { label: 'Technical Score', score: report?.technicalScore || 85, color: ' ' },
-    { label: 'Coding Score', score: report?.codingScore || 82, color: ' ' },
-    { label: 'Problem Solving', score: report?.problemSolvingScore || 88, color: ' ' },
-    { label: 'Communication', score: report?.communicationScore || 80, color: ' ' },
-    { label: 'Confidence Score', score: report?.confidenceScore || 86, color: ' ' },
-    { label: 'Behavioral Score', score: report?.behaviorScore || 80, color: ' ' },
+    { label: 'Technical Score', score: report?.technicalScore ?? 0 },
+    { label: 'Coding Score', score: report?.codingScore ?? 0 },
+    { label: 'Problem Solving', score: report?.problemSolvingScore ?? 0 },
+    { label: 'Communication', score: report?.communicationScore ?? 0 },
+    { label: 'Confidence Score', score: report?.confidenceScore ?? 0 },
+    { label: 'Behavioral Score', score: report?.behaviorScore ?? 0 },
   ];
 
   return (
@@ -134,10 +134,10 @@ export default function InterviewReportPage({ params: propsParams }) {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
             {/* Score Ring / Badge (4 cols) */}
             <div className="md:col-span-4 flex flex-col items-center justify-center text-center border-b md:border-b-0 md:border-r border-border/50 pb-6 md:pb-0 md:pr-6">
-              <div className="relative flex items-center justify-center w-36 h-36 rounded-full bg-primary   p-1.5 shadow-sm">
+              <div className="relative flex items-center justify-center w-36 h-36 rounded-full bg-primary p-1.5 shadow-sm">
                 <div className="w-full h-full rounded-full bg-card flex flex-col items-center justify-center">
                   <span className="text-4xl font-extrabold text-foreground">
-                    {report?.overallScore}%
+                    {report?.overallScore ?? 0}%
                   </span>
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mt-0.5">
                     Overall Score
@@ -152,11 +152,18 @@ export default function InterviewReportPage({ params: propsParams }) {
             {/* Recommendation & Summary (8 cols) */}
             <div className="md:col-span-8 space-y-4">
               <div className="space-y-1">
-                <span className="text-xs font-semibold uppercase tracking-wider text-primary flex items-center gap-1.5">
-                  <Award className="h-4 w-4" /> AI Hiring Recommendation
-                </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                    <Award className="h-4 w-4" /> AI Hiring Recommendation
+                  </span>
+                  {report?.interviewReadiness && (
+                    <Badge variant="secondary" className="text-[11px] font-semibold">
+                      {report.interviewReadiness}
+                    </Badge>
+                  )}
+                </div>
                 <h2 className="text-2xl font-bold text-foreground">
-                  {report?.recommendation || 'RECOMMENDED FOR HIRE'}
+                  {report?.recommendation || (report?.overallScore >= 70 ? 'RECOMMENDED FOR HIRE' : 'NEEDS PREPARATION')}
                 </h2>
               </div>
               <p className="text-sm leading-relaxed text-muted-foreground bg-card/60 p-4 rounded-md border border-border/40">
@@ -205,6 +212,27 @@ export default function InterviewReportPage({ params: propsParams }) {
                       <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
                         Q{q.questionOrder || idx + 1}
                       </Badge>
+                      {q.verdict && (
+                        <Badge
+                          className={`text-[10px] font-bold ${
+                            q.verdict === 'CORRECT'
+                              ? 'bg-emerald-600 text-white'
+                              : q.verdict === 'PARTIALLY_CORRECT'
+                              ? 'bg-amber-600 text-white'
+                              : q.verdict === 'NOT_ANSWERED'
+                              ? 'bg-muted text-muted-foreground border border-border'
+                              : 'bg-rose-600 text-white'
+                          }`}
+                        >
+                          {q.verdict === 'CORRECT'
+                            ? 'Correct'
+                            : q.verdict === 'PARTIALLY_CORRECT'
+                            ? 'Partially Correct'
+                            : q.verdict === 'NOT_ANSWERED'
+                            ? 'Not Answered'
+                            : 'Incorrect'}
+                        </Badge>
+                      )}
                       <Badge variant="secondary" className="text-[10px] font-mono">
                         Score: {q.score}%
                       </Badge>
@@ -222,7 +250,9 @@ export default function InterviewReportPage({ params: propsParams }) {
                     <div className="space-y-2 pt-4">
                       <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Candidate Answer</h4>
                       <p className="text-xs font-mono bg-card p-3 rounded-lg border border-border/50 text-foreground whitespace-pre-wrap">
-                        {q.answer || '(No answer recorded)'}
+                        {q.answer && q.answer !== '(No answer)' && q.answer !== '(No answer provided)' && q.answer !== '(No answer recorded)'
+                          ? q.answer
+                          : 'No answer was provided for this question.'}
                       </p>
                     </div>
 
@@ -234,6 +264,17 @@ export default function InterviewReportPage({ params: propsParams }) {
                         {q.feedback}
                       </p>
                     </div>
+
+                    {q.idealAnswer && (
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-semibold uppercase tracking-wider text-emerald-600 flex items-center gap-1.5">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Benchmark Model Answer
+                        </h4>
+                        <p className="text-xs leading-relaxed text-muted-foreground bg-card p-3 rounded-lg border border-border/50">
+                          {q.idealAnswer}
+                        </p>
+                      </div>
+                    )}
                   </CardContent>
                 )}
               </Card>
