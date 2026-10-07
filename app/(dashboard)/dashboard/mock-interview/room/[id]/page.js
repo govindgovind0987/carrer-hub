@@ -38,6 +38,7 @@ import { Label } from '@/components/ui/label';
 import { useVoiceInterview } from '@/hooks/useVoiceInterview';
 import { VoiceRecorder } from '@/components/interview/voice-recorder';
 import { CodeEditorComponent } from '@/components/interview/code-editor';
+import { useSetAssistantContext } from '@/components/assistant';
 import {
   getInterviewSessionAction,
   submitInterviewAnswerAction,
@@ -73,6 +74,19 @@ export default function LiveInterviewRoomPage({ params: propsParams }) {
   // Timers
   const [totalSecondsLeft, setTotalSecondsLeft] = useState(1800); // 30 mins default
   const [questionSeconds, setQuestionSeconds] = useState(0);
+
+  // Sync active interview question and candidate answer to AI Assistant
+  const currentQ = session?.questions?.[currentIndex];
+  useSetAssistantContext({
+    pageType: 'interview-room',
+    sessionId,
+    role: session?.role,
+    technology: session?.technology,
+    currentQuestionIndex: currentIndex + 1,
+    currentQuestionText: currentQ?.question,
+    currentQuestionType: currentQ?.questionType,
+    userAnswerText: (currentQ?.id && answers[currentQ.id]?.textAnswer) || voice?.transcript || '',
+  });
 
   // Load Session Data & Reconnect Support
   useEffect(() => {

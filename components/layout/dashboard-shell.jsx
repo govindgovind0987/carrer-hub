@@ -54,6 +54,7 @@ import {
 import { Logo } from '@/components/shared/logo';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
 import { getInitials } from '@/lib/utils';
+import { AssistantProvider, AssistantFloatingButton } from '@/components/assistant';
 
 export function DashboardShell({ children }) {
   const pathname = usePathname();
@@ -129,6 +130,7 @@ export function DashboardShell({ children }) {
   };
 
   return (
+    <AssistantProvider>
     <SidebarProvider defaultOpen={true}>
       {/* Official shadcn/ui Sidebar */}
       <Sidebar collapsible="icon" className="border-r border-border bg-card">
@@ -395,7 +397,9 @@ export function DashboardShell({ children }) {
         <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 max-w-7xl mx-auto w-full">
           {children}
         </main>
+        <AssistantFloatingButton />
       </SidebarInset>
     </SidebarProvider>
+    </AssistantProvider>
   );
 }

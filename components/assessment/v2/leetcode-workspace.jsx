@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ProblemPanel } from './problem-panel';
 import { EditorConsolePanel } from './editor-console-panel';
 import { toast } from 'sonner';
+import { useSetAssistantContext } from '@/components/assistant';
 
 export function LeetCodeWorkspace({ problem, userProgress, previousSubmissions = [], similarProblems = {} }) {
   const [language, setLanguage] = useState('python');
@@ -15,6 +16,23 @@ export function LeetCodeWorkspace({ problem, userProgress, previousSubmissions =
   const [executionResult, setExecutionResult] = useState(null);
   const [submissionResult, setSubmissionResult] = useState(null);
   const [submissionsList, setSubmissionsList] = useState(previousSubmissions);
+
+  // Automatically sync problem, current code, and execution errors to AI Assistant
+  useSetAssistantContext({
+    pageType: 'coding-problem',
+    problemId: problem.id,
+    problemSlug: problem.slug,
+    problemTitle: problem.title,
+    difficulty: problem.difficulty,
+    category: problem.category,
+    tags: problem.tags,
+    constraints: problem.constraints,
+    examples: problem.examples,
+    currentCode: code,
+    language,
+    executionResult,
+    submissionResult,
+  });
 
   const handleLanguageChange = (newLang) => {
     setLanguage(newLang);
