@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import {
   Card,
   CardContent,
@@ -22,7 +23,9 @@ export default function SignInPage() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <SignInForm />
+        <Suspense fallback={<div className="h-40 animate-pulse rounded-md bg-muted/20" />}>
+          <SignInForm />
+        </Suspense>
       </CardContent>
     </Card>
   );
